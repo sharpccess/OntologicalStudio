@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "OntologicalStudio.AIProviders/1.0.0": {
+        "dependencies": {
+          "OntologicalStudio.Core": "1.0.0"
+        },
+        "runtime": {
+          "OntologicalStudio.AIProviders.dll": {}
+        }
+      },
+      "OntologicalStudio.Core/1.0.0": {
+        "runtime": {
+          "OntologicalStudio.Core.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "OntologicalStudio.AIProviders/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "OntologicalStudio.Core/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

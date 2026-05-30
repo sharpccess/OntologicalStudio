@@ -1,0 +1,391 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2000/xaml"
+        xmlns:vm="using OntologicalStudio.Desktop.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+        x:Class="OntologicalStudio.Desktop.Views.MainWindow"
+        Title="Ontological Studio - Problem Solving Studio"
+        Background="#0f0f11"
+        Foreground="#e4e4e7"
+        Width="1280" Height="800"
+        WindowStartupLocation="CenterScreen">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid ColumnDefinitions="280, *, 380">
+        <Border Grid.Column="0" Background="#141416" BorderBrush="#27272a" BorderThickness="0,0,1,0">
+            <Grid RowDefinitions="Auto, *, Auto">
+                <Border Grid.Row="0" Padding="15" BorderBrush="#27272a" BorderThickness="0,0,0,1">
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="ONTOLOGICAL STUDIO" FontSize="14" FontWeight="Bold" Foreground="#a855f7" LetterSpacing="1" />
+                        <TextBlock Text="AI Problem Solving Studio" FontSize="11" Foreground="#71717a" />
+                    </StackPanel>
+                </Border>
+
+                <ScrollViewer Grid.Row="1" Padding="15">
+                    <StackPanel Spacing="20">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Universes" FontSize="12" FontWeight="SemiBold" Foreground="#a1a1aa" />
+                            <ComboBox ItemsSource="{Binding Universes}" 
+                                      SelectedItem="{Binding SelectedUniverse}" 
+                                      HorizontalAlignment="Stretch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            
+                            <Expander Header="New Universe" Background="#1a1a1e" BorderBrush="#27272a" HorizontalAlignment="Stretch">
+                                <StackPanel Spacing="8" Padding="5">
+                                    <TextBox Text="{Binding NewUniverseName}" Watermark="Universe Name" FontSize="12" />
+                                    <TextBox Text="{Binding NewUniverseDescription}" Watermark="Description..." FontSize="12" Height="60" TextWrapping="Wrap" AcceptsReturn="True" />
+                                    <Button Command="{Binding CreateUniverseCommand}" Content="Create" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#6366f1" Foreground="White" />
+                                </StackPanel>
+                            </Expander>
+
+                            <Button Command="{Binding DeleteUniverseCommand}" Content="Delete Selected" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#ef4444" Foreground="White" FontSize="11" />
+                        </StackPanel>
+
+                        <Separator Background="#27272a" />
+
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Grid.Column="0" Text="Scenarios &amp; Problems" FontSize="12" FontWeight="SemiBold" Foreground="#a1a1aa" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" Command="{Binding AddScenarioCommand}" Content="+" Padding="6,2" Background="#22c55e" Foreground="White" />
+                            </Grid>
+                            <ListBox ItemsSource="{Binding Scenarios}" 
+                                     SelectedItem="{Binding SelectedScenario}"
+                                     Background="#18181b" 
+                                     BorderBrush="#27272a" 
+                                     BorderThickness="1" 
+                                     Height="150" 
+                                     CornerRadius="6">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="8" Padding="2">
+                                            <TextBlock Text="●" Foreground="#6366f1" VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding Title}" FontSize="12" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <Button Command="{Binding DeleteScenarioCommand}" Content="Delete Scenario" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#ef4444" Foreground="White" FontSize="11" />
+                        </StackPanel>
+
+                        <Separator Background="#27272a" />
+
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Entities in Workspace" FontSize="12" FontWeight="SemiBold" Foreground="#a1a1aa" />
+                            <ListBox ItemsSource="{Binding Entities}" 
+                                     SelectedItem="{Binding SelectedEntity}"
+                                     Background="#18181b" 
+                                     BorderBrush="#27272a" 
+                                     BorderThickness="1" 
+                                     Height="150" 
+                                     CornerRadius="6">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" FontSize="12" />
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <Border Grid.Row="2" Padding="15" BorderBrush="#27272a" BorderThickness="0,1,0,0" Background="#18181b">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Report Engine (QuestPDF)" FontSize="12" FontWeight="SemiBold" Foreground="#a1a1aa" />
+                        <Button Content="Generate PDF Report" 
+                                HorizontalAlignment="Stretch" 
+                                HorizontalContentAlignment="Center" 
+                                Background="#a855f7" 
+                                Foreground="White" 
+                                FontWeight="Bold"
+                                Click="OnGenerateReportClick" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Column="1" RowDefinitions="Auto, *">
+            <Border Grid.Row="0" Background="#141416" BorderBrush="#27272a" BorderThickness="0,0,0,1" Padding="10">
+                <Grid ColumnDefinitions="Auto, *, Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Add Node:" VerticalAlignment="Center" FontSize="12" Foreground="#a1a1aa" />
+                        <ComboBox ItemsSource="{Binding EntityTypes}" 
+                                  SelectedItem="{Binding SelectedEntityTypeForNewEntity}"
+                                  Width="120" FontSize="12">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <Button Command="{Binding AddEntityCommand}" Content="Add Node" Background="#6366f1" Foreground="White" FontSize="12" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Connect:" VerticalAlignment="Center" FontSize="12" Foreground="#a1a1aa" />
+                        
+                        <ComboBox ItemsSource="{Binding Entities}" 
+                                  SelectedItem="{Binding RelationshipSource}"
+                                  PlaceholderText="Source" Width="100" FontSize="11">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        
+                        <TextBlock Text="──" VerticalAlignment="Center" Foreground="#71717a" />
+                        
+                        <ComboBox ItemsSource="{Binding RelationshipTypes}" 
+                                  SelectedItem="{Binding SelectedRelationshipTypeForNewRelationship}"
+                                  Width="100" FontSize="11">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        
+                        <TextBlock Text="──&gt;" VerticalAlignment="Center" Foreground="#71717a" />
+                        
+                        <ComboBox ItemsSource="{Binding Entities}" 
+                                  SelectedItem="{Binding RelationshipTarget}"
+                                  PlaceholderText="Target" Width="100" FontSize="11">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        
+                        <Button Command="{Binding CreateRelationshipCommand}" Content="Connect" Background="#a855f7" Foreground="White" FontSize="12" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Background="#0b0b0d" ClipToBounds="True">
+                <Panel x:Name="CanvasContainer" Background="Transparent" 
+                       PointerPressed="OnCanvasPointerPressed" 
+                       PointerMoved="OnCanvasPointerMoved" 
+                       PointerReleased="OnCanvasPointerReleased"
+                       PointerWheelChanged="OnCanvasPointerWheelChanged">
+                    
+                    <Panel.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform x:Name="CanvasScale" ScaleX="1.0" ScaleY="1.0" />
+                            <TranslateTransform x:Name="CanvasTranslate" X="0" Y="0" />
+                        </TransformGroup>
+                    </Panel.RenderTransform>
+
+                    <Canvas Background="Transparent" Width="2000" Height="2000">
+                        <ItemsControl ItemsSource="{Binding Relationships}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Canvas>
+                                        <Line StartPoint="{Binding StartPoint}" 
+                                              EndPoint="{Binding EndPoint}" 
+                                              Stroke="#4f46e5" 
+                                              StrokeThickness="2" />
+                                        
+                                        <Border Canvas.Left="{Binding LabelX}" 
+                                                Canvas.Top="{Binding LabelY}" 
+                                                Background="#18181b" 
+                                                BorderBrush="#3f3f46" 
+                                                BorderThickness="1" 
+                                                Padding="6,3" 
+                                                CornerRadius="4" 
+                                                HorizontalAlignment="Center">
+                                            <TextBlock Text="{Binding TypeName}" FontSize="10" Foreground="#d4d4d8" FontWeight="SemiBold" />
+                                        </Border>
+                                    </Canvas>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <ItemsControl ItemsSource="{Binding Entities}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.Styles>
+                                <Style Selector="ContentPresenter">
+                                    <Setter Property="Canvas.Left" Value="{Binding PositionX, Mode=TwoWay}" />
+                                    <Setter Property="Canvas.Top" Value="{Binding PositionY, Mode=TwoWay}" />
+                                </Style>
+                            </ItemsControl.Styles>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Width="180" Height="90" 
+                                            Background="#1a1a1e" 
+                                            BorderBrush="#3f3f46" 
+                                            BorderThickness="1.5" 
+                                            CornerRadius="8" 
+                                            Padding="10"
+                                            PointerPressed="OnNodePointerPressed" 
+                                            PointerMoved="OnNodePointerMoved" 
+                                            PointerReleased="OnNodePointerReleased">
+                                        <Grid RowDefinitions="Auto, *, Auto">
+                                            <Border Grid.Row="0" HorizontalAlignment="Left" Background="#312e81" Padding="5,2" CornerRadius="4">
+                                                <TextBlock Text="{Binding TypeName}" FontSize="8" Foreground="#c7d2fe" FontWeight="Bold" />
+                                            </Border>
+                                            <TextBlock Grid.Row="1" Text="{Binding Name}" FontWeight="Bold" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" Foreground="#f4f4f5" />
+                                            <Grid Grid.Row="2" ColumnDefinitions="*, *">
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="3">
+                                                    <TextBlock Text="Conf:" FontSize="9" Foreground="#71717a" />
+                                                    <TextBlock Text="{Binding ConfidenceLevel}" FontSize="9" Foreground="#a1a1aa" />
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="3" HorizontalAlignment="Right">
+                                                    <TextBlock Text="Comp:" FontSize="9" Foreground="#71717a" />
+                                                    <TextBlock Text="{Binding CompletenessScore}" FontSize="9" Foreground="#a1a1aa" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Canvas>
+                </Panel>
+            </Border>
+        </Grid>
+
+        <Border Grid.Column="2" Background="#141416" BorderBrush="#27272a" BorderThickness="1,0,0,0" Padding="15">
+            <Grid RowDefinitions="*, Auto">
+                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="15">
+                        <TextBlock Text="Context Inspector" FontSize="14" FontWeight="Bold" Foreground="#a855f7" />
+                        
+                        <TextBlock Text="Select a Node or Line on the canvas to view/edit details" 
+                                   IsVisible="{Binding SelectedObject, Converter={x:Null}}" 
+                                   Foreground="#71717a" 
+                                   FontStyle="Italic" 
+                                   TextWrapping="Wrap" />
+
+                        <StackPanel Spacing="12" IsVisible="{Binding SelectedEntity}">
+                            <TextBlock Text="ENTITY DETAILS" FontSize="11" FontWeight="Bold" Foreground="#a1a1aa" LetterSpacing="0.5" />
+                            
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Name" FontSize="11" Foreground="#71717a" />
+                                <TextBox Text="{Binding SelectedEntity.Name}" FontSize="12" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Description" FontSize="11" Foreground="#71717a" />
+                                <TextBox Text="{Binding SelectedEntity.Description}" FontSize="12" Height="60" TextWrapping="Wrap" AcceptsReturn="True" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Notes &amp; Observations" FontSize="11" Foreground="#71717a" />
+                                <TextBox Text="{Binding SelectedEntity.Notes}" FontSize="12" Height="100" TextWrapping="Wrap" AcceptsReturn="True" />
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*, *">
+                                <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,5,0">
+                                    <TextBlock Text="Confidence Level" FontSize="11" Foreground="#71717a" />
+                                    <NumericUpDown Value="{Binding SelectedEntity.ConfidenceLevel}" Minimum="0" Maximum="100" Increment="5" FontSize="12" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="4" Margin="5,0,0,0">
+                                    <TextBlock Text="Completeness" FontSize="11" Foreground="#71717a" />
+                                    <NumericUpDown Value="{Binding SelectedEntity.CompletenessScore}" Minimum="0" Maximum="100" Increment="5" FontSize="12" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Button Command="{Binding SaveSelectedObjectCommand}" Content="Save Entity Changes" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#16a34a" Foreground="White" />
+                            
+                            <Separator Background="#27272a" Margin="0,5" />
+                            
+                            <TextBlock Text="AI COLLABORATIVE HYDRATION" FontSize="11" FontWeight="Bold" Foreground="#a1a1aa" />
+                            <Button Command="{Binding HydrateEntityCommand}" Content="Suggest Dimensions &amp; Triggers" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#4f46e5" Foreground="White" />
+                            <Button Command="{Binding DeleteEntityCommand}" Content="Delete Node" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#dc2626" Foreground="White" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="12" IsVisible="{Binding SelectedRelationship}">
+                            <TextBlock Text="RELATIONSHIP DETAILS" FontSize="11" FontWeight="Bold" Foreground="#a1a1aa" />
+                            
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Source" FontSize="11" Foreground="#71717a" />
+                                <TextBlock Text="{Binding SelectedRelationship.Source.Name}" FontSize="13" FontWeight="SemiBold" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Connection Type" FontSize="11" Foreground="#71717a" />
+                                <TextBlock Text="{Binding SelectedRelationship.TypeName}" FontSize="13" FontWeight="SemiBold" Foreground="#818cf8" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Target" FontSize="11" Foreground="#71717a" />
+                                <TextBlock Text="{Binding SelectedRelationship.Target.Name}" FontSize="13" FontWeight="SemiBold" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Relationship Description" FontSize="11" Foreground="#71717a" />
+                                <TextBox Text="{Binding SelectedRelationship.Model.Description}" FontSize="12" Height="60" TextWrapping="Wrap" AcceptsReturn="True" />
+                            </StackPanel>
+
+                            <Button Command="{Binding SaveSelectedObjectCommand}" Content="Save Relationship" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#16a34a" Foreground="White" />
+                            <Button Command="{Binding DeleteRelationshipCommand}" Content="Delete Connection" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#dc2626" Foreground="White" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="12" IsVisible="{Binding SelectedScenario}">
+                            <TextBlock Text="SCENARIO / PROBLEM DETAIL" FontSize="11" FontWeight="Bold" Foreground="#a1a1aa" />
+                            
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Title / Topic" FontSize="11" Foreground="#71717a" />
+                                <TextBox Text="{Binding SelectedScenario.Title}" FontSize="12" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Situation Summary" FontSize="11" Foreground="#71717a" />
+                                <TextBox Text="{Binding SelectedScenario.Description}" FontSize="12" Height="60" TextWrapping="Wrap" AcceptsReturn="True" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Objectives &amp; Constraints" FontSize="11" Foreground="#71717a" />
+                                <TextBox Text="{Binding SelectedScenario.Goals}" FontSize="12" Height="80" TextWrapping="Wrap" AcceptsReturn="True" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Reasoning Status" FontSize="11" Foreground="#71717a" />
+                                <ComboBox SelectedItem="{Binding SelectedScenario.Status}" HorizontalAlignment="Stretch" FontSize="12">
+                                    <ComboBoxItem Content="Draft / Modeling" />
+                                    <ComboBoxItem Content="Active Reasoning" />
+                                    <ComboBoxItem Content="Resolved / Structured" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <Button Command="{Binding SaveSelectedObjectCommand}" Content="Save Scenario Config" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#16a34a" Foreground="White" />
+                            
+                            <Separator Background="#27272a" Margin="0,5" />
+                            
+                            <TextBlock Text="PROBLEM REASONING ENGINE" FontSize="11" FontWeight="Bold" Foreground="#a1a1aa" />
+                            <Button Command="{Binding RunReasoningCommand}" Content="Ask AI for Strategic Reasoning" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#7c3aed" Foreground="White" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <Border Grid.Row="1" Background="#1a1a1e" BorderBrush="#27272a" BorderThickness="1" CornerRadius="8" Padding="12" Height="220" Margin="0,15,0,0">
+                    <Grid RowDefinitions="Auto, *">
+                        <TextBlock Grid.Row="0" Text="AI Reasoning Output" FontSize="11" FontWeight="Bold" Foreground="#e4e4e7" Margin="0,0,0,5" />
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <TextBlock Text="{Binding AiResultText}" FontSize="11" Foreground="#a1a1aa" TextWrapping="Wrap" />
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

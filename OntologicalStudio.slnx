@@ -1,0 +1,10 @@
+<Solution>
+  <Project Path="OntologicalStudio.AIProviders/OntologicalStudio.AIProviders.csproj" />
+  <Project Path="OntologicalStudio.Api/OntologicalStudio.Api.csproj" />
+  <Project Path="OntologicalStudio.Application/OntologicalStudio.Application.csproj" />
+  <Project Path="OntologicalStudio.Core/OntologicalStudio.Core.csproj" />
+  <Project Path="OntologicalStudio.Desktop/OntologicalStudio.Desktop.csproj" />
+  <Project Path="OntologicalStudio.Infrastructure/OntologicalStudio.Infrastructure.csproj" />
+  <Project Path="OntologicalStudio.Localization/OntologicalStudio.Localization.csproj" />
+  <Project Path="OntologicalStudio.Persistence/OntologicalStudio.Persistence.csproj" />
+</Solution>

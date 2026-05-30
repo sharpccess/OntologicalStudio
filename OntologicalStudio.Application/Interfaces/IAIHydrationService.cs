@@ -1,0 +1,12 @@
+using OntologicalStudio.Core.Interfaces;
+using OntologicalStudio.Core.Models;
+
+namespace OntologicalStudio.Application.Services;
+
+public interface IAIHydrationService
+{
+    Task<HydrationResult> HydrateEntityAsync(Guid entityId, HydrationOptions options);
+    Task<IEnumerable<RelationshipSuggestion>> SuggestRelationshipsAsync(Guid entityId);
+    Task<string> GeneratePromptAsync(PromptContext context);
+    Task<string> AnalyzeScenarioAsync(Guid scenarioId);
+}

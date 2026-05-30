@@ -1,0 +1,15 @@
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio.Application\bin\Debug\net8.0\OntologicalStudio.Application.deps.json
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio.Application\bin\Debug\net8.0\OntologicalStudio.Application.dll
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio.Application\bin\Debug\net8.0\OntologicalStudio.Application.pdb
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio.Application\bin\Debug\net8.0\OntologicalStudio.Core.dll
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio.Application\bin\Debug\net8.0\OntologicalStudio.Core.pdb
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio.Application\obj\Debug\net8.0\OntologicalStudio.Application.csproj.AssemblyReference.cache
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio.Application\obj\Debug\net8.0\OntologicalStudio.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio.Application\obj\Debug\net8.0\OntologicalStudio.Application.AssemblyInfoInputs.cache
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio.Application\obj\Debug\net8.0\OntologicalStudio.Application.AssemblyInfo.cs
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio.Application\obj\Debug\net8.0\OntologicalStudio.Application.csproj.CoreCompileInputs.cache
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio.Application\obj\Debug\net8.0\Ontologi.DE15859C.Up2Date
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio.Application\obj\Debug\net8.0\OntologicalStudio.Application.dll
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio.Application\obj\Debug\net8.0\refint\OntologicalStudio.Application.dll
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio.Application\obj\Debug\net8.0\OntologicalStudio.Application.pdb
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio.Application\obj\Debug\net8.0\ref\OntologicalStudio.Application.dll
