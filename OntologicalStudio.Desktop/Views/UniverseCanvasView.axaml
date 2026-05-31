@@ -81,7 +81,7 @@
                              AcceptsReturn="True"
                              Height="70"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <Button Content="Save node" Command="{Binding SaveSelectedNodeCommand}"/>
+                        <Button Content="Save node"/>
                         <Button Content="Delete selected node"
                                 Command="{Binding DeleteSelectedNodeCommand}"/>
                     </StackPanel>

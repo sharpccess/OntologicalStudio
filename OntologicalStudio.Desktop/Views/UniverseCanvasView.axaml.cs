@@ -479,7 +479,7 @@ public partial class UniverseCanvasView : UserControl
         {
             if (_viewModel is not null)
             {
-                await _viewModel.SaveSelectedNodeCommand.ExecuteAsync(null);
+                await _viewModel.SaveSelectedNodeAsync();
                 RenderScene();
             }
         };

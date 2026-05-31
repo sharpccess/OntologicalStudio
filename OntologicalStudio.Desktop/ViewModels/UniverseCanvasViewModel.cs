@@ -385,8 +385,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
-    private async Task SaveSelectedNodeAsync()
+    public async Task SaveSelectedNodeAsync()
     {
         if (SelectedNode is null)
             return;
