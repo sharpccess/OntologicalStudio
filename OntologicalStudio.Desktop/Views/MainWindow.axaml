@@ -22,7 +22,14 @@
                     <TextBlock Text="{Binding LanguageLabel}" VerticalAlignment="Center" Opacity="0.75"/>
                     <ComboBox Width="90"
                               ItemsSource="{Binding AvailableLanguages}"
-                              SelectedItem="{Binding SelectedLanguageCode, Mode=TwoWay}"/>
+                              SelectedValueBinding="{Binding Code}"
+                              SelectedValue="{Binding SelectedLanguageCode, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Label}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                 </StackPanel>
             </Grid>
         </Border>

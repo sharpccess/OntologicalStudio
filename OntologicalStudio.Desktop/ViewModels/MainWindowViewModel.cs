@@ -4,6 +4,7 @@ using System;
 using System.Collections.ObjectModel;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace OntologicalStudio.Desktop.ViewModels;
 
@@ -44,7 +45,7 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private string selectedLanguageCode = "en";
 
-    public ObservableCollection<string> AvailableLanguages { get; } = new();
+    public ObservableCollection<LanguageOption> AvailableLanguages { get; } = new();
 
     public UniversesViewModel Universes { get; }
     public UniverseCanvasViewModel UniverseCanvas { get; }
@@ -59,7 +60,7 @@ public partial class MainWindowViewModel : ObservableObject
         _localization.OnLanguageChanged += ApplyLocalization;
 
         foreach (var language in _localization.GetAvailableLanguages().OrderBy(x => x))
-            AvailableLanguages.Add(language);
+            AvailableLanguages.Add(new LanguageOption(language, language.ToUpperInvariant()));
         SelectedLanguageCode = _localization.CurrentLanguageCode;
 
         Universes = new UniversesViewModel(provider);
@@ -118,4 +119,9 @@ public partial class MainWindowViewModel : ObservableObject
         await Scenarios.LoadAsync();
         await Prompt.ReloadScenariosAsync();
     }
+}
+
+public record LanguageOption(string Code, string Label)
+{
+    public override string ToString() => Label;
 }

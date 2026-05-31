@@ -100,21 +100,24 @@
 **Objetivo:** El núcleo expone una API local para que una extensión IDE pueda mandar prompts y recibir respuestas, usando el LLM del IDE (`vscode.lm`).
 
 ### Backend
-- [ ] Activar `OntologicalStudio.Api` (Kestrel embebido en Desktop, puerto efímero `127.0.0.1:0`).
+- [x] Activar `OntologicalStudio.Api` (MVP standalone en `127.0.0.1:53821`; embebido queda como siguiente paso).
 - [ ] Token de sesión escrito en `~/.ontological-studio/session.json`.
 - [ ] Endpoints:
-  - `GET  /universes`, `GET /universes/{id}` (con entidades+relaciones).
-  - `POST /entities/{id}/hydrate` → SSE stream de `AIChunk`.
-  - `POST /scenarios/{id}/solve` → SSE stream + persiste `Solution`.
+  - [x] `GET /api/universes`, `GET /api/universes/{id}`.
+  - [x] `GET /api/universes/{id}/entities`, `GET /api/universes/{id}/scenarios`.
+  - [ ] `POST /entities/{id}/hydrate` → SSE stream de `AIChunk`.
+  - [x] `POST /api/scenarios/{id}/solve` → persiste `Solution`.
   - `POST /bridge/responses` (callback de la extensión cuando usa `vscode.lm`).
 - [ ] `IdeBridgeAIProvider`: implementación de `IAIProvider` que despacha a un cliente conectado vía SSE/WebSocket y espera respuesta.
 
 ### Extensión VSCode (TypeScript, repo separado o `extension/` en monorepo)
 - [ ] Comando: **Ontological Studio: Open Universe** (panel webview).
 - [ ] Comando: **Ontological Studio: Hydrate Selection With LLM** (usa `vscode.lm.selectChatModels` + `sendRequest`).
-- [ ] Comando: **Ontological Studio: Solve Scenario**.
+- [x] Comando: **Ontological Studio: Solve Scenario**.
+- [x] Comando: **Ontological Studio: Health Check**.
+- [x] Comando: **Ontological Studio: List Universes**.
 - [ ] Auth via token leído del archivo de sesión.
-- [ ] Cliente HTTP/SSE → backend.
+- [x] Cliente HTTP → backend.
 
 ---
 

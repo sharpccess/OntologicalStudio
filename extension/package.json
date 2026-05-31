@@ -1,0 +1,35 @@
+{
+  "name": "ontological-studio-vscode",
+  "displayName": "Ontological Studio",
+  "description": "VSCode integration for Ontological Studio local API",
+  "version": "0.0.1",
+  "publisher": "local",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:ontologicalStudio.healthCheck",
+    "onCommand:ontologicalStudio.listUniverses",
+    "onCommand:ontologicalStudio.solveScenario"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ontologicalStudio.healthCheck",
+        "title": "Ontological Studio: Health Check"
+      },
+      {
+        "command": "ontologicalStudio.listUniverses",
+        "title": "Ontological Studio: List Universes"
+      },
+      {
+        "command": "ontologicalStudio.solveScenario",
+        "title": "Ontological Studio: Solve Scenario"
+      }
+    ]
+  }
+}

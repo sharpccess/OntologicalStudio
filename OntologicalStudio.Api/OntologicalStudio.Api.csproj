@@ -1,9 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OntologicalStudio.Application\OntologicalStudio.Application.csproj" />
+    <ProjectReference Include="..\OntologicalStudio.Core\OntologicalStudio.Core.csproj" />
+    <ProjectReference Include="..\OntologicalStudio.Infrastructure\OntologicalStudio.Infrastructure.csproj" />
+    <ProjectReference Include="..\OntologicalStudio.Persistence\OntologicalStudio.Persistence.csproj" />
+  </ItemGroup>
 
 </Project>

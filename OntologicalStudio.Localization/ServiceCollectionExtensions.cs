@@ -9,8 +9,12 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddLocalization(this IServiceCollection services, string languagesDirectory)
     {
-        services.AddSingleton<ILocalizationService>(sp => 
-            new LocalizationService(languagesDirectory));
+        services.AddSingleton<ILocalizationService>(sp =>
+        {
+            var localization = new LocalizationService(languagesDirectory);
+            localization.InitializeAsync(languagesDirectory).GetAwaiter().GetResult();
+            return localization;
+        });
         return services;
     }
 }
