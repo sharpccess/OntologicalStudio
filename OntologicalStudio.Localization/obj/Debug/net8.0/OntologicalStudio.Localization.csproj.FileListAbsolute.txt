@@ -11,3 +11,6 @@ C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Localization\obj\Debug\net8.0\refint\OntologicalStudio.Localization.dll
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Localization\obj\Debug\net8.0\OntologicalStudio.Localization.pdb
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Localization\obj\Debug\net8.0\ref\OntologicalStudio.Localization.dll
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_desktop\OntologicalStudio.Localization.deps.json
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_desktop\OntologicalStudio.Localization.dll
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_desktop\OntologicalStudio.Localization.pdb
