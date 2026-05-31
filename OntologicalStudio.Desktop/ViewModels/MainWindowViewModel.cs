@@ -50,6 +50,9 @@ public partial class MainWindowViewModel : ObservableObject
     private string promptPreviewTabHeader = "Prompt Preview";
 
     [ObservableProperty]
+    private string libraryTabHeader = "Library";
+
+    [ObservableProperty]
     private string languageLabel = "Language";
 
     [ObservableProperty]
@@ -77,6 +80,9 @@ public partial class MainWindowViewModel : ObservableObject
 
     [ObservableProperty]
     private PromptPreviewViewModel? prompt;
+
+    [ObservableProperty]
+    private LibraryViewModel? library;
 
     [ObservableProperty]
     private AiSettingsViewModel? aiSettings;
@@ -145,6 +151,7 @@ public partial class MainWindowViewModel : ObservableObject
         EntitiesTabHeader = _localization.T("tab.entities");
         RelationshipsTabHeader = _localization.T("tab.relationships");
         ScenariosTabHeader = _localization.T("tab.scenarios");
+        LibraryTabHeader = _localization.T("tab.library");
         PromptPreviewTabHeader = _localization.T("tab.promptPreview");
 
         if (App.Current?.Resources is { } resources)
@@ -186,6 +193,8 @@ public partial class MainWindowViewModel : ObservableObject
             WriteStartupLog("ScenariosViewModel created");
             var prompt = new PromptPreviewViewModel(_provider, universes);
             WriteStartupLog("PromptPreviewViewModel created");
+            var library = new LibraryViewModel(_provider, universes, entities, canvas);
+            WriteStartupLog("LibraryViewModel created");
 
             Universes = universes;
             UniverseCanvas = canvas;
@@ -193,6 +202,7 @@ public partial class MainWindowViewModel : ObservableObject
             Relationships = relationships;
             Scenarios = scenarios;
             Prompt = prompt;
+            Library = library;
 
             universes.SelectionChanged += HandleUniverseStateChanged;
             universes.UniversesChanged += HandleUniverseStateChanged;
@@ -219,6 +229,10 @@ public partial class MainWindowViewModel : ObservableObject
             await Task.Delay(100);
             await Prompt.ReloadScenariosAsync();
             WriteStartupLog("MainWindowViewModel Prompt loaded");
+
+            await Task.Delay(100);
+            await Library.LoadAsync();
+            WriteStartupLog("MainWindowViewModel Library loaded");
         }
         catch (Exception ex)
         {
@@ -259,6 +273,9 @@ public partial class MainWindowViewModel : ObservableObject
 
             if (Prompt is not null)
                 await Prompt.ReloadScenariosAsync();
+
+            if (Library is not null)
+                await Library.LoadAsync();
         }
         catch (Exception ex)
         {

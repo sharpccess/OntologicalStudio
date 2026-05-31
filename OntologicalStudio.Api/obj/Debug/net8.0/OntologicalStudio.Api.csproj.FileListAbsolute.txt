@@ -108,3 +108,7 @@ C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_api\Ont
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_api\OntologicalStudio.Api.runtimeconfig.json
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_api\OntologicalStudio.Api.dll
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_api\OntologicalStudio.Api.pdb
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Api\bin\Debug\net8.0\DocumentFormat.OpenXml.dll
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Api\bin\Debug\net8.0\DocumentFormat.OpenXml.Framework.dll
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Api\bin\Debug\net8.0\System.IO.Packaging.dll
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Api\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

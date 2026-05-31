@@ -1,0 +1,95 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OntologicalStudio.Desktop.ViewModels"
+             xmlns:m="using:OntologicalStudio.Core.Models"
+             x:Class="OntologicalStudio.Desktop.Views.LibraryView"
+             x:DataType="vm:LibraryViewModel">
+    <Grid ColumnDefinitions="*,*" Margin="8">
+        <Border Grid.Column="0" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,8,0">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Spacing="6">
+                    <TextBlock Text="{DynamicResource library.entitiesTitle}" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Button Content="{DynamicResource library.saveSelectedEntity}" Command="{Binding SaveSelectedEntityCommand}"/>
+                        <Button Content="{DynamicResource library.importEntity}" Command="{Binding ImportSelectedEntityCommand}"/>
+                        <Button Content="{DynamicResource library.deleteEntity}" Command="{Binding DeleteSelectedEntityCommand}"/>
+                    </StackPanel>
+                    <TextBox Watermark="{DynamicResource library.searchEntities}"
+                             Text="{Binding EntitySearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <ListBox ItemsSource="{Binding EntityItems}" SelectedItem="{Binding SelectedEntityItem, Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="m:EntityLibraryItem">
+                            <Border BorderBrush="#333" BorderThickness="0,0,0,1" Padding="0,4">
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                                    <TextBlock Grid.Row="0"
+                                               Grid.Column="0"
+                                               Text="{Binding Name}"
+                                               FontWeight="SemiBold"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Row="0"
+                                               Grid.Column="1"
+                                               Text="{Binding EntityTypeName}"
+                                               Opacity="0.6"
+                                               FontSize="10"
+                                               Margin="8,0,0,0"/>
+                                    <TextBlock Grid.Row="1"
+                                               Grid.ColumnSpan="2"
+                                               Text="{Binding Description}"
+                                               Opacity="0.7"
+                                               FontSize="10"
+                                               TextTrimming="CharacterEllipsis"
+                                               MaxLines="1"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <Border Grid.Column="1" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="8">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Spacing="6">
+                    <TextBlock Text="{DynamicResource library.modelsTitle}" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Button Content="{DynamicResource library.saveUniverseModel}" Command="{Binding SaveActiveUniverseModelCommand}"/>
+                        <Button Content="{DynamicResource library.importUniverseModel}" Command="{Binding ImportSelectedUniverseModelCommand}"/>
+                        <Button Content="{DynamicResource library.deleteModel}" Command="{Binding DeleteSelectedUniverseModelCommand}"/>
+                    </StackPanel>
+                    <TextBox Watermark="{DynamicResource library.searchModels}"
+                             Text="{Binding UniverseModelSearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="{Binding StatusMessage}" Opacity="0.7" FontSize="11" TextWrapping="Wrap"/>
+                </StackPanel>
+                <ListBox ItemsSource="{Binding UniverseModelItems}" SelectedItem="{Binding SelectedUniverseModelItem, Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="m:UniverseModelLibraryItem">
+                            <Border BorderBrush="#333" BorderThickness="0,0,0,1" Padding="0,4">
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                                    <TextBlock Grid.Row="0"
+                                               Grid.Column="0"
+                                               Text="{Binding Name}"
+                                               FontWeight="SemiBold"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Row="0"
+                                               Grid.Column="1"
+                                               Text="{Binding Entities.Count, StringFormat='E:{0}'}"
+                                               Opacity="0.6"
+                                               FontSize="10"
+                                               Margin="8,0,0,0"/>
+                                    <TextBlock Grid.Row="1"
+                                               Grid.ColumnSpan="2"
+                                               Text="{Binding Description}"
+                                               Opacity="0.7"
+                                               FontSize="10"
+                                               TextTrimming="CharacterEllipsis"
+                                               MaxLines="1"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

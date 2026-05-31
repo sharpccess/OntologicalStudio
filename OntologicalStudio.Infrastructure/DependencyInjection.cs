@@ -20,6 +20,7 @@ public static class DependencyInjection
             options.UseSqlite(connectionString));
 
         services.AddSingleton<IAiConnectionSettingsService, AiConnectionSettingsService>();
+        services.AddSingleton<ILibraryCatalogService, LibraryCatalogService>();
         services.AddScoped<IAIProvider, ConfigurableAIProvider>();
 
         services.AddScoped<IEntityRepository, EntityRepository>();
@@ -40,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<IEntityHydrationWorkflowService, EntityHydrationWorkflowService>();
         services.AddSingleton<IWebResearchService, WebResearchService>();
         services.AddScoped<IReportService, ReportService>();
+        services.AddScoped<IArtifactExportService, ArtifactExportService>();
         services.AddScoped<IPromptBuilder, PromptBuilder>();
         services.AddScoped<ISolutionService, SolutionService>();
 

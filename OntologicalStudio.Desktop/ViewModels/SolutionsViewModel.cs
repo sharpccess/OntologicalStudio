@@ -159,6 +159,28 @@ public partial class SolutionsViewModel : ObservableObject
         }
     }
 
+    public async Task<ArtifactExportPayload?> BuildExportAsync(ArtifactExportFormat format)
+    {
+        if (SelectedSolution is null)
+        {
+            StatusMessage = "Select a solution first.";
+            return null;
+        }
+
+        try
+        {
+            var payload = await ScopedRunner.RunAsync<IArtifactExportService, ArtifactExportPayload>(
+                _provider,
+                service => service.ExportSolutionAsync(SelectedSolution, format));
+            return payload;
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Export failed: {ex.Message}";
+            return null;
+        }
+    }
+
     private Solution LocalizeSolution(Solution solution)
     {
         foreach (var artifact in solution.Artifacts)

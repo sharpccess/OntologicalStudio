@@ -106,6 +106,9 @@
             <TabItem Header="{Binding ScenariosTabHeader}" IsEnabled="{Binding HasActiveUniverse}">
                 <views:ScenariosView DataContext="{Binding Scenarios}"/>
             </TabItem>
+            <TabItem Header="{Binding LibraryTabHeader}">
+                <views:LibraryView DataContext="{Binding Library}"/>
+            </TabItem>
         </TabControl>
     </Grid>
 </Window>

@@ -30,6 +30,9 @@ build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 [C:/Users/emoti/source/repos/OntogenesisPlus/OntologicalStudio/OntologicalStudio.Desktop/Views/EntitiesView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[C:/Users/emoti/source/repos/OntogenesisPlus/OntologicalStudio/OntologicalStudio.Desktop/Views/LibraryView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [C:/Users/emoti/source/repos/OntogenesisPlus/OntologicalStudio/OntologicalStudio.Desktop/Views/MainWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 

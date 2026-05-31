@@ -311,6 +311,18 @@ public partial class UniverseCanvasView : UserControl
         RenderScene();
     }
 
+    private void OnSelectedRelationshipTypeComboChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (_viewModel is null)
+            return;
+
+        if (sender is ComboBox comboBox && comboBox.SelectedItem is RelationshipType relationshipType)
+        {
+            _viewModel.SelectedNodeRelationshipType = relationshipType;
+            _viewModel.SelectedNodeRelationshipTypeText = relationshipType.DisplayName;
+        }
+    }
+
     private async void OnDeleteSelectedRelationshipClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         if (_viewModel?.SelectedEdge is null)

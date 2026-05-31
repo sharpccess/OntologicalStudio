@@ -254,6 +254,10 @@
           "framework": "net8.0",
           "targetAlias": "net8.0",
           "dependencies": {
+            "DocumentFormat.OpenXml": {
+              "target": "Package",
+              "version": "[3.0.2, )"
+            },
             "QuestPDF": {
               "target": "Package",
               "version": "[2024.3.0, )"

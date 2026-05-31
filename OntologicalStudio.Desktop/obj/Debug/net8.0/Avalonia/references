@@ -24,6 +24,8 @@ C:\Users\emoti\.nuget\packages\avalonia\11.2.1\ref\net8.0\Avalonia.Vulkan.dll
 C:\Users\emoti\.nuget\packages\avalonia.win32\11.2.1\lib\net8.0\Avalonia.Win32.dll
 C:\Users\emoti\.nuget\packages\avalonia.x11\11.2.1\lib\net8.0\Avalonia.X11.dll
 C:\Users\emoti\.nuget\packages\communitytoolkit.mvvm\8.3.2\lib\net8.0\CommunityToolkit.Mvvm.dll
+C:\Users\emoti\.nuget\packages\documentformat.openxml\3.0.2\lib\net8.0\DocumentFormat.OpenXml.dll
+C:\Users\emoti\.nuget\packages\documentformat.openxml.framework\3.0.2\lib\net8.0\DocumentFormat.OpenXml.Framework.dll
 C:\Users\emoti\.nuget\packages\dynamicdata\8.4.1\lib\net8.0\DynamicData.dll
 C:\Users\emoti\.nuget\packages\harfbuzzsharp\7.3.0.2\lib\net6.0\HarfBuzzSharp.dll
 C:\Users\emoti\.nuget\packages\microcom.runtime\0.11.0\lib\net5.0\MicroCom.Runtime.dll
@@ -118,6 +120,7 @@ C:\Users\emoti\.nuget\packages\microsoft.netcore.app.ref\8.0.27\ref\net8.0\Syste
 C:\Users\emoti\.nuget\packages\microsoft.netcore.app.ref\8.0.27\ref\net8.0\System.IO.FileSystem.Watcher.dll
 C:\Users\emoti\.nuget\packages\microsoft.netcore.app.ref\8.0.27\ref\net8.0\System.IO.IsolatedStorage.dll
 C:\Users\emoti\.nuget\packages\microsoft.netcore.app.ref\8.0.27\ref\net8.0\System.IO.MemoryMappedFiles.dll
+C:\Users\emoti\.nuget\packages\system.io.packaging\8.0.0\lib\net8.0\System.IO.Packaging.dll
 C:\Users\emoti\.nuget\packages\system.io.pipelines\8.0.0\lib\net8.0\System.IO.Pipelines.dll
 C:\Users\emoti\.nuget\packages\microsoft.netcore.app.ref\8.0.27\ref\net8.0\System.IO.Pipes.AccessControl.dll
 C:\Users\emoti\.nuget\packages\microsoft.netcore.app.ref\8.0.27\ref\net8.0\System.IO.Pipes.dll

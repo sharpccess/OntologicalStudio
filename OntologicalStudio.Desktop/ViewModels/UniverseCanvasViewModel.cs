@@ -128,7 +128,23 @@ public partial class UniverseCanvasViewModel : ObservableObject
     partial void OnSelectedNodeDescriptionChanged(string value) { }
     partial void OnSelectedNodeNotesChanged(string value) { }
     partial void OnSelectedNodeEntityTypeChanged(EntityType? value) { }
-    partial void OnSelectedNodeRelationshipTypeChanged(RelationshipType? value) { }
+    partial void OnSelectedNodeRelationshipTypeChanged(RelationshipType? value)
+    {
+        if (_suspendSelectedRelationshipAutosave)
+            return;
+
+        if (value is not null)
+            SelectedNodeRelationshipTypeText = value.DisplayName;
+
+        QueueSelectedRelationshipAutosave();
+    }
+    partial void OnSelectedNodeRelationshipTypeTextChanged(string value)
+    {
+        if (_suspendSelectedRelationshipAutosave)
+            return;
+
+        QueueSelectedRelationshipAutosave();
+    }
     partial void OnSelectedNodeRelationshipDescriptionChanged(string value) { }
 
     public UniverseCanvasViewModel(IServiceProvider provider, UniversesViewModel universes)
@@ -837,7 +853,10 @@ public partial class UniverseCanvasViewModel : ObservableObject
 
     private void QueueSelectedRelationshipAutosave()
     {
-        if (_suspendSelectedRelationshipAutosave || SelectedEdge is null || SelectedNodeRelationshipType is null)
+        if (_suspendSelectedRelationshipAutosave || SelectedEdge is null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(SelectedNodeRelationshipTypeText) && SelectedNodeRelationshipType is null)
             return;
 
         _selectedRelationshipAutosaveCts?.Cancel();
