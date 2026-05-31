@@ -53,10 +53,11 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                     <TextBlock Text="{DynamicResource canvas.relationshipType}" Opacity="0.7" FontSize="11"/>
+                    <TextBox Watermark="{DynamicResource canvas.relationshipType}"
+                             Text="{Binding SelectedRelationshipTypeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             IsEnabled="{Binding HasSelectedUniverse}"/>
                     <ComboBox ItemsSource="{Binding RelationshipTypes}"
                               SelectedItem="{Binding SelectedRelationshipType, Mode=TwoWay}"
-                              Text="{Binding SelectedRelationshipTypeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                              IsEditable="True"
                               IsEnabled="{Binding HasSelectedUniverse}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
@@ -110,10 +111,10 @@
 
                     <Separator Margin="0,4"/>
                     <TextBlock Text="{DynamicResource canvas.selectedRelationship}" FontWeight="SemiBold"/>
+                    <TextBox Watermark="{DynamicResource canvas.relationshipType}"
+                             Text="{Binding SelectedNodeRelationshipTypeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     <ComboBox ItemsSource="{Binding RelationshipTypes}"
-                              SelectedItem="{Binding SelectedNodeRelationshipType, Mode=TwoWay}"
-                              Text="{Binding SelectedNodeRelationshipTypeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                              IsEditable="True">
+                              SelectedItem="{Binding SelectedNodeRelationshipType, Mode=TwoWay}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding DisplayName}"/>
