@@ -102,7 +102,7 @@ app.MapPost("/api/scenarios/{id:guid}/solve", async (
     [FromServices] ISolutionService solutions,
     CancellationToken cancellationToken) =>
 {
-    var solution = await solutions.RunAsync(id, request.ExtraInstructions, cancellationToken);
+    var solution = await solutions.RunAsync(id, request.ExtraInstructions, "en", cancellationToken);
     return Results.Ok(new
     {
         solution.Id,

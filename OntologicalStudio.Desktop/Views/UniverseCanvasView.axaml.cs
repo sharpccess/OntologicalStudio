@@ -838,7 +838,10 @@ public partial class UniverseCanvasView : UserControl
             Width = 500,
             Height = 330,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = true
+            CanResize = true,
+            ShowInTaskbar = false,
+            SystemDecorations = SystemDecorations.Full,
+            Topmost = true
         };
 
         var cancelButton = new Button
@@ -885,6 +888,14 @@ public partial class UniverseCanvasView : UserControl
             }
         };
 
+        dialog.Closed += (_, _) =>
+        {
+            owner.IsEnabled = true;
+            owner.Activate();
+            owner.Focus();
+        };
+
+        owner.IsEnabled = false;
         await dialog.ShowDialog(owner);
         return result;
     }

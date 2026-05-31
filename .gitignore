@@ -1,0 +1,42 @@
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+**/publish/
+temp_build_desktop/
+temp_probe/
+
+# User and IDE files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.cache
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and local runtime data
+*.log
+startup.log
+artifacts/
+
+# Databases and local state
+*.db
+*.db-shm
+*.db-wal
+
+# Packages
+*.nupkg
+node_modules/
+extension/*.vsix
+
+# Test / coverage
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
