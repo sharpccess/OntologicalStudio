@@ -1,9 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using OntologicalStudio.Application.Services;
 using OntologicalStudio.Core.Interfaces;
 using OntologicalStudio.Core.Models;
 using OntologicalStudio.Desktop.Services;
+using OntologicalStudio.Localization.Services;
 using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
@@ -21,6 +23,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
 {
     private readonly IServiceProvider _provider;
     private readonly UniversesViewModel _universes;
+    private readonly ILocalizationService _localization;
     private static readonly string StartupLogPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "OntologicalStudio",
@@ -44,6 +47,9 @@ public partial class UniverseCanvasViewModel : ObservableObject
 
     [ObservableProperty]
     private RelationshipType? selectedRelationshipType;
+
+    [ObservableProperty]
+    private string selectedRelationshipTypeText = string.Empty;
 
     [ObservableProperty]
     private CanvasEntityNodeViewModel? linkSource;
@@ -87,6 +93,9 @@ public partial class UniverseCanvasViewModel : ObservableObject
     private RelationshipType? selectedNodeRelationshipType;
 
     [ObservableProperty]
+    private string selectedNodeRelationshipTypeText = string.Empty;
+
+    [ObservableProperty]
     private string selectedNodeRelationshipDescription = string.Empty;
 
     [ObservableProperty]
@@ -120,6 +129,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
     {
         _provider = provider;
         _universes = universes;
+        _localization = provider.GetRequiredService<ILocalizationService>();
         Hydration = new EntityHydrationViewModel(provider);
         _universes.SelectionChanged += async () =>
         {
@@ -131,6 +141,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
             OnPropertyChanged(nameof(HasSelectedUniverse));
             await LoadAsync();
         };
+        _localization.OnLanguageChanged += HandleLanguageChanged;
     }
 
     private async Task LoadReferenceDataAsync()
@@ -142,7 +153,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
                 repository => repository.GetAllAsync());
             EntityTypes.Clear();
             foreach (var entityType in entityTypes.OrderBy(x => x.Name))
-                EntityTypes.Add(entityType);
+                EntityTypes.Add(TypeLocalizationHelper.Localize(entityType, _localization));
             SelectedEntityType ??= EntityTypes.FirstOrDefault();
 
             var relationshipTypes = await ScopedRunner.RunAsync<IRelationshipTypeRepository, IEnumerable<RelationshipType>>(
@@ -150,8 +161,9 @@ public partial class UniverseCanvasViewModel : ObservableObject
                 repository => repository.GetAllAsync());
             RelationshipTypes.Clear();
             foreach (var relationshipType in relationshipTypes.OrderBy(x => x.Name))
-                RelationshipTypes.Add(relationshipType);
+                RelationshipTypes.Add(TypeLocalizationHelper.Localize(relationshipType, _localization));
             SelectedRelationshipType ??= RelationshipTypes.FirstOrDefault();
+            SelectedRelationshipTypeText = SelectedRelationshipType?.DisplayName ?? string.Empty;
         }
         catch (Exception ex)
         {
@@ -186,6 +198,9 @@ public partial class UniverseCanvasViewModel : ObservableObject
             var loadedNodes = new List<CanvasEntityNodeViewModel>();
             foreach (var entity in entities.OrderBy(x => x.Name))
             {
+                if (entity.EntityType is not null)
+                    TypeLocalizationHelper.Localize(entity.EntityType, _localization);
+
                 var (width, height) = GetNodeSize(entity);
                 var (x, y) = entity.PositionX == 0 && entity.PositionY == 0
                     ? GetDefaultPosition(index++)
@@ -210,6 +225,8 @@ public partial class UniverseCanvasViewModel : ObservableObject
                         continue;
                     if (!nodeById.ContainsKey(relation.TargetEntityId))
                         continue;
+                    if (relation.RelationshipType is not null)
+                        TypeLocalizationHelper.Localize(relation.RelationshipType, _localization);
 
                     relationList.Add(relation);
                 }
@@ -224,7 +241,8 @@ public partial class UniverseCanvasViewModel : ObservableObject
                     relation.Id,
                     source,
                     target,
-                    relation.RelationshipType?.Name ?? "relatesTo",
+                    relation.RelationshipTypeId,
+                    relation.RelationshipType?.DisplayName ?? relation.RelationshipType?.Name ?? "relatesTo",
                     relation.Description));
             }
 
@@ -541,11 +559,16 @@ public partial class UniverseCanvasViewModel : ObservableObject
     [RelayCommand]
     private async Task SaveSelectedRelationshipAsync()
     {
-        if (SelectedEdge is null || SelectedNodeRelationshipType is null)
+        if (SelectedEdge is null)
             return;
 
         var edgeId = SelectedEdge.Id;
-        var relationshipType = SelectedNodeRelationshipType;
+        var relationshipType = await ResolveRelationshipTypeAsync(SelectedNodeRelationshipTypeText, SelectedNodeRelationshipType);
+        if (relationshipType is null)
+        {
+            StatusMessage = "Relationship type is required.";
+            return;
+        }
         var relationshipDescription = SelectedNodeRelationshipDescription.Trim();
 
         try
@@ -562,7 +585,8 @@ public partial class UniverseCanvasViewModel : ObservableObject
 
             if (SelectedEdge is not null)
             {
-                SelectedEdge.Label = relationshipType.Name;
+                SelectedEdge.RelationshipTypeId = relationshipType.Id;
+                SelectedEdge.Label = relationshipType.DisplayName;
                 SelectedEdge.Description = relationshipDescription;
                 ApplySelectedRelationshipSnapshot(SelectedEdge);
             }
@@ -590,6 +614,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
             await LoadAsync();
             SelectedEdge = Edges.FirstOrDefault(x => x.Id == edge.Id);
             SelectedNodeRelationshipType = relationshipType;
+            SelectedNodeRelationshipTypeText = relationshipType.DisplayName;
             StatusMessage = $"Relationship changed to '{relationshipType.Name}'.";
         }
         catch (Exception ex)
@@ -660,7 +685,14 @@ public partial class UniverseCanvasViewModel : ObservableObject
     [RelayCommand]
     private async Task ConnectAsync()
     {
-        if (LinkSource is null || LinkTarget is null || SelectedRelationshipType is null)
+        if (LinkSource is null || LinkTarget is null)
+        {
+            StatusMessage = "Source, target and relationship type are required.";
+            return;
+        }
+
+        var relationshipType = await ResolveRelationshipTypeAsync(SelectedRelationshipTypeText, SelectedRelationshipType);
+        if (relationshipType is null)
         {
             StatusMessage = "Source, target and relationship type are required.";
             return;
@@ -676,7 +708,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
         {
             await ScopedRunner.RunAsync<IRelationshipService>(
                 _provider,
-                service => service.CreateAsync(LinkSource.Id, LinkTarget.Id, SelectedRelationshipType.Id));
+                service => service.CreateAsync(LinkSource.Id, LinkTarget.Id, relationshipType.Id));
             IsLinkMode = false;
             LinkSource = null;
             LinkTarget = null;
@@ -770,11 +802,13 @@ public partial class UniverseCanvasViewModel : ObservableObject
             if (edge is null)
             {
                 SelectedNodeRelationshipType = null;
+                SelectedNodeRelationshipTypeText = string.Empty;
                 SelectedNodeRelationshipDescription = string.Empty;
                 return;
             }
 
-            SelectedNodeRelationshipType = RelationshipTypes.FirstOrDefault(x => x.Name == edge.Label);
+            SelectedNodeRelationshipType = RelationshipTypes.FirstOrDefault(x => x.Id == edge.RelationshipTypeId);
+            SelectedNodeRelationshipTypeText = SelectedNodeRelationshipType?.DisplayName ?? edge.Label;
             SelectedNodeRelationshipDescription = edge.Description;
         }
         finally
@@ -821,6 +855,44 @@ public partial class UniverseCanvasViewModel : ObservableObject
         catch
         {
         }
+    }
+
+    private async Task<RelationshipType?> ResolveRelationshipTypeAsync(string? input, RelationshipType? selectedType)
+    {
+        var trimmed = input?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(trimmed))
+            return selectedType;
+
+        if (selectedType is not null && TypeLocalizationHelper.MatchesRelationshipTypeInput(selectedType, trimmed, _localization))
+            return selectedType;
+
+        var existing = RelationshipTypes.FirstOrDefault(x => TypeLocalizationHelper.MatchesRelationshipTypeInput(x, trimmed, _localization));
+        if (existing is not null)
+            return existing;
+
+        var created = new RelationshipType
+        {
+            Name = trimmed,
+            Description = trimmed
+        };
+
+        await ScopedRunner.RunAsync<IRelationshipTypeRepository>(
+            _provider,
+            repository => repository.AddAsync(created));
+
+        TypeLocalizationHelper.Localize(created, _localization);
+        RelationshipTypes.Add(created);
+        SelectedRelationshipType = created;
+        SelectedRelationshipTypeText = created.DisplayName;
+        SelectedNodeRelationshipType = created;
+        SelectedNodeRelationshipTypeText = created.DisplayName;
+        return created;
+    }
+
+    private void HandleLanguageChanged()
+    {
+        _ = LoadReferenceDataAsync();
+        _ = LoadAsync();
     }
 
     private static (double x, double y) GetDefaultPosition(int index)
@@ -875,7 +947,7 @@ public partial class CanvasEntityNodeViewModel : ObservableObject
     public Entity Entity { get; }
     public Guid Id => Entity.Id;
     public string Name => Entity.Name;
-    public string TypeName => Entity.EntityType?.Name ?? "Entity";
+    public string TypeName => Entity.EntityType?.DisplayName ?? Entity.EntityType?.Name ?? "Entity";
     public string Description => Entity.Description;
 
     private double x;
@@ -946,6 +1018,7 @@ public partial class CanvasEntityNodeViewModel : ObservableObject
 public class CanvasRelationshipEdgeViewModel
 {
     public Guid Id { get; }
+    public Guid RelationshipTypeId { get; set; }
     public CanvasEntityNodeViewModel Source { get; }
     public CanvasEntityNodeViewModel Target { get; }
     public string Label { get; set; }
@@ -955,10 +1028,12 @@ public class CanvasRelationshipEdgeViewModel
         Guid id,
         CanvasEntityNodeViewModel source,
         CanvasEntityNodeViewModel target,
+        Guid relationshipTypeId,
         string label,
         string description)
     {
         Id = id;
+        RelationshipTypeId = relationshipTypeId;
         Source = source;
         Target = target;
         Label = label;
