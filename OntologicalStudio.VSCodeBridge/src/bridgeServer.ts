@@ -5,6 +5,9 @@ export interface BridgeOptions {
     port: number;
     preferredModel?: string;
     output: vscode.OutputChannel;
+    /** If true, when the requested port is in use the server tries the next ports up to portFallbackTries. */
+    autoFallback?: boolean;
+    portFallbackTries?: number;
 }
 
 interface ChatMessage {
@@ -32,15 +35,21 @@ interface ChatPayload {
 export class BridgeServer {
     private server?: http.Server;
     private _running = false;
+    private _actualPort: number;
     private readonly opts: BridgeOptions;
     public lastUsedModel: string = "";
     public requestCount = 0;
 
     constructor(opts: BridgeOptions) {
         this.opts = opts;
+        this._actualPort = opts.port;
     }
 
     get port(): number {
+        return this._actualPort;
+    }
+
+    get requestedPort(): number {
         return this.opts.port;
     }
 
@@ -49,17 +58,45 @@ export class BridgeServer {
     }
 
     start(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            this.server = http.createServer((req, res) => this.handle(req, res));
-            this.server.on("error", (err) => {
-                this.opts.output.appendLine(`[bridge] server error: ${err.message}`);
-                reject(err);
+        const autoFallback = this.opts.autoFallback ?? true;
+        const tries = Math.max(1, this.opts.portFallbackTries ?? 10);
+        const candidates: number[] = [];
+        for (let i = 0; i < tries; i++) candidates.push(this.opts.port + i);
+
+        const tryBind = (idx: number): Promise<void> =>
+            new Promise<void>((resolve, reject) => {
+                if (idx >= candidates.length) {
+                    reject(new Error(
+                        `No free port found between ${candidates[0]} and ${candidates[candidates.length - 1]}.`
+                    ));
+                    return;
+                }
+                const candidate = candidates[idx];
+                const server = http.createServer((req, res) => this.handle(req, res));
+                const onError = (err: NodeJS.ErrnoException) => {
+                    server.removeAllListeners();
+                    server.close();
+                    if (err.code === "EADDRINUSE" && autoFallback) {
+                        this.opts.output.appendLine(`[bridge] port ${candidate} in use, trying ${candidate + 1}…`);
+                        tryBind(idx + 1).then(resolve, reject);
+                    } else {
+                        reject(err);
+                    }
+                };
+                server.once("error", onError);
+                server.listen(candidate, "127.0.0.1", () => {
+                    server.removeListener("error", onError);
+                    server.on("error", (e) =>
+                        this.opts.output.appendLine(`[bridge] server error: ${(e as Error).message}`)
+                    );
+                    this.server = server;
+                    this._actualPort = candidate;
+                    this._running = true;
+                    resolve();
+                });
             });
-            this.server.listen(this.opts.port, "127.0.0.1", () => {
-                this._running = true;
-                resolve();
-            });
-        });
+
+        return tryBind(0);
     }
 
     stop(): Promise<void> {
