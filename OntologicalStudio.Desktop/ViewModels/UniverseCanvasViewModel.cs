@@ -220,7 +220,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
             NewEntityName = string.Empty;
             NewEntityDescription = string.Empty;
             await LoadAsync();
-            _universes.UniversesChanged?.Invoke();
+            _universes.NotifyDataChanged();
             SelectedNode = Nodes.FirstOrDefault(node => node.Id == entity.Id);
         }
         catch (Exception ex)
@@ -340,7 +340,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
             LinkSource = null;
             LinkTarget = null;
             await LoadAsync();
-            _universes.UniversesChanged?.Invoke();
+            _universes.NotifyDataChanged();
         }
         catch (Exception ex)
         {
@@ -360,7 +360,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
                 _provider,
                 service => service.DeleteAsync(SelectedNode.Id));
             await LoadAsync();
-            _universes.UniversesChanged?.Invoke();
+            _universes.NotifyDataChanged();
         }
         catch (Exception ex)
         {

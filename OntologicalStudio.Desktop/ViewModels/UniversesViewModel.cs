@@ -38,6 +38,8 @@ public partial class UniversesViewModel : ObservableObject
 
     partial void OnSelectedUniverseChanged(Universe? value) => SelectionChanged?.Invoke();
 
+    public void NotifyDataChanged() => UniversesChanged?.Invoke();
+
     public async Task LoadAsync()
     {
         try
