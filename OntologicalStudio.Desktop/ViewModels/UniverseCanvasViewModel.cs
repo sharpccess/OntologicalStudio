@@ -66,6 +66,9 @@ public partial class UniverseCanvasViewModel : ObservableObject
     private string selectedNodeDescription = string.Empty;
 
     [ObservableProperty]
+    private EntityType? selectedNodeEntityType;
+
+    [ObservableProperty]
     private RelationshipType? selectedNodeRelationshipType;
 
     [ObservableProperty]
@@ -212,7 +215,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
         }
 
         var name = string.IsNullOrWhiteSpace(NewEntityName)
-            ? $"{entityType.Name} {Nodes.Count + 1}"
+            ? "New Item"
             : NewEntityName.Trim();
 
         try
@@ -239,6 +242,13 @@ public partial class UniverseCanvasViewModel : ObservableObject
             await LoadAsync();
             _universes.NotifyDataChanged();
             SelectedNode = Nodes.FirstOrDefault(node => node.Id == entity.Id);
+            if (SelectedNode is not null)
+            {
+                SelectedNodeName = SelectedNode.Name;
+                SelectedNodeDescription = SelectedNode.Description;
+                SelectedNodeEntityType = EntityTypes.FirstOrDefault(x => x.Id == SelectedNode.Entity.EntityTypeId);
+            }
+            StatusMessage = "Item created. Edit it directly on the canvas or in the side panel.";
         }
         catch (Exception ex)
         {
@@ -280,11 +290,13 @@ public partial class UniverseCanvasViewModel : ObservableObject
         {
             SelectedNodeName = string.Empty;
             SelectedNodeDescription = string.Empty;
+            SelectedNodeEntityType = null;
             return;
         }
 
         SelectedNodeName = node.Name;
         SelectedNodeDescription = node.Description;
+        SelectedNodeEntityType = EntityTypes.FirstOrDefault(x => x.Id == node.Entity.EntityTypeId);
 
         if (IsLinkMode && LinkSource is null)
         {
@@ -382,8 +394,10 @@ public partial class UniverseCanvasViewModel : ObservableObject
                 async service =>
                 {
                     var entity = await service.GetByIdAsync(SelectedNode.Id);
-                    entity.Name = SelectedNodeName.Trim();
+                    entity.Name = string.IsNullOrWhiteSpace(SelectedNodeName) ? "New Item" : SelectedNodeName.Trim();
                     entity.Description = SelectedNodeDescription.Trim();
+                    if (SelectedNodeEntityType is not null)
+                        entity.EntityTypeId = SelectedNodeEntityType.Id;
                     await service.UpdateAsync(entity);
                 });
 
@@ -394,6 +408,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
             {
                 SelectedNodeName = SelectedNode.Name;
                 SelectedNodeDescription = SelectedNode.Description;
+                SelectedNodeEntityType = EntityTypes.FirstOrDefault(x => x.Id == SelectedNode.Entity.EntityTypeId);
             }
             StatusMessage = "Node updated.";
         }
@@ -583,7 +598,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
 public partial class CanvasEntityNodeViewModel : ObservableObject
 {
     public const double DefaultWidth = 180;
-    public const double DefaultHeight = 120;
+    public const double DefaultHeight = 132;
 
     public Entity Entity { get; }
     public Guid Id => Entity.Id;
