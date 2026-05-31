@@ -276,6 +276,33 @@ public partial class UniverseCanvasView : UserControl
             _viewModel.ZoomOutCommand.Execute(null);
     }
 
+    private async void OnSaveSelectedNodeClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_viewModel is null)
+            return;
+
+        await _viewModel.SaveSelectedNodeAsync();
+        RenderScene();
+    }
+
+    private async void OnSaveSelectedRelationshipClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_viewModel is null)
+            return;
+
+        await _viewModel.SaveSelectedRelationshipCommand.ExecuteAsync(null);
+        RenderScene();
+    }
+
+    private async void OnDeleteSelectedRelationshipClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_viewModel?.SelectedEdge is null)
+            return;
+
+        await _viewModel.DeleteEdgeAsync(_viewModel.SelectedEdge);
+        RenderScene();
+    }
+
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
         if (_viewModel is null)
