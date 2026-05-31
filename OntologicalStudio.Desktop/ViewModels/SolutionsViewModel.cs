@@ -332,10 +332,10 @@ public partial class SolutionsViewModel : ObservableObject
             result.Add(new MarkdownPreviewViewModel
             {
                 Text = string.Join(" ", paragraphLines).Trim(),
-                FontSize = 12,
+                FontSize = 13,
                 FontWeight = FontWeight.Normal,
-                Foreground = Brushes.White,
-                Margin = new Thickness(0, 0, 0, 8)
+                Foreground = new SolidColorBrush(Color.Parse("#E5E7EB")),
+                Margin = new Thickness(0, 0, 0, 10)
             });
             paragraphLines.Clear();
         }
@@ -391,10 +391,10 @@ public partial class SolutionsViewModel : ObservableObject
                 result.Add(new MarkdownPreviewViewModel
                 {
                     Text = line[2..].Trim(),
-                    FontSize = 20,
+                    FontSize = 24,
                     FontWeight = FontWeight.Bold,
-                    Foreground = Brushes.White,
-                    Margin = new Thickness(0, 0, 0, 10)
+                    Foreground = new SolidColorBrush(Color.Parse("#F9FAFB")),
+                    Margin = new Thickness(0, 6, 0, 14)
                 });
                 continue;
             }
@@ -405,10 +405,10 @@ public partial class SolutionsViewModel : ObservableObject
                 result.Add(new MarkdownPreviewViewModel
                 {
                     Text = line[3..].Trim(),
-                    FontSize = 16,
+                    FontSize = 18,
                     FontWeight = FontWeight.Bold,
-                    Foreground = Brushes.White,
-                    Margin = new Thickness(0, 4, 0, 8)
+                    Foreground = new SolidColorBrush(Color.Parse("#F3F4F6")),
+                    Margin = new Thickness(0, 10, 0, 8)
                 });
                 continue;
             }
@@ -419,10 +419,10 @@ public partial class SolutionsViewModel : ObservableObject
                 result.Add(new MarkdownPreviewViewModel
                 {
                     Text = line[4..].Trim(),
-                    FontSize = 13,
+                    FontSize = 14,
                     FontWeight = FontWeight.Bold,
-                    Foreground = Brushes.White,
-                    Margin = new Thickness(0, 2, 0, 6)
+                    Foreground = new SolidColorBrush(Color.Parse("#E5E7EB")),
+                    Margin = new Thickness(0, 6, 0, 6)
                 });
                 continue;
             }
@@ -432,11 +432,11 @@ public partial class SolutionsViewModel : ObservableObject
                 FlushParagraph();
                 result.Add(new MarkdownPreviewViewModel
                 {
-                    Text = $"• {line[2..].Trim()}",
-                    FontSize = 12,
+                    Text = $"•  {line[2..].Trim()}",
+                    FontSize = 13,
                     FontWeight = FontWeight.Normal,
-                    Foreground = Brushes.White,
-                    Margin = new Thickness(10, 0, 0, 6)
+                    Foreground = new SolidColorBrush(Color.Parse("#E5E7EB")),
+                    Margin = new Thickness(12, 0, 0, 6)
                 });
                 continue;
             }
