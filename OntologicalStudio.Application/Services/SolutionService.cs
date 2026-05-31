@@ -34,12 +34,12 @@ public class SolutionService : ISolutionService
     public Task<IEnumerable<Solution>> GetByScenarioAsync(Guid scenarioId) =>
         _repo.GetByScenarioAsync(scenarioId);
 
-    public async Task<Solution> RunAsync(Guid scenarioId, string? extraInstructions, CancellationToken ct = default)
+    public async Task<Solution> RunAsync(Guid scenarioId, string? extraInstructions, string languageCode, CancellationToken ct = default)
     {
         var scenario = await _scenarios.GetByIdAsync(scenarioId)
             ?? throw new InvalidOperationException($"Scenario {scenarioId} not found.");
 
-        var prompt = await _promptBuilder.BuildScenarioPromptAsync(scenarioId, extraInstructions);
+        var prompt = await _promptBuilder.BuildScenarioPromptAsync(scenarioId, extraInstructions, languageCode);
 
         var universe = await _universes.GetByIdAsync(scenario.UniverseId);
         var entityList = (await _entities.GetByUniverseAsync(scenario.UniverseId)).ToList();
@@ -61,7 +61,9 @@ public class SolutionService : ISolutionService
             await foreach (var chunk in _ai.StreamAsync(new AIRequest
             {
                 UserPrompt = prompt,
-                SystemPrompt = "markdown",
+                SystemPrompt = languageCode == "es"
+                    ? "Responde exclusivamente en español. Usa markdown claro, estructurado y profesional."
+                    : "Respond exclusively in English. Use clear, structured, professional markdown.",
                 OutputFormat = "markdown"
             }, ct))
             {
@@ -96,7 +98,7 @@ public class SolutionService : ISolutionService
             InlineContent = responseText ?? string.Empty,
             SizeBytes = (responseText ?? string.Empty).Length,
             Order = 0,
-            Label = "AI response"
+            Label = languageCode == "es" ? "Respuesta de IA" : "AI response"
         });
 
         await _repo.AddAsync(solution);

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using OntologicalStudio.Application.Services;
 using OntologicalStudio.Core.Models;
 using OntologicalStudio.Desktop.Services;
+using OntologicalStudio.Localization.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,6 +15,7 @@ namespace OntologicalStudio.Desktop.ViewModels;
 public partial class SolutionsViewModel : ObservableObject
 {
     private readonly IServiceProvider _provider;
+    private readonly ILocalizationService _localization;
 
     public ObservableCollection<Solution> Items { get; } = new();
 
@@ -35,6 +37,7 @@ public partial class SolutionsViewModel : ObservableObject
     public SolutionsViewModel(IServiceProvider provider)
     {
         _provider = provider;
+        _localization = provider.GetRequiredService<ILocalizationService>();
     }
 
     partial void OnCurrentScenarioChanged(Scenario? value) => _ = LoadAsync();
@@ -74,7 +77,10 @@ public partial class SolutionsViewModel : ObservableObject
         {
             var sol = await ScopedRunner.RunAsync<ISolutionService, Solution>(
                 _provider,
-                s => s.RunAsync(CurrentScenario.Id, string.IsNullOrWhiteSpace(ExtraInstructions) ? null : ExtraInstructions));
+                s => s.RunAsync(
+                    CurrentScenario.Id,
+                    string.IsNullOrWhiteSpace(ExtraInstructions) ? null : ExtraInstructions,
+                    _localization.CurrentLanguageCode));
             ExtraInstructions = string.Empty;
             await LoadAsync();
             SelectedSolution = Items.FirstOrDefault(x => x.Id == sol.Id);

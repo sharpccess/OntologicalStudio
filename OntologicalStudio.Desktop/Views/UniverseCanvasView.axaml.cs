@@ -536,7 +536,7 @@ public partial class UniverseCanvasView : UserControl
                     Text = node.Description,
                     FontSize = 11,
                     TextWrapping = TextWrapping.Wrap,
-                    MaxHeight = 32,
+                    Width = Math.Max(60, node.Width - 20),
                     Opacity = 0.8
                 }
             }

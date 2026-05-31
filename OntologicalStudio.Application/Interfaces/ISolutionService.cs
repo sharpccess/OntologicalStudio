@@ -6,7 +6,7 @@ public interface ISolutionService
 {
     Task<Solution?> GetByIdAsync(Guid id);
     Task<IEnumerable<Solution>> GetByScenarioAsync(Guid scenarioId);
-    Task<Solution> RunAsync(Guid scenarioId, string? extraInstructions, CancellationToken ct = default);
+    Task<Solution> RunAsync(Guid scenarioId, string? extraInstructions, string languageCode, CancellationToken ct = default);
     Task DeleteAsync(Guid id);
     Task UpdateRatingAsync(Guid id, int rating);
     Task UpdateNotesAsync(Guid id, string notes);
