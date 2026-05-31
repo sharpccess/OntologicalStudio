@@ -29,6 +29,8 @@ public partial class UniverseCanvasView : UserControl
     private double _originWidth;
     private double _originHeight;
     private bool _isPanning;
+    private bool _isDraggingNode;
+    private bool _isResizingNode;
     private Point _panStart;
     private Vector _panOffset;
     private Point _lastCanvasPoint;
@@ -97,15 +99,34 @@ public partial class UniverseCanvasView : UserControl
         if (_canvas is null || _scrollViewer is null)
             return;
 
+        var source = e.Source as Control;
         var point = e.GetCurrentPoint(_canvas);
         _lastCanvasPoint = e.GetPosition(_canvas);
 
         if (point.Properties.IsRightButtonPressed)
         {
-            if (e.Source != _canvas)
+            if (_isDraggingNode || _isResizingNode)
                 return;
+
+            if (source is ShapePath edgePath && edgePath.Tag is CanvasRelationshipEdgeViewModel edge)
+            {
+                _viewModel?.SelectEdge(edge);
+                ShowEdgeContextMenu(edgePath, edge);
+                e.Handled = true;
+                return;
+            }
+
+            if (source is Border border && border.Tag is CanvasEntityNodeViewModel node)
+            {
+                _viewModel?.SelectNode(node);
+                ShowNodeContextMenu(border, node);
+                e.Handled = true;
+                return;
+            }
+
             ShowCanvasContextMenu();
             Focus();
+            e.Handled = true;
             return;
         }
 
@@ -183,6 +204,7 @@ public partial class UniverseCanvasView : UserControl
         {
             var node = _dragNode;
             _dragNode = null;
+            _isDraggingNode = false;
             e.Pointer.Capture(null);
             if (_viewModel is not null)
                 await _viewModel.PersistNodeLayoutAsync(node);
@@ -193,6 +215,7 @@ public partial class UniverseCanvasView : UserControl
         {
             var node = _resizeNode;
             _resizeNode = null;
+            _isResizingNode = false;
             e.Pointer.Capture(null);
             if (_viewModel is not null)
                 await _viewModel.PersistNodeLayoutAsync(node);
@@ -341,10 +364,12 @@ public partial class UniverseCanvasView : UserControl
 
         _viewModel.SelectNode(node);
         _dragNode = node;
+        _isDraggingNode = true;
         _dragStart = e.GetPosition(_canvas);
         _originX = node.X;
         _originY = node.Y;
         e.Pointer.Capture(_canvas);
+        e.Handled = true;
         RenderScene();
     }
 
@@ -358,6 +383,7 @@ public partial class UniverseCanvasView : UserControl
 
         _viewModel.SelectNode(node);
         _resizeNode = node;
+        _isResizingNode = true;
         _dragStart = e.GetPosition(_canvas);
         _originWidth = node.Width;
         _originHeight = node.Height;

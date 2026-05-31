@@ -49,7 +49,32 @@ public class LocalizationService : ILocalizationService
 
     public void ChangeLanguage(string languageCode)
     {
-        LoadLanguagePackAsync(languageCode).Wait();
+        if (string.IsNullOrWhiteSpace(languageCode))
+            return;
+
+        if (languageCode == _currentLanguageCode)
+            return;
+
+        try
+        {
+            var languageFile = Path.Combine(_languagesDirectory, $"{languageCode}.json");
+            if (File.Exists(languageFile))
+            {
+                var json = File.ReadAllText(languageFile);
+                var translations = JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
+                _translations = translations;
+            }
+            else
+            {
+                _translations = new Dictionary<string, string>();
+            }
+
+            _currentLanguageCode = languageCode;
+            OnLanguageChanged?.Invoke();
+        }
+        catch
+        {
+        }
     }
 
     public string T(string key)

@@ -94,13 +94,6 @@ public partial class UniverseCanvasViewModel : ObservableObject
         Hydration = new EntityHydrationViewModel(provider);
         _universes.SelectionChanged += async () => await LoadAsync();
         _universes.UniversesChanged += async () => await LoadAsync();
-        _ = InitializeAsync();
-    }
-
-    private async Task InitializeAsync()
-    {
-        await LoadReferenceDataAsync();
-        await LoadAsync();
     }
 
     private async Task LoadReferenceDataAsync()
@@ -131,6 +124,9 @@ public partial class UniverseCanvasViewModel : ObservableObject
 
     public async Task LoadAsync()
     {
+        if (EntityTypes.Count == 0 || RelationshipTypes.Count == 0)
+            await LoadReferenceDataAsync();
+
         Nodes.Clear();
         Edges.Clear();
 

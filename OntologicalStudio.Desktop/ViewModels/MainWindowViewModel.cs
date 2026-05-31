@@ -3,6 +3,7 @@ using OntologicalStudio.Localization.Services;
 using System;
 using System.Collections.ObjectModel;
 using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
 
 namespace OntologicalStudio.Desktop.ViewModels;
 
@@ -71,6 +72,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         // Initial load
         _ = Universes.LoadAsync();
+        _ = LoadDeferredAsync();
     }
 
     partial void OnSelectedLanguageCodeChanged(string value)
@@ -105,5 +107,15 @@ public partial class MainWindowViewModel : ObservableObject
         RelationshipsTabHeader = _localization.T("tab.relationships");
         ScenariosTabHeader = _localization.T("tab.scenarios");
         PromptPreviewTabHeader = _localization.T("tab.promptPreview");
+    }
+
+    private async Task LoadDeferredAsync()
+    {
+        await Task.Delay(50);
+        await UniverseCanvas.LoadAsync();
+        await Entities.LoadAsync();
+        await Relationships.ReloadForUniverseAsync();
+        await Scenarios.LoadAsync();
+        await Prompt.ReloadScenariosAsync();
     }
 }
