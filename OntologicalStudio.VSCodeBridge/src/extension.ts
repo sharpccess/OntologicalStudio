@@ -39,11 +39,22 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         const port = config.get<number>("port", 39217);
         const preferredModel = config.get<string>("preferredModel", "");
 
-        bridge = new BridgeServer({ port, preferredModel, output });
+        bridge = new BridgeServer({ port, preferredModel, output, autoFallback: true, portFallbackTries: 10 });
         try {
             await bridge.start();
-            output.appendLine(`[bridge] started on http://localhost:${port}`);
-            vscode.window.showInformationMessage(`Ontological Studio Bridge running on port ${port}.`);
+            const endpoint = `http://localhost:${bridge.port}`;
+            output.appendLine(`[bridge] started on ${endpoint}`);
+            const switched = bridge.port !== bridge.requestedPort;
+            const msg = switched
+                ? `Port ${bridge.requestedPort} was in use. Bridge running on ${bridge.port}.`
+                : `Ontological Studio Bridge running on port ${bridge.port}.`;
+            const choice = await vscode.window.showInformationMessage(msg, "Copy endpoint", "Open Panel");
+            if (choice === "Copy endpoint") {
+                await vscode.env.clipboard.writeText(endpoint);
+                vscode.window.showInformationMessage(`Copied ${endpoint} to clipboard.`);
+            } else if (choice === "Open Panel") {
+                await vscode.commands.executeCommand("ontologicalstudio.openPanel");
+            }
         } catch (err) {
             output.appendLine(`[bridge] start failed: ${(err as Error).message}`);
             vscode.window.showErrorMessage(`Failed to start bridge: ${(err as Error).message}`);
@@ -86,11 +97,22 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         await PanelProvider.createOrShow(context.extensionUri);
     };
 
+    const copyEndpoint = async () => {
+        if (!bridge?.isRunning()) {
+            vscode.window.showWarningMessage("Bridge is not running.");
+            return;
+        }
+        const endpoint = `http://localhost:${bridge.port}`;
+        await vscode.env.clipboard.writeText(endpoint);
+        vscode.window.showInformationMessage(`Copied ${endpoint} to clipboard.`);
+    };
+
     context.subscriptions.push(
         vscode.commands.registerCommand("ontologicalstudio.startBridge", startBridge),
         vscode.commands.registerCommand("ontologicalstudio.stopBridge", stopBridge),
         vscode.commands.registerCommand("ontologicalstudio.showStatus", showStatus),
         vscode.commands.registerCommand("ontologicalstudio.openPanel", openPanel),
+        vscode.commands.registerCommand("ontologicalstudio.copyEndpoint", copyEndpoint),
         { dispose: () => bridge?.stop() }
     );
 

@@ -32,6 +32,9 @@ export class StatusViewProvider implements vscode.WebviewViewProvider {
                 case "openPanel":
                     await vscode.commands.executeCommand("ontologicalstudio.openPanel");
                     return;
+                case "copy":
+                    await vscode.commands.executeCommand("ontologicalstudio.copyEndpoint");
+                    return;
                 case "refresh":
                     this.refresh();
                     return;
@@ -62,6 +65,12 @@ body { font-family: var(--vscode-font-family); color: var(--vscode-foreground); 
 .row { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 12px; }
 .dot { width: 10px; height: 10px; border-radius: 50%; background: ${dot}; box-shadow: 0 0 6px ${dot}55; }
 .kv { display: flex; justify-content: space-between; font-size: 11px; color: var(--vscode-descriptionForeground); }
+.endpoint { display: flex; gap: 4px; align-items: center; margin-top: 8px; padding: 6px 8px;
+            background: var(--vscode-textBlockQuote-background, rgba(255,255,255,0.04));
+            border: 1px solid var(--vscode-panel-border, #333); border-radius: 4px;
+            font-family: var(--vscode-editor-font-family, monospace); font-size: 11px; word-break: break-all; }
+.endpoint .copy { margin-left: auto; padding: 2px 8px; font-size: 10px; cursor: pointer;
+                  background: transparent; color: var(--vscode-textLink-foreground); border: none; }
 button { width: 100%; margin-top: 6px; padding: 6px 8px; border: 1px solid var(--vscode-button-border, #444);
          background: var(--vscode-button-background, #2c2c2c); color: var(--vscode-button-foreground, #fff);
          border-radius: 4px; cursor: pointer; font-size: 12px; }
@@ -74,6 +83,12 @@ hr { border: none; border-top: 1px solid var(--vscode-panel-border, #333); margi
   <div class="kv"><span>Port</span><span>${port}</span></div>
   <div class="kv"><span>Last model</span><span>${lastModel}</span></div>
   <div class="kv"><span>Requests</span><span>${requests}</span></div>
+  ${
+      running
+          ? `<div class="endpoint"><span>http://localhost:${port}</span>
+               <button class="copy" onclick="post('copy')">Copy</button></div>`
+          : ""
+  }
   <hr/>
   ${
       running
@@ -84,9 +99,9 @@ hr { border: none; border-top: 1px solid var(--vscode-panel-border, #333); margi
   <button onclick="post('refresh')" style="background:transparent;border-color:var(--vscode-panel-border,#333)">Refresh</button>
   <hr/>
   <div class="muted">
-    The desktop app should be configured to use<br/>
-    <code>http://localhost:${port}</code> as its provider endpoint
-    with provider type <strong>VSCode / TRAE Bridge</strong>.
+    In the desktop AI Settings, paste this endpoint
+    and set provider to <strong>VSCode / TRAE Bridge</strong>.
+    Then click <strong>Test connection</strong>.
   </div>
 <script>
   const vscode = acquireVsCodeApi();
