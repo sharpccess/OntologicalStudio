@@ -300,8 +300,62 @@ public class ConfigurableAIProvider : IAIProvider
             "openrouter" => await GenerateOpenRouterAsync(prompt, systemPrompt, provider, jsonMode),
             "openai" => await GenerateOpenAiCompatibleAsync(prompt, systemPrompt, provider, jsonMode, "OpenAI"),
             "anthropic" => await GenerateAnthropicAsync(prompt, systemPrompt, provider),
+            "vscode" => await GenerateVsCodeBridgeAsync(prompt, systemPrompt, provider),
             _ => await GenerateOllamaAsync(prompt, systemPrompt, provider.Endpoint, provider.Model, provider.ApiKey, jsonMode)
         };
+    }
+
+    // VSCode / TRAE Bridge: posts the prompt to the local extension server
+    // which forwards it through vscode.lm (Copilot, Claude, etc.).
+    private async Task<string> GenerateVsCodeBridgeAsync(string prompt, string systemPrompt, ProviderConfiguration provider)
+    {
+        var endpoint = NormalizeVsCodeBridgeEndpoint(provider.Endpoint);
+        var modelLabel = string.IsNullOrWhiteSpace(provider.Model) ? "auto" : provider.Model!;
+        _providerName = $"VSCode/TRAE Bridge ({modelLabel})";
+
+        var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+        var body = new
+        {
+            systemPrompt = systemPrompt ?? string.Empty,
+            userPrompt = prompt ?? string.Empty,
+            model = string.IsNullOrWhiteSpace(provider.Model) ? null : provider.Model
+        };
+        request.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.SendAsync(request);
+        var jsonString = await response.Content.ReadAsStringAsync();
+        if (!response.IsSuccessStatusCode)
+            throw new InvalidOperationException($"VSCode bridge returned {(int)response.StatusCode}: {jsonString}");
+
+        using var doc = JsonDocument.Parse(jsonString);
+        if (doc.RootElement.TryGetProperty("model", out var modelProp))
+        {
+            var resolvedModel = modelProp.GetString();
+            if (!string.IsNullOrWhiteSpace(resolvedModel))
+                _providerName = $"VSCode/TRAE Bridge ({resolvedModel})";
+        }
+        return doc.RootElement.TryGetProperty("content", out var contentProp)
+            ? contentProp.GetString() ?? string.Empty
+            : string.Empty;
+    }
+
+    private static string NormalizeVsCodeBridgeEndpoint(string endpoint)
+    {
+        var normalized = (endpoint ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(normalized))
+            normalized = "http://localhost:39217";
+
+        if (!normalized.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            && !normalized.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = $"http://{normalized}";
+        }
+
+        normalized = normalized.TrimEnd('/');
+        if (!normalized.EndsWith("/chat", StringComparison.OrdinalIgnoreCase))
+            normalized = $"{normalized}/chat";
+
+        return normalized;
     }
 
     private async Task<string> GenerateOpenRouterAsync(string prompt, string systemPrompt, ProviderConfiguration provider, bool jsonMode)
@@ -483,15 +537,22 @@ public class ConfigurableAIProvider : IAIProvider
     private async Task<ProviderConfiguration> GetConfiguredProviderAsync()
     {
         var settings = await _settingsService.GetAsync();
+        var provider = (settings.Provider ?? string.Empty).Trim().ToLowerInvariant();
+        // VSCode bridge does not require an API key (auth is delegated to the editor's LM API).
+        var isConfigured = provider switch
+        {
+            "vscode" => !string.IsNullOrWhiteSpace(settings.ApiEndpoint),
+            _ => !string.IsNullOrWhiteSpace(settings.Provider)
+                && !string.IsNullOrWhiteSpace(settings.ApiEndpoint)
+                && !string.IsNullOrWhiteSpace(settings.Model)
+                && !string.IsNullOrWhiteSpace(settings.ApiKey)
+        };
         return new ProviderConfiguration(
             settings.Provider,
             settings.ApiEndpoint,
             settings.Model,
             settings.ApiKey,
-            !string.IsNullOrWhiteSpace(settings.Provider)
-                && !string.IsNullOrWhiteSpace(settings.ApiEndpoint)
-                && !string.IsNullOrWhiteSpace(settings.Model)
-                && !string.IsNullOrWhiteSpace(settings.ApiKey));
+            isConfigured);
     }
 
     private static OllamaConfiguration GetFallbackOllamaConfiguration()
@@ -539,6 +600,7 @@ public class ConfigurableAIProvider : IAIProvider
             "openrouter" => $"OpenRouter ({model})",
             "openai" => $"OpenAI ({model})",
             "anthropic" => $"Anthropic ({model})",
+            "vscode" => $"VSCode/TRAE Bridge ({model})",
             _ => $"Ollama ({model})"
         };
     }
