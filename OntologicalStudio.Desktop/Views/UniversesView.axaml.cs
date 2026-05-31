@@ -176,6 +176,16 @@ public partial class UniversesView : UserControl
             await vm.DeleteSelectedUniverseAsync();
     }
 
+    private async void OnUpdateClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (DataContext is ViewModels.UniversesViewModel vm)
+        {
+            vm.NewName = _nameTextBox?.Text ?? string.Empty;
+            vm.NewDescription = _descriptionTextBox?.Text ?? string.Empty;
+            await vm.UpdateSelectedUniverseAsync();
+        }
+    }
+
     private async void OnRefreshClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         if (DataContext is ViewModels.UniversesViewModel vm)

@@ -23,7 +23,7 @@
                               IsEnabled="{Binding HasSelectedUniverse}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Name}"/>
+                                <TextBlock Text="{Binding DisplayName}"/>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
@@ -55,10 +55,12 @@
                     <TextBlock Text="{DynamicResource canvas.relationshipType}" Opacity="0.7" FontSize="11"/>
                     <ComboBox ItemsSource="{Binding RelationshipTypes}"
                               SelectedItem="{Binding SelectedRelationshipType, Mode=TwoWay}"
+                              Text="{Binding SelectedRelationshipTypeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              IsEditable="True"
                               IsEnabled="{Binding HasSelectedUniverse}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Name}"/>
+                                <TextBlock Text="{Binding DisplayName}"/>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
@@ -85,7 +87,7 @@
                               SelectedItem="{Binding SelectedNodeEntityType, Mode=TwoWay}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Name}"/>
+                                <TextBlock Text="{Binding DisplayName}"/>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
@@ -109,10 +111,12 @@
                     <Separator Margin="0,4"/>
                     <TextBlock Text="{DynamicResource canvas.selectedRelationship}" FontWeight="SemiBold"/>
                     <ComboBox ItemsSource="{Binding RelationshipTypes}"
-                              SelectedItem="{Binding SelectedNodeRelationshipType, Mode=TwoWay}">
+                              SelectedItem="{Binding SelectedNodeRelationshipType, Mode=TwoWay}"
+                              Text="{Binding SelectedNodeRelationshipTypeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              IsEditable="True">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Name}"/>
+                                <TextBlock Text="{Binding DisplayName}"/>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>

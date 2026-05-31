@@ -14,7 +14,7 @@
                         <DataTemplate x:DataType="m:Entity">
                             <StackPanel>
                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
-                                <TextBlock Text="{Binding EntityType.Name}" Opacity="0.6" FontSize="11"/>
+                                <TextBlock Text="{Binding EntityType.DisplayName}" Opacity="0.6" FontSize="11"/>
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -40,7 +40,7 @@
                               IsEnabled="{Binding HasSelectedUniverse}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="m:EntityType">
-                                <TextBlock Text="{Binding Name}"/>
+                                <TextBlock Text="{Binding DisplayName}"/>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
@@ -56,7 +56,7 @@
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="{DynamicResource entities.name}" Opacity="0.7"/>
                         <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedEntity.Name}"/>
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource entities.type}" Opacity="0.7"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEntity.EntityType.Name}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEntity.EntityType.DisplayName}"/>
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="{DynamicResource entities.description}" Opacity="0.7"/>
                         <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedEntity.Description}" TextWrapping="Wrap"/>
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="{DynamicResource entities.notes}" Opacity="0.7"/>

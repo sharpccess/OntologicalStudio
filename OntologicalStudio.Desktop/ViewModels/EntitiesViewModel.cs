@@ -47,6 +47,7 @@ public partial class EntitiesViewModel : ObservableObject
         _provider = provider;
         _universes = universes;
         _localization = provider.GetRequiredService<ILocalizationService>();
+        _localization.OnLanguageChanged += HandleLanguageChanged;
         _universes.SelectionChanged += async () =>
         {
             OnPropertyChanged(nameof(HasSelectedUniverse));
@@ -74,7 +75,7 @@ public partial class EntitiesViewModel : ObservableObject
                 _provider, r => r.GetAllAsync());
             EntityTypes.Clear();
             foreach (var t in types.OrderBy(t => t.Name))
-                EntityTypes.Add(t);
+                EntityTypes.Add(TypeLocalizationHelper.Localize(t, _localization));
             NewEntityType ??= EntityTypes.FirstOrDefault();
         }
         catch (Exception ex)
@@ -100,6 +101,8 @@ public partial class EntitiesViewModel : ObservableObject
         {
             var data = await ScopedRunner.RunAsync<IEntityService, IEnumerable<Entity>>(
                 _provider, s => s.GetByUniverseAsync(universe.Id));
+            foreach (var entity in data.Where(x => x.EntityType is not null))
+                TypeLocalizationHelper.Localize(entity.EntityType!, _localization);
             foreach (var e in data.OrderBy(e => e.Name))
                 Items.Add(e);
             StatusMessage = _localization.CurrentLanguageCode == "es"
@@ -113,6 +116,11 @@ public partial class EntitiesViewModel : ObservableObject
                 ? $"Error: {ex.Message}"
                 : $"Error: {ex.Message}";
         }
+    }
+
+    private void HandleLanguageChanged()
+    {
+        _ = InitAsync();
     }
 
     [RelayCommand]

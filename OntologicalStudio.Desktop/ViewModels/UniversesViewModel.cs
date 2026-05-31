@@ -52,6 +52,11 @@ public partial class UniversesViewModel : ObservableObject
     partial void OnSelectedUniverseChanged(Universe? value)
     {
         OnPropertyChanged(nameof(HasSelectedUniverse));
+        if (value is not null)
+        {
+            NewName = value.Name;
+            NewDescription = value.Description;
+        }
         SelectionChanged?.Invoke();
     }
 
@@ -155,6 +160,40 @@ public partial class UniversesViewModel : ObservableObject
     }
 
     public async Task RefreshUniversesAsync() => await LoadAsync();
+
+    public async Task UpdateSelectedUniverseAsync()
+    {
+        if (SelectedUniverse is null)
+            return;
+
+        var name = NewName?.Trim() ?? string.Empty;
+        var description = NewDescription?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            StatusMessage = _localization.CurrentLanguageCode == "es" ? "El nombre es obligatorio." : "Name is required.";
+            return;
+        }
+
+        try
+        {
+            SelectedUniverse.Name = name;
+            SelectedUniverse.Description = description;
+            await ScopedRunner.RunAsync<IUniverseService>(
+                _provider,
+                service => service.UpdateAsync(SelectedUniverse));
+            await LoadAsync();
+            SelectedUniverse = Items.FirstOrDefault(x => x.Id == SelectedUniverse?.Id);
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? "Universo actualizado."
+                : "Universe updated.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? $"Falló la actualización: {ex.Message}"
+                : $"Update failed: {ex.Message}";
+        }
+    }
 
     [RelayCommand]
     private async Task CreateAsync() => await CreateUniverseAsync();

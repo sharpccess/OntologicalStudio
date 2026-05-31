@@ -35,6 +35,7 @@ public partial class RelationshipsViewModel : ObservableObject
         _provider = provider;
         _universes = universes;
         _localization = provider.GetRequiredService<ILocalizationService>();
+        _localization.OnLanguageChanged += HandleLanguageChanged;
         _universes.SelectionChanged += async () => await ReloadForUniverseAsync();
         _universes.UniversesChanged += async () => await ReloadForUniverseAsync();
         _ = InitAsync();
@@ -69,10 +70,11 @@ public partial class RelationshipsViewModel : ObservableObject
                 {
                     if (!seen.Add(r.Id)) continue;
                     if (!entityIds.Contains(r.TargetEntityId)) continue;
+                    var relationshipTypeName = r.RelationshipType?.Name ?? "?";
                     Items.Add(new RelationshipRow(
                         r.Id,
                         r.SourceEntity?.Name ?? entities.FirstOrDefault(x => x.Id == r.SourceEntityId)?.Name ?? "?",
-                        r.RelationshipType?.Name ?? "?",
+                        TypeLocalizationHelper.LocalizeRelationshipTypeName(relationshipTypeName, _localization),
                         r.TargetEntity?.Name ?? entities.FirstOrDefault(x => x.Id == r.TargetEntityId)?.Name ?? "?",
                         r.Description));
                 }
@@ -109,6 +111,11 @@ public partial class RelationshipsViewModel : ObservableObject
                 ? $"Error al eliminar: {ex.Message}"
                 : $"Delete failed: {ex.Message}";
         }
+    }
+
+    private void HandleLanguageChanged()
+    {
+        _ = ReloadForUniverseAsync();
     }
 }
 
