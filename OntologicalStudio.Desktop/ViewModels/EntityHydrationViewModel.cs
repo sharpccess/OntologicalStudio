@@ -29,7 +29,31 @@ public partial class EntityHydrationViewModel : ObservableObject
     private bool includeBehavioralPatterns = true;
 
     [ObservableProperty]
-    private HydrationResult? preview;
+    private HydrationPreview? preview;
+
+    [ObservableProperty]
+    private string customPrompt = string.Empty;
+
+    [ObservableProperty]
+    private bool applyHydrationData = true;
+
+    [ObservableProperty]
+    private bool applyNotes = true;
+
+    [ObservableProperty]
+    private bool applyConfidence = true;
+
+    [ObservableProperty]
+    private bool applyCompleteness = true;
+
+    [ObservableProperty]
+    private string diffHydrationData = string.Empty;
+
+    [ObservableProperty]
+    private string diffNotes = string.Empty;
+
+    [ObservableProperty]
+    private string diffScores = string.Empty;
 
     [ObservableProperty]
     private bool isBusy;
@@ -40,6 +64,12 @@ public partial class EntityHydrationViewModel : ObservableObject
     partial void OnSelectedNodeChanged(CanvasEntityNodeViewModel? value)
     {
         Preview = null;
+        DiffHydrationData = string.Empty;
+        DiffNotes = string.Empty;
+        DiffScores = string.Empty;
+        CustomPrompt = value is null
+            ? string.Empty
+            : $"Hydrate entity '{value.Name}' ({value.TypeName}) using motivations, fears, incentives and behavioral patterns. Existing description: {value.Description}";
         _ = LoadHistoryAsync();
     }
 
@@ -72,18 +102,22 @@ public partial class EntityHydrationViewModel : ObservableObject
         StatusMessage = "Generating hydration preview...";
         try
         {
-            Preview = await ScopedRunner.RunAsync<IEntityHydrationWorkflowService, HydrationResult>(
+            Preview = await ScopedRunner.RunAsync<IEntityHydrationWorkflowService, HydrationPreview>(
                 _provider,
-                service => service.PreviewHydrationAsync(SelectedNode.Id, new HydrationOptions
-                {
-                    IncludeMotivations = IncludeMotivations,
-                    IncludeFears = IncludeFears,
-                    IncludeIncentives = IncludeIncentives,
-                    IncludeBehavioralPatterns = IncludeBehavioralPatterns,
-                    IncludePersonalities = true,
-                    DetailLevel = 2,
-                    MaxSuggestions = 8
-                }));
+                service => service.PreviewHydrationAsync(
+                    SelectedNode.Id,
+                    new HydrationOptions
+                    {
+                        IncludeMotivations = IncludeMotivations,
+                        IncludeFears = IncludeFears,
+                        IncludeIncentives = IncludeIncentives,
+                        IncludeBehavioralPatterns = IncludeBehavioralPatterns,
+                        IncludePersonalities = true,
+                        DetailLevel = 2,
+                        MaxSuggestions = 8
+                    },
+                    CustomPrompt));
+            BuildDiff();
             StatusMessage = "Preview ready. Review and apply if useful.";
         }
         catch (Exception ex)
@@ -107,11 +141,17 @@ public partial class EntityHydrationViewModel : ObservableObject
         {
             await ScopedRunner.RunAsync<IEntityHydrationWorkflowService, HydrationLog>(
                 _provider,
-                service => service.ApplyHydrationAsync(
-                    SelectedNode.Id,
-                    Preview,
-                    $"Hydrate entity '{SelectedNode.Name}' with motivations={IncludeMotivations}, fears={IncludeFears}, incentives={IncludeIncentives}, patterns={IncludeBehavioralPatterns}",
-                    "ConfigurableAIProvider"));
+                service => service.ApplyHydrationAsync(SelectedNode.Id, new HydrationApplyRequest
+                {
+                    EntityId = SelectedNode.Id,
+                    PromptUsed = Preview.PromptUsed,
+                    ProviderUsed = Preview.ProviderUsed,
+                    Preview = Preview.Result,
+                    ApplyHydrationData = ApplyHydrationData,
+                    ApplyNotes = ApplyNotes,
+                    ApplyConfidence = ApplyConfidence,
+                    ApplyCompleteness = ApplyCompleteness
+                }));
             StatusMessage = "Hydration applied to entity.";
             await LoadHistoryAsync();
         }
@@ -123,5 +163,26 @@ public partial class EntityHydrationViewModel : ObservableObject
         {
             IsBusy = false;
         }
+    }
+
+    private void BuildDiff()
+    {
+        if (Preview is null)
+        {
+            DiffHydrationData = string.Empty;
+            DiffNotes = string.Empty;
+            DiffScores = string.Empty;
+            return;
+        }
+
+        DiffHydrationData =
+            $"Current:{Environment.NewLine}{Preview.CurrentHydrationData}{Environment.NewLine}{Environment.NewLine}" +
+            $"Suggested:{Environment.NewLine}{Preview.Result.SuggestedProperties}";
+        DiffNotes =
+            $"Current:{Environment.NewLine}{Preview.CurrentNotes}{Environment.NewLine}{Environment.NewLine}" +
+            $"Suggested:{Environment.NewLine}{Preview.Result.SuggestedNotes}";
+        DiffScores =
+            $"Confidence: {Preview.CurrentConfidenceLevel} -> {Preview.Result.ConfidenceScore}{Environment.NewLine}" +
+            $"Completeness: {Preview.CurrentCompletenessScore} -> {Preview.Result.CompletenessScore}";
     }
 }

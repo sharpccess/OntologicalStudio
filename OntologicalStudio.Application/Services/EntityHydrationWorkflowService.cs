@@ -19,37 +19,70 @@ public class EntityHydrationWorkflowService : IEntityHydrationWorkflowService
         _logs = logs;
     }
 
-    public Task<HydrationResult> PreviewHydrationAsync(Guid entityId, HydrationOptions options) =>
-        _hydrationService.HydrateEntityAsync(entityId, options);
-
-    public async Task<HydrationLog> ApplyHydrationAsync(Guid entityId, HydrationResult preview, string promptUsed, string providerUsed)
+    public async Task<HydrationPreview> PreviewHydrationAsync(Guid entityId, HydrationOptions options, string? customPrompt = null)
     {
         var entity = await _entities.GetByIdAsync(entityId)
             ?? throw new InvalidOperationException("Entity not found.");
 
-        entity.HydrationData = string.IsNullOrWhiteSpace(preview.SuggestedProperties)
-            ? entity.HydrationData
-            : preview.SuggestedProperties;
-        entity.Notes = string.IsNullOrWhiteSpace(preview.SuggestedNotes)
-            ? entity.Notes
-            : string.Join(Environment.NewLine + Environment.NewLine,
-                new[] { entity.Notes, preview.SuggestedNotes }.Where(x => !string.IsNullOrWhiteSpace(x)));
-        entity.ConfidenceLevel = preview.ConfidenceScore;
-        entity.CompletenessScore = preview.CompletenessScore > 0
-            ? preview.CompletenessScore
-            : entity.CompletenessScore;
+        var result = await _hydrationService.HydrateEntityAsync(entityId, options);
+        result.EntityId = entityId;
+
+        return new HydrationPreview
+        {
+            EntityId = entityId,
+            PromptUsed = BuildPrompt(entity, options, customPrompt),
+            ProviderUsed = "ConfigurableAIProvider",
+            CurrentHydrationData = entity.HydrationData,
+            CurrentNotes = entity.Notes,
+            CurrentConfidenceLevel = entity.ConfidenceLevel,
+            CurrentCompletenessScore = entity.CompletenessScore,
+            Result = result
+        };
+    }
+
+    public async Task<HydrationLog> ApplyHydrationAsync(Guid entityId, HydrationApplyRequest request)
+    {
+        var entity = await _entities.GetByIdAsync(entityId)
+            ?? throw new InvalidOperationException("Entity not found.");
+
+        var appliedFields = new List<string>();
+
+        if (request.ApplyHydrationData && !string.IsNullOrWhiteSpace(request.Preview.SuggestedProperties))
+        {
+            entity.HydrationData = request.Preview.SuggestedProperties;
+            appliedFields.Add(nameof(Entity.HydrationData));
+        }
+
+        if (request.ApplyNotes && !string.IsNullOrWhiteSpace(request.Preview.SuggestedNotes))
+        {
+            entity.Notes = string.Join(Environment.NewLine + Environment.NewLine,
+                new[] { entity.Notes, request.Preview.SuggestedNotes }.Where(x => !string.IsNullOrWhiteSpace(x)));
+            appliedFields.Add(nameof(Entity.Notes));
+        }
+
+        if (request.ApplyConfidence)
+        {
+            entity.ConfidenceLevel = request.Preview.ConfidenceScore;
+            appliedFields.Add(nameof(Entity.ConfidenceLevel));
+        }
+
+        if (request.ApplyCompleteness && request.Preview.CompletenessScore > 0)
+        {
+            entity.CompletenessScore = request.Preview.CompletenessScore;
+            appliedFields.Add(nameof(Entity.CompletenessScore));
+        }
 
         await _entities.UpdateAsync(entity);
 
         var log = new HydrationLog
         {
             EntityId = entityId,
-            PromptUsed = promptUsed,
-            ProviderUsed = providerUsed,
-            RawResponse = preview.AnalysisNotes?.Length > 0
-                ? preview.AnalysisNotes
-                : $"{preview.SuggestedProperties}{Environment.NewLine}{preview.SuggestedNotes}",
-            AppliedFields = "[\"HydrationData\",\"Notes\",\"ConfidenceLevel\",\"CompletenessScore\"]"
+            PromptUsed = request.PromptUsed,
+            ProviderUsed = request.ProviderUsed,
+            RawResponse = request.Preview.AnalysisNotes?.Length > 0
+                ? request.Preview.AnalysisNotes
+                : $"{request.Preview.SuggestedProperties}{Environment.NewLine}{request.Preview.SuggestedNotes}",
+            AppliedFields = System.Text.Json.JsonSerializer.Serialize(appliedFields)
         };
 
         await _logs.AddAsync(log);
@@ -57,4 +90,19 @@ public class EntityHydrationWorkflowService : IEntityHydrationWorkflowService
     }
 
     public Task<IEnumerable<HydrationLog>> GetHistoryAsync(Guid entityId) => _logs.GetByEntityAsync(entityId);
+
+    private static string BuildPrompt(Entity entity, HydrationOptions options, string? customPrompt)
+    {
+        if (!string.IsNullOrWhiteSpace(customPrompt))
+            return customPrompt;
+
+        var requested = new List<string>();
+        if (options.IncludePersonalities) requested.Add("personality");
+        if (options.IncludeMotivations) requested.Add("motivations");
+        if (options.IncludeFears) requested.Add("fears");
+        if (options.IncludeIncentives) requested.Add("incentives");
+        if (options.IncludeBehavioralPatterns) requested.Add("behavioral patterns");
+
+        return $"Hydrate entity '{entity.Name}' of type '{entity.EntityType?.Name ?? "Entity"}' using: {string.Join(", ", requested)}. Description: {entity.Description}. Existing notes: {entity.Notes}";
+    }
 }

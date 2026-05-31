@@ -82,6 +82,10 @@
                     <Separator Margin="0,4"/>
                     <StackPanel DataContext="{Binding Hydration}">
                         <TextBlock Text="Hydration" FontWeight="SemiBold"/>
+                        <TextBox Watermark="Custom prompt for hydration"
+                                 Text="{Binding CustomPrompt, Mode=TwoWay}"
+                                 AcceptsReturn="True"
+                                 Height="72"/>
                         <WrapPanel Orientation="Horizontal">
                             <CheckBox Content="Motivations" IsChecked="{Binding IncludeMotivations, Mode=TwoWay}" Margin="0,0,8,4"/>
                             <CheckBox Content="Fears" IsChecked="{Binding IncludeFears, Mode=TwoWay}" Margin="0,0,8,4"/>
@@ -96,9 +100,22 @@
                         <Expander Header="Preview" IsExpanded="True">
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Suggested properties" FontWeight="SemiBold" FontSize="11"/>
-                                <TextBox Text="{Binding Preview.SuggestedProperties, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" Height="90"/>
+                                <TextBox Text="{Binding Preview.Result.SuggestedProperties, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" Height="90"/>
                                 <TextBlock Text="Suggested notes" FontWeight="SemiBold" FontSize="11"/>
-                                <TextBox Text="{Binding Preview.SuggestedNotes, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" Height="90"/>
+                                <TextBox Text="{Binding Preview.Result.SuggestedNotes, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" Height="90"/>
+                                <TextBlock Text="Provider / prompt" FontWeight="SemiBold" FontSize="11"/>
+                                <TextBox Text="{Binding Preview.PromptUsed, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" Height="70"/>
+                            </StackPanel>
+                        </Expander>
+                        <Expander Header="Diff / apply selection" IsExpanded="True">
+                            <StackPanel Spacing="4">
+                                <CheckBox Content="Apply hydration data" IsChecked="{Binding ApplyHydrationData, Mode=TwoWay}"/>
+                                <TextBox Text="{Binding DiffHydrationData, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" Height="90"/>
+                                <CheckBox Content="Apply notes" IsChecked="{Binding ApplyNotes, Mode=TwoWay}"/>
+                                <TextBox Text="{Binding DiffNotes, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" Height="90"/>
+                                <CheckBox Content="Apply confidence" IsChecked="{Binding ApplyConfidence, Mode=TwoWay}"/>
+                                <CheckBox Content="Apply completeness" IsChecked="{Binding ApplyCompleteness, Mode=TwoWay}"/>
+                                <TextBox Text="{Binding DiffScores, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" Height="60"/>
                             </StackPanel>
                         </Expander>
                         <Expander Header="History">

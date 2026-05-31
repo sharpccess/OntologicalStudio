@@ -77,16 +77,16 @@
 
 ---
 
-## Fase C — Hidratación con preview/diff
+## Fase C — Hidratación con preview/diff *(en curso)*
 
 **Objetivo:** Hidratar entidades con resultado de IA, controlado por el usuario (apply selectivo).
 
 - [x] Modelo `HydrationLog` (EntityId, PromptUsed, ProviderUsed, RawResponse, AppliedFields[], CreatedAt).
 - [~] Diálogo de hidratación:
-  - Prompt editable, pre-rellenado por template (Person / Company / Belief / …).
-  - Streaming de respuesta.
-  - Diff visual entre estado actual y propuesta de la IA.
-  - Apply por campo (checkboxes).
+  - [x] Prompt editable, pre-rellenado por template (Person / Company / Belief / …).
+  - [ ] Streaming de respuesta.
+  - [x] Diff visual entre estado actual y propuesta de la IA.
+  - [x] Apply por campo (checkboxes).
 - [x] Historial por entidad.
 - [ ] Refactor `IAIProvider`:
   - `IAsyncEnumerable<AIChunk> StreamAsync(AIRequest req, CancellationToken ct)`
