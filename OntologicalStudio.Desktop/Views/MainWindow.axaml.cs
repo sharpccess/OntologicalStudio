@@ -7,5 +7,8 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        ShowInTaskbar = true;
+        WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        CanResize = true;
     }
 }

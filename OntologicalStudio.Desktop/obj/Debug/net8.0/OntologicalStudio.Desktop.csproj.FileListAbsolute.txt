@@ -228,3 +228,6 @@ C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_desktop
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_desktop\Languages\es.json
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Desktop\bin\Debug\net8.0\Languages\en.json
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Desktop\bin\Debug\net8.0\Languages\es.json
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Desktop\obj\Debug\net8.0\OntologicalStudio.Desktop.dll
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Desktop\obj\Debug\net8.0\refint\OntologicalStudio.Desktop.dll
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Desktop\obj\Debug\net8.0\OntologicalStudio.Desktop.pdb

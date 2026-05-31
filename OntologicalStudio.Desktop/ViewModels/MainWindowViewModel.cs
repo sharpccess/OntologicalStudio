@@ -3,7 +3,6 @@ using OntologicalStudio.Localization.Services;
 using System;
 using System.Collections.ObjectModel;
 using Microsoft.Extensions.DependencyInjection;
-using System.IO;
 
 namespace OntologicalStudio.Desktop.ViewModels;
 
@@ -56,7 +55,6 @@ public partial class MainWindowViewModel : ObservableObject
     public MainWindowViewModel(IServiceProvider provider)
     {
         _localization = provider.GetRequiredService<ILocalizationService>();
-        _localization.InitializeAsync(Path.Combine(AppContext.BaseDirectory, "Languages")).GetAwaiter().GetResult();
         _localization.OnLanguageChanged += ApplyLocalization;
 
         foreach (var language in _localization.GetAvailableLanguages().OrderBy(x => x))

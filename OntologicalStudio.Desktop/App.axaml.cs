@@ -1,6 +1,8 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OntologicalStudio.Desktop.ViewModels;
@@ -10,12 +12,17 @@ using OntologicalStudio.Localization.Services;
 using OntologicalStudio.Persistence.Context;
 using System;
 using System.IO;
+using System.Text;
 
 namespace OntologicalStudio.Desktop;
 
 public partial class App : Avalonia.Application
 {
     public static IServiceProvider Services { get; private set; } = null!;
+    private static readonly string StartupLogPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "OntologicalStudio",
+        "startup.log");
 
     public override void Initialize()
     {
@@ -24,29 +31,51 @@ public partial class App : Avalonia.Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        Services = ConfigureServices();
-
-        // Apply migrations + seed once at startup
+        WriteStartupLog("OnFrameworkInitializationCompleted start");
         try
         {
+            Services = ConfigureServices();
+            WriteStartupLog("Services configured");
+
             using var scope = Services.CreateScope();
             var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             ctx.Database.Migrate();
             DatabaseSeeder.SeedAsync(ctx).GetAwaiter().GetResult();
+            WriteStartupLog("Database migrated + seeded");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"[Startup] DB init failed: {ex.Message}");
+            Console.Error.WriteLine($"[Startup] App service init failed: {ex.Message}");
+            WriteStartupLog($"App service init failed: {ex}");
         }
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow
+            try
             {
-                DataContext = new MainWindowViewModel(Services)
-            };
+                if (Services is null)
+                {
+                    desktop.MainWindow = BuildFallbackWindow("Services not initialized.");
+                    WriteStartupLog("Fallback window created: services null");
+                }
+                else
+                {
+                    var window = new MainWindow
+                    {
+                        DataContext = new MainWindowViewModel(Services)
+                    };
+                    desktop.MainWindow = window;
+                    WriteStartupLog("MainWindow created");
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteStartupLog($"MainWindow creation failed: {ex}");
+                desktop.MainWindow = BuildFallbackWindow(ex.ToString());
+            }
         }
 
+        WriteStartupLog("OnFrameworkInitializationCompleted end");
         base.OnFrameworkInitializationCompleted();
     }
 
@@ -63,5 +92,37 @@ public partial class App : Avalonia.Application
         services.AddInfrastructure(connectionString);
         services.AddLocalization(Path.Combine(AppContext.BaseDirectory, "Languages"));
         return services.BuildServiceProvider();
+    }
+
+    private static void WriteStartupLog(string message)
+    {
+        try
+        {
+            var dir = Path.GetDirectoryName(StartupLogPath);
+            if (!string.IsNullOrWhiteSpace(dir))
+                Directory.CreateDirectory(dir);
+            File.AppendAllText(StartupLogPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {message}{Environment.NewLine}", Encoding.UTF8);
+        }
+        catch
+        {
+        }
+    }
+
+    private static Window BuildFallbackWindow(string message)
+    {
+        return new Window
+        {
+            Title = "Ontological Studio - Startup Error",
+            Width = 900,
+            Height = 650,
+            WindowStartupLocation = WindowStartupLocation.CenterScreen,
+            Content = new TextBox
+            {
+                Text = message,
+                IsReadOnly = true,
+                AcceptsReturn = true,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap
+            }
+        };
     }
 }
