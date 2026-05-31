@@ -112,7 +112,7 @@ public class ConfigurableAIProvider : IAIProvider
         AIRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        string text;
+        string text = string.Empty;
         string? openAiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
         string? ollamaEndpoint = Environment.GetEnvironmentVariable("OLLAMA_ENDPOINT") ?? "http://localhost:11434";
 
@@ -121,35 +121,22 @@ public class ConfigurableAIProvider : IAIProvider
             try
             {
                 text = await GenerateOpenAiAsync(request.UserPrompt, request.SystemPrompt, openAiKey, request.JsonMode);
-                foreach (var chunk in ChunkText(text))
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    yield return new TextChunk(chunk);
-                    await Task.Delay(20, cancellationToken);
-                }
-                yield return new DoneChunk(request.UserPrompt.Length / 4, text.Length / 4);
-                yield break;
             }
             catch (Exception ex)
             {
                 text = $"OpenAI error (falling back): {ex.Message}\n\n" + GenerateHeuristicAnalysis(request.UserPrompt);
-                foreach (var chunk in ChunkText(text))
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    yield return new TextChunk(chunk);
-                }
-                yield return new DoneChunk(request.UserPrompt.Length / 4, text.Length / 4);
-                yield break;
             }
         }
-
-        try
+        else
         {
-            text = await GenerateOllamaAsync(request.UserPrompt, request.SystemPrompt, ollamaEndpoint, request.JsonMode);
-        }
-        catch
-        {
-            text = GenerateHeuristicAnalysis(request.UserPrompt);
+            try
+            {
+                text = await GenerateOllamaAsync(request.UserPrompt, request.SystemPrompt, ollamaEndpoint, request.JsonMode);
+            }
+            catch
+            {
+                text = GenerateHeuristicAnalysis(request.UserPrompt);
+            }
         }
 
         foreach (var chunk in ChunkText(text))
@@ -158,6 +145,7 @@ public class ConfigurableAIProvider : IAIProvider
             yield return new TextChunk(chunk);
             await Task.Delay(20, cancellationToken);
         }
+
         yield return new DoneChunk(request.UserPrompt.Length / 4, text.Length / 4);
     }
 

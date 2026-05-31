@@ -8,6 +8,7 @@ using Avalonia.Media;
 using OntologicalStudio.Desktop.ViewModels;
 using System.Collections.Specialized;
 using ShapePath = Avalonia.Controls.Shapes.Path;
+using MenuItem = Avalonia.Controls.MenuItem;
 
 namespace OntologicalStudio.Desktop.Views;
 
@@ -353,6 +354,11 @@ public partial class UniverseCanvasView : UserControl
         var menu = new ContextMenu();
         var items = new List<object>();
 
+        var createHeader = new MenuItem
+        {
+            Header = "Create new item"
+        };
+        var createItems = new List<object>();
         foreach (var entityType in _viewModel.EntityTypes.OrderBy(x => x.Name))
         {
             var item = new MenuItem
@@ -364,8 +370,31 @@ public partial class UniverseCanvasView : UserControl
                 await _viewModel.CreateNodeAtAsync(_lastCanvasPoint.X, _lastCanvasPoint.Y, entityType);
                 RenderScene();
             };
-            items.Add(item);
+            createItems.Add(item);
         }
+        createHeader.ItemsSource = createItems;
+        items.Add(createHeader);
+
+        var existingHeader = new MenuItem
+        {
+            Header = "Add existing item here"
+        };
+        var existingItems = new List<object>();
+        foreach (var node in _viewModel.Nodes.OrderBy(x => x.Name))
+        {
+            var existingItem = new MenuItem
+            {
+                Header = node.Name
+            };
+            existingItem.Click += async (_, _) =>
+            {
+                await _viewModel.MoveExistingNodeAsync(node, _lastCanvasPoint.X, _lastCanvasPoint.Y);
+                RenderScene();
+            };
+            existingItems.Add(existingItem);
+        }
+        existingHeader.ItemsSource = existingItems;
+        items.Add(existingHeader);
 
         menu.ItemsSource = items;
         menu.Open(_canvas);
@@ -375,6 +404,13 @@ public partial class UniverseCanvasView : UserControl
     {
         if (_viewModel is null)
             return;
+
+        var editItem = new MenuItem { Header = "Edit this node in panel" };
+        editItem.Click += (_, _) =>
+        {
+            _viewModel.SelectNode(node);
+            RenderScene();
+        };
 
         var deleteItem = new MenuItem { Header = "Delete node" };
         deleteItem.Click += async (_, _) =>
@@ -399,7 +435,7 @@ public partial class UniverseCanvasView : UserControl
 
         var menu = new ContextMenu
         {
-            ItemsSource = new object[] { connectItem, cancelConnectionItem, deleteItem }
+            ItemsSource = new object[] { editItem, connectItem, cancelConnectionItem, deleteItem }
         };
         menu.Open(target);
     }
@@ -409,8 +445,57 @@ public partial class UniverseCanvasView : UserControl
         if (_viewModel is null || sender is not ShapePath path || path.Tag is not CanvasRelationshipEdgeViewModel edge)
             return;
 
+        if (e.GetCurrentPoint(path).Properties.IsRightButtonPressed)
+        {
+            _viewModel.SelectEdge(edge);
+            ShowEdgeContextMenu(path, edge);
+            RenderScene();
+            e.Handled = true;
+            return;
+        }
+
         _viewModel.SelectEdge(edge);
         RenderScene();
         e.Handled = true;
+    }
+
+    private void ShowEdgeContextMenu(Control target, CanvasRelationshipEdgeViewModel edge)
+    {
+        if (_viewModel is null)
+            return;
+
+        var selectItem = new MenuItem { Header = "Edit relationship in panel" };
+        selectItem.Click += (_, _) =>
+        {
+            _viewModel.SelectEdge(edge);
+            RenderScene();
+        };
+
+        var typeHeader = new MenuItem { Header = "Change relationship type" };
+        var typeItems = new List<object>();
+        foreach (var relationshipType in _viewModel.RelationshipTypes.OrderBy(x => x.Name))
+        {
+            var typeItem = new MenuItem { Header = relationshipType.Name };
+            typeItem.Click += async (_, _) =>
+            {
+                await _viewModel.UpdateEdgeTypeAsync(edge, relationshipType);
+                RenderScene();
+            };
+            typeItems.Add(typeItem);
+        }
+        typeHeader.ItemsSource = typeItems;
+
+        var deleteItem = new MenuItem { Header = "Delete relationship" };
+        deleteItem.Click += async (_, _) =>
+        {
+            await _viewModel.DeleteEdgeAsync(edge);
+            RenderScene();
+        };
+
+        var menu = new ContextMenu
+        {
+            ItemsSource = new object[] { selectItem, typeHeader, deleteItem }
+        };
+        menu.Open(target);
     }
 }

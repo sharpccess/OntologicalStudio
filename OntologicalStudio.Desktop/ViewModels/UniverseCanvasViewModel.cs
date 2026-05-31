@@ -339,6 +339,36 @@ public partial class UniverseCanvasViewModel : ObservableObject
         await DeleteSelectedNodeAsync();
     }
 
+    public async Task MoveExistingNodeAsync(CanvasEntityNodeViewModel node, double x, double y)
+    {
+        try
+        {
+            await ScopedRunner.RunAsync<IEntityService>(
+                _provider,
+                async service =>
+                {
+                    var entity = await service.GetByIdAsync(node.Id);
+                    entity.PositionX = Math.Max(24, x);
+                    entity.PositionY = Math.Max(24, y);
+                    await service.UpdateAsync(entity);
+                });
+
+            await LoadAsync();
+            _universes.NotifyDataChanged();
+            SelectedNode = Nodes.FirstOrDefault(n => n.Id == node.Id);
+            if (SelectedNode is not null)
+            {
+                SelectedNodeName = SelectedNode.Name;
+                SelectedNodeDescription = SelectedNode.Description;
+            }
+            StatusMessage = $"Moved '{node.Name}' to the selected canvas position.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Move existing node failed: {ex.Message}";
+        }
+    }
+
     [RelayCommand]
     private async Task SaveSelectedNodeAsync()
     {
@@ -398,6 +428,52 @@ public partial class UniverseCanvasViewModel : ObservableObject
         catch (Exception ex)
         {
             StatusMessage = $"Save relationship failed: {ex.Message}";
+        }
+    }
+
+    public async Task UpdateEdgeTypeAsync(CanvasRelationshipEdgeViewModel edge, RelationshipType relationshipType)
+    {
+        try
+        {
+            await ScopedRunner.RunAsync<IRelationshipService>(
+                _provider,
+                async service =>
+                {
+                    var relationship = await service.GetByIdAsync(edge.Id);
+                    relationship.RelationshipTypeId = relationshipType.Id;
+                    await service.UpdateAsync(relationship);
+                });
+
+            await LoadAsync();
+            _universes.NotifyDataChanged();
+            SelectedEdge = Edges.FirstOrDefault(x => x.Id == edge.Id);
+            SelectedNodeRelationshipType = relationshipType;
+            StatusMessage = $"Relationship changed to '{relationshipType.Name}'.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Update relationship type failed: {ex.Message}";
+        }
+    }
+
+    public async Task DeleteEdgeAsync(CanvasRelationshipEdgeViewModel edge)
+    {
+        try
+        {
+            await ScopedRunner.RunAsync<IRelationshipService>(
+                _provider,
+                service => service.DeleteAsync(edge.Id));
+
+            await LoadAsync();
+            _universes.NotifyDataChanged();
+            SelectedEdge = null;
+            SelectedNodeRelationshipType = null;
+            SelectedNodeRelationshipDescription = string.Empty;
+            StatusMessage = "Relationship deleted.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Delete relationship failed: {ex.Message}";
         }
     }
 

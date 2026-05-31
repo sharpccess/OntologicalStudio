@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OntologicalStudio.AIProviders")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5827aac9ec7617f97f5e8c4d36f87872906d8335")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+32a171f7c912b0093ee586eea5f88547d0c84744")]
 [assembly: System.Reflection.AssemblyProductAttribute("OntologicalStudio.AIProviders")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OntologicalStudio.AIProviders")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
