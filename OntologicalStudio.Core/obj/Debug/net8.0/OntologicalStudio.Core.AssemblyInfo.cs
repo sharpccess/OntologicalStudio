@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OntologicalStudio.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ed6dcc03ae195b454fe4ef3f0d657e6a6078e96f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c4b7d5f7274a84506c8b7d0507a95b163db2b301")]
 [assembly: System.Reflection.AssemblyProductAttribute("OntologicalStudio.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OntologicalStudio.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
