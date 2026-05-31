@@ -22,18 +22,6 @@ public partial class RelationshipsViewModel : ObservableObject
     public ObservableCollection<RelationshipType> RelationshipTypes { get; } = new();
 
     [ObservableProperty]
-    private Entity? sourceEntity;
-
-    [ObservableProperty]
-    private Entity? targetEntity;
-
-    [ObservableProperty]
-    private RelationshipType? relationshipType;
-
-    [ObservableProperty]
-    private string description = string.Empty;
-
-    [ObservableProperty]
     private RelationshipRow? selectedRelationship;
 
     [ObservableProperty]
@@ -50,25 +38,7 @@ public partial class RelationshipsViewModel : ObservableObject
 
     private async Task InitAsync()
     {
-        await LoadRelationshipTypesAsync();
         await ReloadForUniverseAsync();
-    }
-
-    private async Task LoadRelationshipTypesAsync()
-    {
-        try
-        {
-            var rts = await ScopedRunner.RunAsync<IRelationshipTypeRepository, IEnumerable<RelationshipType>>(
-                _provider, r => r.GetAllAsync());
-            RelationshipTypes.Clear();
-            foreach (var t in rts.OrderBy(t => t.Name))
-                RelationshipTypes.Add(t);
-            RelationshipType ??= RelationshipTypes.FirstOrDefault();
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"RelationshipTypes load failed: {ex.Message}";
-        }
     }
 
     public async Task ReloadForUniverseAsync()
@@ -112,38 +82,7 @@ public partial class RelationshipsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task CreateAsync()
-    {
-        if (SourceEntity is null || TargetEntity is null || RelationshipType is null)
-        {
-            StatusMessage = "Source, target, and relationship type are required.";
-            return;
-        }
-        if (SourceEntity.Id == TargetEntity.Id)
-        {
-            StatusMessage = "Source and target must differ.";
-            return;
-        }
-        try
-        {
-            await ScopedRunner.RunAsync<IRelationshipService>(_provider, async s =>
-            {
-                var rel = await s.CreateAsync(SourceEntity.Id, TargetEntity.Id, RelationshipType.Id);
-                if (!string.IsNullOrWhiteSpace(Description))
-                {
-                    rel.Description = Description.Trim();
-                    await s.UpdateAsync(rel);
-                }
-            });
-            Description = string.Empty;
-            await ReloadForUniverseAsync();
-            _universes.NotifyDataChanged();
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Create failed: {ex.Message}";
-        }
-    }
+    private async Task RefreshAsync() => await ReloadForUniverseAsync();
 
     [RelayCommand]
     private async Task DeleteAsync()

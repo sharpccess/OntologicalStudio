@@ -479,6 +479,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
                 {
                     var relationship = await service.GetByIdAsync(edge.Id);
                     relationship.RelationshipTypeId = relationshipType.Id;
+                    relationship.RelationshipType = null!;
                     await service.UpdateAsync(relationship);
                 });
 

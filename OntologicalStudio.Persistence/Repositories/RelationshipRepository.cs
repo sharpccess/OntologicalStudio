@@ -60,6 +60,9 @@ public class RelationshipRepository : IRelationshipRepository
     public async Task UpdateAsync(Relationship relationship)
     {
         relationship.UpdatedAt = DateTime.UtcNow;
+        relationship.SourceEntity = null!;
+        relationship.TargetEntity = null!;
+        relationship.RelationshipType = null!;
         _relationships.Update(relationship);
         await _context.SaveChangesAsync();
     }

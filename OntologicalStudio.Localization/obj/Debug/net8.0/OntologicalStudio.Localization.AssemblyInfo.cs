@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OntologicalStudio.Localization")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3d66418ac928228815341dc21f804d0f4162ccd4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9e866b8b1749ec3c2fb5255c3dfcba4582812cbb")]
 [assembly: System.Reflection.AssemblyProductAttribute("OntologicalStudio.Localization")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OntologicalStudio.Localization")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

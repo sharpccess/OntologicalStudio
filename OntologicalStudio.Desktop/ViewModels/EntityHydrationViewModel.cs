@@ -78,6 +78,11 @@ public partial class EntityHydrationViewModel : ObservableObject
         _provider = provider;
     }
 
+    public async Task PreviewCurrentNodeAsync()
+    {
+        await PreviewAsync();
+    }
+
     public async Task LoadHistoryAsync()
     {
         History.Clear();

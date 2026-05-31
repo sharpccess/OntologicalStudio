@@ -117,6 +117,8 @@ public partial class UniverseCanvasView : UserControl
             if (_isDraggingNode || _isResizingNode)
                 return;
 
+            var taggedControl = FindTaggedAncestor(e.Source as Control);
+
             if (source is ShapePath edgePath && edgePath.Tag is CanvasRelationshipEdgeViewModel edge)
             {
                 _viewModel?.SelectEdge(edge);
@@ -126,7 +128,7 @@ public partial class UniverseCanvasView : UserControl
                 return;
             }
 
-            if (source is Border border && border.Tag is CanvasEntityNodeViewModel node)
+            if (taggedControl is Border border && border.Tag is CanvasEntityNodeViewModel node)
             {
                 _viewModel?.SelectNode(node);
                 ShowNodeContextMenu(border, node);
@@ -159,6 +161,7 @@ public partial class UniverseCanvasView : UserControl
         }
 
         var source = e.Source as Control;
+        var taggedControl = FindTaggedAncestor(source);
         if (source is ShapePath edgePath && edgePath.Tag is CanvasRelationshipEdgeViewModel edge)
         {
             _viewModel?.SelectEdge(edge);
@@ -167,7 +170,7 @@ public partial class UniverseCanvasView : UserControl
             return;
         }
 
-        if (source is Border border && border.Tag is CanvasEntityNodeViewModel node)
+        if (taggedControl is Border border && border.Tag is CanvasEntityNodeViewModel node)
         {
             _viewModel?.SelectNode(node);
             ShowNodeContextMenu(border, node);
@@ -748,6 +751,14 @@ public partial class UniverseCanvasView : UserControl
             RenderScene();
         };
 
+        var hydrateItem = new MenuItem { Header = "Hydrate this entity" };
+        hydrateItem.Click += async (_, _) =>
+        {
+            _viewModel.SelectNode(node);
+            await _viewModel.Hydration.PreviewCurrentNodeAsync();
+            RenderScene();
+        };
+
         var cancelConnectionItem = new MenuItem { Header = "Cancel connection mode" };
         cancelConnectionItem.Click += (_, _) =>
         {
@@ -757,7 +768,7 @@ public partial class UniverseCanvasView : UserControl
 
         var menu = new ContextMenu
         {
-            ItemsSource = new object[] { editItem, connectItem, cancelConnectionItem, deleteItem }
+            ItemsSource = new object[] { editItem, connectItem, hydrateItem, cancelConnectionItem, deleteItem }
         };
         target.ContextMenu = menu;
         menu.Open(target);
@@ -821,5 +832,18 @@ public partial class UniverseCanvasView : UserControl
         };
         target.ContextMenu = menu;
         menu.Open(target);
+    }
+
+    private static Control? FindTaggedAncestor(Control? source)
+    {
+        var current = source;
+        while (current is not null)
+        {
+            if (current is Border border && border.Tag is CanvasEntityNodeViewModel)
+                return border;
+            current = current.Parent as Control;
+        }
+
+        return null;
     }
 }
