@@ -40,3 +40,10 @@ TestResults/
 coverage/
 *.coverage
 *.coveragexml
+.env
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+.credentials
