@@ -96,6 +96,9 @@ public partial class UniverseCanvasViewModel : ObservableObject
     private string selectedNodeEntityTypeText = string.Empty;
 
     [ObservableProperty]
+    private string selectedNodeColor = "#D7EAF7";
+
+    [ObservableProperty]
     private RelationshipType? selectedNodeRelationshipType;
 
     [ObservableProperty]
@@ -128,6 +131,18 @@ public partial class UniverseCanvasViewModel : ObservableObject
     partial void OnSelectedNodeDescriptionChanged(string value) { }
     partial void OnSelectedNodeNotesChanged(string value) { }
     partial void OnSelectedNodeEntityTypeChanged(EntityType? value) { }
+    partial void OnSelectedNodeColorChanged(string value)
+    {
+        if (_suspendSelectedNodeAutosave || SelectedNode is null)
+            return;
+
+        SelectedNode.NodeColor = NormalizeNodeColor(value);
+        SelectedNode.Entity.Properties = UpdateNodeVisualProperties(
+            SelectedNode.Entity.Properties,
+            SelectedNode.NodeColor);
+        SelectedNode.RefreshDisplay();
+        QueueSelectedNodeAutosave();
+    }
     partial void OnSelectedNodeRelationshipTypeChanged(RelationshipType? value)
     {
         if (_suspendSelectedRelationshipAutosave)
@@ -335,6 +350,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
             entity.EntityType = entityType;
             entity.UniverseId = universe.Id;
             entity.Properties = UpdateNodeLayoutProperties(entity.Properties, CanvasEntityNodeViewModel.DefaultWidth, CanvasEntityNodeViewModel.DefaultHeight);
+            entity.Properties = UpdateNodeVisualProperties(entity.Properties, GenerateSoftRandomColor());
 
             await ScopedRunner.RunAsync<IEntityService>(
                 _provider,
@@ -546,6 +562,10 @@ public partial class UniverseCanvasViewModel : ObservableObject
                 selectedNode.Entity.EntityTypeId = resolvedEntityType.Id;
                 selectedNode.Entity.EntityType = resolvedEntityType;
             }
+            selectedNode.NodeColor = NormalizeNodeColor(SelectedNodeColor);
+            selectedNode.Entity.Properties = UpdateNodeVisualProperties(
+                selectedNode.Entity.Properties,
+                selectedNode.NodeColor);
 
             await ScopedRunner.RunAsync<IEntityService>(
                 _provider,
@@ -570,6 +590,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
             selectedNode.Entity.EntityType = EntityTypes.FirstOrDefault(x => x.Id == persistedEntity.EntityTypeId)
                 ?? persistedEntity.EntityType
                 ?? selectedNode.Entity.EntityType;
+            selectedNode.NodeColor = GetNodeColor(persistedEntity);
 
             selectedNode.RefreshDisplay();
             if (SelectedNode?.Id == selectedNode.Id)
@@ -628,6 +649,18 @@ public partial class UniverseCanvasViewModel : ObservableObject
         {
             StatusMessage = $"Save relationship failed: {ex.Message}";
         }
+    }
+
+    [RelayCommand]
+    private async Task DeleteActiveRelationshipTypeFromHistoryAsync()
+    {
+        await DeleteRelationshipTypeFromHistoryAsync(SelectedRelationshipTypeText, SelectedRelationshipType);
+    }
+
+    [RelayCommand]
+    private async Task DeleteSelectedRelationshipTypeFromHistoryAsync()
+    {
+        await DeleteRelationshipTypeFromHistoryAsync(SelectedNodeRelationshipTypeText, SelectedNodeRelationshipType);
     }
 
     public async Task UpdateEdgeTypeAsync(CanvasRelationshipEdgeViewModel edge, RelationshipType relationshipType)
@@ -787,6 +820,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
                 SelectedNodeDescription = string.Empty;
                 SelectedNodeNotes = string.Empty;
                 SelectedNodeEntityType = null;
+                SelectedNodeColor = "#D7EAF7";
                 return;
             }
 
@@ -795,6 +829,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
         SelectedNodeNotes = node.Entity.Notes ?? string.Empty;
         SelectedNodeEntityType = EntityTypes.FirstOrDefault(x => x.Id == node.Entity.EntityTypeId);
         SelectedNodeEntityTypeText = SelectedNodeEntityType?.DisplayName ?? node.Entity.EntityType?.DisplayName ?? node.Entity.EntityType?.Name ?? string.Empty;
+        SelectedNodeColor = node.NodeColor;
         }
         finally
         {
@@ -926,6 +961,64 @@ public partial class UniverseCanvasViewModel : ObservableObject
         return created;
     }
 
+    private async Task DeleteRelationshipTypeFromHistoryAsync(string? input, RelationshipType? selectedType)
+    {
+        var relationshipType = FindRelationshipType(input, selectedType);
+        if (relationshipType is null)
+        {
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? "No se encontró el tipo de relación para eliminar del historial."
+                : "Relationship type was not found in history.";
+            return;
+        }
+
+        try
+        {
+            await ScopedRunner.RunAsync<IRelationshipTypeRepository>(
+                _provider,
+                async repository =>
+                {
+                    var persisted = await repository.GetByIdAsync(relationshipType.Id);
+                    if (persisted is not null)
+                        await repository.DeleteAsync(persisted);
+                });
+
+            var removedId = relationshipType.Id;
+            var removedLabel = relationshipType.DisplayName;
+
+            await LoadReferenceDataAsync();
+
+            if (SelectedRelationshipType?.Id == removedId)
+                SelectedRelationshipType = null;
+
+            if (SelectedNodeRelationshipType?.Id == removedId)
+                SelectedNodeRelationshipType = null;
+
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? $"Tipo de relación '{removedLabel}' eliminado del historial."
+                : $"Relationship type '{removedLabel}' removed from history.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? $"No se pudo eliminar el tipo de relación: {ex.Message}"
+                : $"Failed to remove relationship type: {ex.Message}";
+        }
+    }
+
+    private RelationshipType? FindRelationshipType(string? input, RelationshipType? selectedType)
+    {
+        var trimmed = input?.Trim() ?? string.Empty;
+
+        if (selectedType is not null)
+            return selectedType;
+
+        if (string.IsNullOrWhiteSpace(trimmed))
+            return null;
+
+        return RelationshipTypes.FirstOrDefault(x => TypeLocalizationHelper.MatchesRelationshipTypeInput(x, trimmed, _localization));
+    }
+
     private async Task<EntityType?> ResolveEntityTypeAsync(string? input, EntityType? selectedType)
     {
         var trimmed = input?.Trim() ?? string.Empty;
@@ -989,6 +1082,23 @@ public partial class UniverseCanvasViewModel : ObservableObject
         }
     }
 
+    internal static string GetNodeColor(Entity entity)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(entity.Properties))
+                return "#D7EAF7";
+
+            var json = JsonNode.Parse(entity.Properties)?.AsObject();
+            var color = json?["canvasColor"]?.GetValue<string>();
+            return NormalizeNodeColor(color);
+        }
+        catch
+        {
+            return "#D7EAF7";
+        }
+    }
+
     private static string UpdateNodeLayoutProperties(string? currentProperties, double width, double height)
     {
         JsonObject json;
@@ -1005,6 +1115,44 @@ public partial class UniverseCanvasViewModel : ObservableObject
         json["canvasWidth"] = Math.Max(160, width);
         json["canvasHeight"] = Math.Max(100, height);
         return json.ToJsonString();
+    }
+
+    private static string UpdateNodeVisualProperties(string? currentProperties, string? color)
+    {
+        JsonObject json;
+        try
+        {
+            json = JsonNode.Parse(string.IsNullOrWhiteSpace(currentProperties) ? "{}" : currentProperties!)?.AsObject()
+                ?? new JsonObject();
+        }
+        catch
+        {
+            json = new JsonObject();
+        }
+
+        json["canvasColor"] = NormalizeNodeColor(color);
+        return json.ToJsonString();
+    }
+
+    private static string NormalizeNodeColor(string? color)
+    {
+        var trimmed = color?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(trimmed))
+            return "#D7EAF7";
+
+        if (!trimmed.StartsWith("#", StringComparison.Ordinal))
+            trimmed = $"#{trimmed}";
+
+        return trimmed.Length == 7 ? trimmed.ToUpperInvariant() : "#D7EAF7";
+    }
+
+    private static string GenerateSoftRandomColor()
+    {
+        var random = Random.Shared;
+        var red = random.Next(180, 236);
+        var green = random.Next(180, 236);
+        var blue = random.Next(180, 236);
+        return $"#{red:X2}{green:X2}{blue:X2}";
     }
 }
 
@@ -1023,6 +1171,7 @@ public partial class CanvasEntityNodeViewModel : ObservableObject
     private double y;
     private double width;
     private double height;
+    private string nodeColor;
 
     public event EventHandler? PositionChanged;
 
@@ -1033,6 +1182,7 @@ public partial class CanvasEntityNodeViewModel : ObservableObject
         this.y = y;
         this.width = width;
         this.height = height;
+        nodeColor = UniverseCanvasViewModel.GetNodeColor(entity);
     }
 
     public double X
@@ -1075,11 +1225,18 @@ public partial class CanvasEntityNodeViewModel : ObservableObject
         }
     }
 
+    public string NodeColor
+    {
+        get => nodeColor;
+        set => SetProperty(ref nodeColor, value);
+    }
+
     public void RefreshDisplay()
     {
         OnPropertyChanged(nameof(Name));
         OnPropertyChanged(nameof(TypeName));
         OnPropertyChanged(nameof(Description));
+        OnPropertyChanged(nameof(NodeColor));
     }
 
 }
@@ -1107,22 +1264,5 @@ public class CanvasRelationshipEdgeViewModel
         Target = target;
         Label = label;
         Description = description;
-    }
-
-    public double StartX => Source.X + (Source.Width / 2);
-    public double StartY => Source.Y + (Source.Height / 2);
-    public double EndX => Target.X + (Target.Width / 2);
-    public double EndY => Target.Y + (Target.Height / 2);
-    public double LabelX => ((StartX + EndX) / 2) - 50;
-    public double LabelY => ((StartY + EndY) / 2) - 14;
-
-    public string PathData
-    {
-        get
-        {
-            var delta = Math.Abs(EndX - StartX) / 2;
-            var control = Math.Max(48, Math.Min(140, delta));
-            return $"M {StartX},{StartY} C {StartX + control},{StartY} {EndX - control},{EndY} {EndX},{EndY}";
-        }
     }
 }

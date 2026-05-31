@@ -12,7 +12,8 @@
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <Button Content="{DynamicResource library.saveSelectedEntity}" Command="{Binding SaveSelectedEntityCommand}"/>
                         <Button Content="{DynamicResource library.importEntity}" Command="{Binding ImportSelectedEntityCommand}"/>
-                        <Button Content="{DynamicResource library.deleteEntity}" Command="{Binding DeleteSelectedEntityCommand}"/>
+                        <Button Content="{DynamicResource library.editEntity}" Click="OnEditEntityClick"/>
+                        <Button Content="{DynamicResource library.deleteEntity}" Click="OnDeleteEntityClick"/>
                     </StackPanel>
                     <TextBox Watermark="{DynamicResource library.searchEntities}"
                              Text="{Binding EntitySearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
@@ -55,7 +56,8 @@
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <Button Content="{DynamicResource library.saveUniverseModel}" Command="{Binding SaveActiveUniverseModelCommand}"/>
                         <Button Content="{DynamicResource library.importUniverseModel}" Command="{Binding ImportSelectedUniverseModelCommand}"/>
-                        <Button Content="{DynamicResource library.deleteModel}" Command="{Binding DeleteSelectedUniverseModelCommand}"/>
+                        <Button Content="{DynamicResource library.editModel}" Click="OnEditUniverseModelClick"/>
+                        <Button Content="{DynamicResource library.deleteModel}" Click="OnDeleteUniverseModelClick"/>
                     </StackPanel>
                     <TextBox Watermark="{DynamicResource library.searchModels}"
                              Text="{Binding UniverseModelSearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>

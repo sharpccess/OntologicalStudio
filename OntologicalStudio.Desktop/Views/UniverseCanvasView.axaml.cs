@@ -103,6 +103,14 @@ public partial class UniverseCanvasView : UserControl
         if (_viewModel is null || _canvas is null)
             return;
 
+        var source = e.Source as Control;
+        if (source is ShapePath edgePath && edgePath.Tag is CanvasRelationshipEdgeViewModel edge)
+        {
+            await ShowRelationshipEditDialogAsync(edge);
+            e.Handled = true;
+            return;
+        }
+
         var point = e.GetPosition(_canvas);
         await _viewModel.CreateNodeAtAsync(point.X, point.Y);
         RenderScene();
@@ -363,15 +371,26 @@ public partial class UniverseCanvasView : UserControl
 
         foreach (var edge in _viewModel.Edges)
         {
+            var route = BuildOrthogonalRoute(edge);
             var path = new ShapePath
             {
-                Data = Geometry.Parse(edge.PathData),
+                Data = route.PathGeometry,
                 Stroke = new SolidColorBrush(Color.Parse(_viewModel.SelectedEdge?.Id == edge.Id ? "#ffd166" : "#5f7184")),
                 StrokeThickness = _viewModel.SelectedEdge?.Id == edge.Id ? 3 : 2,
                 Tag = edge
             };
             path.PointerPressed += OnEdgePointerPressed;
             _canvas.Children.Add(path);
+
+            var arrow = new ShapePath
+            {
+                Data = route.ArrowGeometry,
+                Fill = new SolidColorBrush(Color.Parse(_viewModel.SelectedEdge?.Id == edge.Id ? "#ffd166" : "#5f7184")),
+                Stroke = null,
+                Tag = edge
+            };
+            arrow.PointerPressed += OnEdgePointerPressed;
+            _canvas.Children.Add(arrow);
 
             var label = new Border
             {
@@ -386,21 +405,19 @@ public partial class UniverseCanvasView : UserControl
                 }
             };
 
-            Canvas.SetLeft(label, edge.LabelX);
-            Canvas.SetTop(label, edge.LabelY);
+            Canvas.SetLeft(label, route.LabelX);
+            Canvas.SetTop(label, route.LabelY);
             _canvas.Children.Add(label);
         }
 
         if (_viewModel.IsLinkMode && _viewModel.LinkSource is not null && _viewModel.HasLinkPreview)
         {
-            var startX = _viewModel.LinkSource.X + (_viewModel.LinkSource.Width / 2);
-            var startY = _viewModel.LinkSource.Y + (_viewModel.LinkSource.Height / 2);
+            var previewStart = GetPreviewStartPoint(_viewModel.LinkSource, _viewModel.LinkPreviewX, _viewModel.LinkPreviewY);
             var endX = _viewModel.LinkPreviewX;
             var endY = _viewModel.LinkPreviewY;
-            var control = Math.Max(48, Math.Min(140, Math.Abs(endX - startX) / 2));
             var previewPath = new ShapePath
             {
-                Data = Geometry.Parse($"M {startX},{startY} C {startX + control},{startY} {endX - control},{endY} {endX},{endY}"),
+                Data = BuildPreviewOrthogonalPath(previewStart, new Point(endX, endY)),
                 Stroke = new SolidColorBrush(Color.Parse("#c596ff")),
                 StrokeThickness = 2,
                 StrokeDashArray = new AvaloniaList<double> { 6, 4 }
@@ -418,10 +435,10 @@ public partial class UniverseCanvasView : UserControl
                 Width = node.Width,
                 Height = node.Height,
                 CornerRadius = new CornerRadius(8),
-                Background = new SolidColorBrush(Color.Parse(linking ? "#3f2d61" : selected ? "#24445b" : "#1f252d")),
-                BorderBrush = new SolidColorBrush(Color.Parse(linking ? "#c596ff" : selected ? "#6ec1ff" : "#465463")),
+                Background = new SolidColorBrush(Color.Parse(selected ? "#223140" : "#18212B")),
+                BorderBrush = new SolidColorBrush(Color.Parse(linking ? "#C596FF" : selected ? "#7CC7FF" : "#465463")),
                 BorderThickness = new Thickness(selected ? 2 : 1),
-                Padding = new Thickness(10),
+                Padding = new Thickness(0),
                 ClipToBounds = true,
                 Tag = node,
                 Child = BuildNodeContent(node)
@@ -510,27 +527,50 @@ public partial class UniverseCanvasView : UserControl
         if (isSelected && _viewModel is not null)
             return BuildSelectedNodeEditor(node);
 
+        var cardBackground = Color.Parse("#18212B");
+        var cardBorder = Color.Parse("#415162");
+        var foregroundBrush = new SolidColorBrush(Color.Parse("#F5F7FA"));
+        var secondaryForegroundBrush = new SolidColorBrush(Color.Parse("#C8D2DC"));
+        var accentBrush = new SolidColorBrush(Color.Parse(node.NodeColor));
+
         var layout = new Grid
         {
-            ClipToBounds = true
+            ClipToBounds = true,
+            Background = new SolidColorBrush(cardBackground),
+            Margin = new Thickness(-4)
         };
         layout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
         layout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
         layout.RowDefinitions.Add(new RowDefinition(GridLength.Star));
+        layout.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(6)));
         layout.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
         layout.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+
+        var accentBar = new Border
+        {
+            Background = accentBrush,
+            CornerRadius = new CornerRadius(6, 0, 0, 6)
+        };
+        Grid.SetRowSpan(accentBar, 3);
+        Grid.SetColumn(accentBar, 0);
+        layout.Children.Add(accentBar);
+
+        var headerRow = new Grid
+        {
+            ColumnDefinitions = new ColumnDefinitions("*,Auto"),
+            Margin = new Thickness(10, 10, 10, 0)
+        };
 
         var title = new TextBlock
         {
             Text = node.Name,
             FontWeight = FontWeight.SemiBold,
-            Foreground = Brushes.White,
+            Foreground = foregroundBrush,
             TextTrimming = TextTrimming.CharacterEllipsis,
-            MaxWidth = Math.Max(40, node.Width - 56)
+            MaxWidth = Math.Max(40, node.Width - 76)
         };
-        Grid.SetRow(title, 0);
         Grid.SetColumn(title, 0);
-        layout.Children.Add(title);
+        headerRow.Children.Add(title);
 
         var deleteButton = new Button
         {
@@ -539,7 +579,12 @@ public partial class UniverseCanvasView : UserControl
             Height = 20,
             Padding = new Thickness(0),
             HorizontalAlignment = HorizontalAlignment.Right,
-            VerticalAlignment = VerticalAlignment.Top
+            VerticalAlignment = VerticalAlignment.Top,
+            Background = new SolidColorBrush(Color.Parse("#293544")),
+            Foreground = foregroundBrush,
+            BorderBrush = new SolidColorBrush(Color.Parse("#526274")),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(4)
         };
         deleteButton.PointerPressed += (_, args) => args.Handled = true;
         deleteButton.Click += async (_, _) =>
@@ -550,9 +595,13 @@ public partial class UniverseCanvasView : UserControl
                 RenderScene();
             }
         };
-        Grid.SetRow(deleteButton, 0);
         Grid.SetColumn(deleteButton, 1);
-        layout.Children.Add(deleteButton);
+        headerRow.Children.Add(deleteButton);
+
+        Grid.SetRow(headerRow, 0);
+        Grid.SetColumn(headerRow, 1);
+        Grid.SetColumnSpan(headerRow, 2);
+        layout.Children.Add(headerRow);
 
         var hydrateButton = new Button
         {
@@ -561,7 +610,12 @@ public partial class UniverseCanvasView : UserControl
                 : "Hydrate",
             MinWidth = 68,
             Height = 22,
-            Padding = new Thickness(6, 0)
+            Padding = new Thickness(6, 0),
+            Background = new SolidColorBrush(Color.Parse("#2A6FA1")),
+            Foreground = new SolidColorBrush(Color.Parse("#F7FBFF")),
+            BorderBrush = new SolidColorBrush(Color.Parse("#5CA0D2")),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(4)
         };
         hydrateButton.PointerPressed += (_, args) => args.Handled = true;
         hydrateButton.Click += async (_, _) =>
@@ -579,16 +633,16 @@ public partial class UniverseCanvasView : UserControl
             }
         };
         Grid.SetRow(hydrateButton, 1);
-        Grid.SetColumn(hydrateButton, 0);
+        Grid.SetColumn(hydrateButton, 1);
         Grid.SetColumnSpan(hydrateButton, 2);
         hydrateButton.HorizontalAlignment = HorizontalAlignment.Left;
-        hydrateButton.Margin = new Thickness(0, 4, 0, 0);
+        hydrateButton.Margin = new Thickness(10, 6, 10, 0);
         layout.Children.Add(hydrateButton);
 
         var body = new Grid
         {
             ClipToBounds = true,
-            Margin = new Thickness(0, 6, 0, 0)
+            Margin = new Thickness(10, 8, 10, 10)
         };
         body.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
         body.RowDefinitions.Add(new RowDefinition(GridLength.Star));
@@ -597,7 +651,7 @@ public partial class UniverseCanvasView : UserControl
         {
             Text = node.TypeName,
             FontSize = 11,
-            Opacity = 0.65,
+            Foreground = secondaryForegroundBrush,
             TextTrimming = TextTrimming.CharacterEllipsis,
             MaxWidth = Math.Max(40, node.Width - 28)
         };
@@ -608,21 +662,29 @@ public partial class UniverseCanvasView : UserControl
         {
             Text = node.Description,
             FontSize = 11,
+            Foreground = secondaryForegroundBrush,
             TextWrapping = TextWrapping.Wrap,
             Width = Math.Max(60, node.Width - 28),
             MaxHeight = Math.Max(24, node.Height - 108),
-            Opacity = 0.8,
             ClipToBounds = true
         };
         Grid.SetRow(descriptionBlock, 1);
         body.Children.Add(descriptionBlock);
 
         Grid.SetRow(body, 2);
-        Grid.SetColumn(body, 0);
+        Grid.SetColumn(body, 1);
         Grid.SetColumnSpan(body, 2);
         layout.Children.Add(body);
 
-        return layout;
+        return new Border
+        {
+            Background = new SolidColorBrush(cardBackground),
+            BorderBrush = new SolidColorBrush(cardBorder),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(6),
+            ClipToBounds = true,
+            Child = layout
+        };
     }
 
     private Control BuildSelectedNodeEditor(CanvasEntityNodeViewModel node)
@@ -1150,7 +1212,7 @@ public partial class UniverseCanvasView : UserControl
 
         if (e.ClickCount >= 2)
         {
-            _ = _viewModel.DeleteEdgeAsync(edge);
+            _ = ShowRelationshipEditDialogAsync(edge);
             e.Handled = true;
             return;
         }
@@ -1210,6 +1272,119 @@ public partial class UniverseCanvasView : UserControl
         menu.Open(target);
     }
 
+    private async Task ShowRelationshipEditDialogAsync(CanvasRelationshipEdgeViewModel edge)
+    {
+        if (_viewModel is null)
+            return;
+
+        var owner = TopLevel.GetTopLevel(this) as Window;
+        if (owner is null)
+            return;
+
+        _viewModel.SelectEdge(edge);
+
+        var relationshipTypeCombo = new ComboBox
+        {
+            ItemsSource = _viewModel.RelationshipTypes,
+            SelectedItem = _viewModel.RelationshipTypes.FirstOrDefault(x => x.Id == edge.RelationshipTypeId)
+        };
+        relationshipTypeCombo.ItemTemplate = new FuncDataTemplate<RelationshipType>((relationshipType, _) =>
+            new TextBlock { Text = relationshipType?.DisplayName ?? relationshipType?.Name ?? string.Empty });
+
+        var relationshipTextBox = new TextBox
+        {
+            Text = edge.Label,
+            Watermark = App.Current?.Resources["canvas.relationshipType"]?.ToString() ?? "Relationship type"
+        };
+
+        relationshipTypeCombo.SelectionChanged += (_, _) =>
+        {
+            if (relationshipTypeCombo.SelectedItem is RelationshipType relationshipType)
+                relationshipTextBox.Text = relationshipType.DisplayName;
+        };
+
+        var descriptionTextBox = new TextBox
+        {
+            Text = edge.Description,
+            Watermark = App.Current?.Resources["canvas.relationshipDescription"]?.ToString() ?? "Relationship description",
+            AcceptsReturn = true,
+            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+            Height = 110
+        };
+
+        var dialog = new Window
+        {
+            Title = App.Current?.Resources["relationship.edit"]?.ToString() ?? "Edit Relationship",
+            Width = 520,
+            Height = 320,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            CanResize = true,
+            ShowInTaskbar = false,
+            SystemDecorations = SystemDecorations.Full
+        };
+
+        var cancelButton = new Button
+        {
+            Content = App.Current?.Resources["cancel"]?.ToString() ?? "Cancel",
+            MinWidth = 90
+        };
+        cancelButton.Click += (_, _) => dialog.Close();
+
+        var deleteButton = new Button
+        {
+            Content = App.Current?.Resources["relationship.delete"]?.ToString() ?? "Delete Relationship",
+            MinWidth = 110
+        };
+        deleteButton.Click += async (_, _) =>
+        {
+            await _viewModel.DeleteEdgeAsync(edge);
+            dialog.Close();
+        };
+
+        var updateButton = new Button
+        {
+            Content = App.Current?.Resources["common.update"]?.ToString() ?? "Update",
+            MinWidth = 90
+        };
+        updateButton.Click += async (_, _) =>
+        {
+            _viewModel.SelectedNodeRelationshipType = relationshipTypeCombo.SelectedItem as RelationshipType;
+            _viewModel.SelectedNodeRelationshipTypeText = relationshipTextBox.Text ?? string.Empty;
+            _viewModel.SelectedNodeRelationshipDescription = descriptionTextBox.Text ?? string.Empty;
+            await _viewModel.SaveSelectedRelationshipCommand.ExecuteAsync(null);
+            dialog.Close();
+        };
+
+        dialog.Content = new StackPanel
+        {
+            Margin = new Thickness(16),
+            Spacing = 12,
+            Children =
+            {
+                relationshipTypeCombo,
+                relationshipTextBox,
+                descriptionTextBox,
+                new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Spacing = 8,
+                    Children =
+                    {
+                        deleteButton,
+                        cancelButton,
+                        updateButton
+                    }
+                }
+            }
+        };
+
+        await dialog.ShowDialog(owner);
+        owner.Activate();
+        owner.Focus();
+        RenderScene();
+    }
+
     private static Control? FindTaggedAncestor(Control? source)
     {
         var current = source;
@@ -1222,4 +1397,229 @@ public partial class UniverseCanvasView : UserControl
 
         return null;
     }
+
+    private static string DarkenColor(string hexColor, double factor)
+    {
+        try
+        {
+            var color = Color.Parse(hexColor);
+            byte Darken(byte value) => (byte)Math.Clamp(value * (1 - factor), 0, 255);
+            return $"#{Darken(color.R):X2}{Darken(color.G):X2}{Darken(color.B):X2}";
+        }
+        catch
+        {
+            return "#C6D8E5";
+        }
+    }
+
+    private EdgeRoute BuildOrthogonalRoute(CanvasRelationshipEdgeViewModel edge)
+    {
+        var sourceRect = new Rect(edge.Source.X, edge.Source.Y, edge.Source.Width, edge.Source.Height);
+        var targetRect = new Rect(edge.Target.X, edge.Target.Y, edge.Target.Width, edge.Target.Height);
+        var horizontal = Math.Abs((targetRect.X + targetRect.Width / 2) - (sourceRect.X + sourceRect.Width / 2))
+            >= Math.Abs((targetRect.Y + targetRect.Height / 2) - (sourceRect.Y + sourceRect.Height / 2));
+
+        var start = GetEdgeAnchor(sourceRect, targetRect, horizontal, true);
+        var end = GetEdgeAnchor(targetRect, sourceRect, horizontal, false);
+        var gap = 22d;
+
+        var points = new List<Point> { start };
+
+        if (horizontal)
+        {
+            var startOffset = new Point(start.X + (start.X < end.X ? gap : -gap), start.Y);
+            var endOffset = new Point(end.X + (start.X < end.X ? -gap : gap), end.Y);
+            var midX = FindSafeVerticalLane((startOffset.X + endOffset.X) / 2, startOffset.Y, endOffset.Y, edge.Source, edge.Target);
+
+            points.Add(startOffset);
+            points.Add(new Point(midX, startOffset.Y));
+            points.Add(new Point(midX, endOffset.Y));
+            points.Add(endOffset);
+        }
+        else
+        {
+            var startOffset = new Point(start.X, start.Y + (start.Y < end.Y ? gap : -gap));
+            var endOffset = new Point(end.X, end.Y + (start.Y < end.Y ? -gap : gap));
+            var midY = FindSafeHorizontalLane((startOffset.Y + endOffset.Y) / 2, startOffset.X, endOffset.X, edge.Source, edge.Target);
+
+            points.Add(startOffset);
+            points.Add(new Point(startOffset.X, midY));
+            points.Add(new Point(endOffset.X, midY));
+            points.Add(endOffset);
+        }
+
+        points.Add(end);
+        var normalizedPoints = NormalizePoints(points);
+
+        var figures = new PathFigure
+        {
+            StartPoint = normalizedPoints[0],
+            IsClosed = false,
+            Segments = new PathSegments(normalizedPoints.Skip(1).Select(point => new LineSegment { Point = point }))
+        };
+        var pathGeometry = new PathGeometry { Figures = new PathFigures { figures } };
+
+        var arrowGeometry = BuildArrowGeometry(normalizedPoints[^2], normalizedPoints[^1]);
+        var middleIndex = normalizedPoints.Count / 2;
+        var labelPoint = normalizedPoints.Count % 2 == 0
+            ? new Point((normalizedPoints[middleIndex - 1].X + normalizedPoints[middleIndex].X) / 2, (normalizedPoints[middleIndex - 1].Y + normalizedPoints[middleIndex].Y) / 2)
+            : normalizedPoints[middleIndex];
+
+        return new EdgeRoute(pathGeometry, arrowGeometry, labelPoint.X - 50, labelPoint.Y - 14);
+    }
+
+    private Point GetPreviewStartPoint(CanvasEntityNodeViewModel node, double previewX, double previewY)
+    {
+        var sourceRect = new Rect(node.X, node.Y, node.Width, node.Height);
+        var targetRect = new Rect(previewX - 1, previewY - 1, 2, 2);
+        var horizontal = Math.Abs((targetRect.X + targetRect.Width / 2) - (sourceRect.X + sourceRect.Width / 2))
+            >= Math.Abs((targetRect.Y + targetRect.Height / 2) - (sourceRect.Y + sourceRect.Height / 2));
+        return GetEdgeAnchor(sourceRect, targetRect, horizontal, true);
+    }
+
+    private Geometry BuildPreviewOrthogonalPath(Point start, Point end)
+    {
+        var points = new List<Point> { start };
+        var horizontal = Math.Abs(end.X - start.X) >= Math.Abs(end.Y - start.Y);
+        var gap = 22d;
+
+        if (horizontal)
+        {
+            var startOffset = new Point(start.X + (start.X < end.X ? gap : -gap), start.Y);
+            var endOffset = new Point(end.X + (start.X < end.X ? -gap : gap), end.Y);
+            var midX = (startOffset.X + endOffset.X) / 2;
+            points.Add(startOffset);
+            points.Add(new Point(midX, startOffset.Y));
+            points.Add(new Point(midX, endOffset.Y));
+            points.Add(endOffset);
+        }
+        else
+        {
+            var startOffset = new Point(start.X, start.Y + (start.Y < end.Y ? gap : -gap));
+            var endOffset = new Point(end.X, end.Y + (start.Y < end.Y ? -gap : gap));
+            var midY = (startOffset.Y + endOffset.Y) / 2;
+            points.Add(startOffset);
+            points.Add(new Point(startOffset.X, midY));
+            points.Add(new Point(endOffset.X, midY));
+            points.Add(endOffset);
+        }
+
+        points.Add(end);
+        var normalized = NormalizePoints(points);
+        return new PathGeometry
+        {
+            Figures = new PathFigures
+            {
+                new PathFigure
+                {
+                    StartPoint = normalized[0],
+                    IsClosed = false,
+                    Segments = new PathSegments(normalized.Skip(1).Select(point => new LineSegment { Point = point }))
+                }
+            }
+        };
+    }
+
+    private Point GetEdgeAnchor(Rect from, Rect to, bool horizontal, bool isSource)
+    {
+        if (horizontal)
+        {
+            var targetOnRight = (to.X + to.Width / 2) >= (from.X + from.Width / 2);
+            return targetOnRight
+                ? new Point(from.Right, from.Y + from.Height / 2)
+                : new Point(from.X, from.Y + from.Height / 2);
+        }
+
+        var targetBelow = (to.Y + to.Height / 2) >= (from.Y + from.Height / 2);
+        return targetBelow
+            ? new Point(from.X + from.Width / 2, from.Bottom)
+            : new Point(from.X + from.Width / 2, from.Y);
+    }
+
+    private double FindSafeVerticalLane(double preferredX, double fromY, double toY, CanvasEntityNodeViewModel source, CanvasEntityNodeViewModel target)
+    {
+        var candidate = preferredX;
+        var minY = Math.Min(fromY, toY);
+        var maxY = Math.Max(fromY, toY);
+
+        for (var attempt = 0; attempt < 8; attempt++)
+        {
+            var overlaps = _viewModel?.Nodes
+                .Where(node => node.Id != source.Id && node.Id != target.Id)
+                .Any(node =>
+                {
+                    var rect = new Rect(node.X - 12, node.Y - 12, node.Width + 24, node.Height + 24);
+                    return candidate >= rect.X && candidate <= rect.Right && maxY >= rect.Y && minY <= rect.Bottom;
+                }) ?? false;
+
+            if (!overlaps)
+                return candidate;
+
+            candidate += attempt % 2 == 0 ? 40 : -40;
+        }
+
+        return candidate;
+    }
+
+    private double FindSafeHorizontalLane(double preferredY, double fromX, double toX, CanvasEntityNodeViewModel source, CanvasEntityNodeViewModel target)
+    {
+        var candidate = preferredY;
+        var minX = Math.Min(fromX, toX);
+        var maxX = Math.Max(fromX, toX);
+
+        for (var attempt = 0; attempt < 8; attempt++)
+        {
+            var overlaps = _viewModel?.Nodes
+                .Where(node => node.Id != source.Id && node.Id != target.Id)
+                .Any(node =>
+                {
+                    var rect = new Rect(node.X - 12, node.Y - 12, node.Width + 24, node.Height + 24);
+                    return candidate >= rect.Y && candidate <= rect.Bottom && maxX >= rect.X && minX <= rect.Right;
+                }) ?? false;
+
+            if (!overlaps)
+                return candidate;
+
+            candidate += attempt % 2 == 0 ? 40 : -40;
+        }
+
+        return candidate;
+    }
+
+    private static List<Point> NormalizePoints(List<Point> points)
+    {
+        var normalized = new List<Point>();
+        foreach (var point in points)
+        {
+            if (normalized.Count == 0 || normalized[^1] != point)
+                normalized.Add(point);
+        }
+
+        return normalized;
+    }
+
+    private static Geometry BuildArrowGeometry(Point previous, Point end)
+    {
+        var dx = end.X - previous.X;
+        var dy = end.Y - previous.Y;
+        var length = Math.Sqrt((dx * dx) + (dy * dy));
+        if (length < 0.001)
+            return Geometry.Parse("M 0,0 L 0,0 Z");
+
+        var ux = dx / length;
+        var uy = dy / length;
+        var size = 10d;
+        var wing = 5d;
+
+        var left = new Point(
+            end.X - (ux * size) + (-uy * wing),
+            end.Y - (uy * size) + (ux * wing));
+        var right = new Point(
+            end.X - (ux * size) - (-uy * wing),
+            end.Y - (uy * size) - (ux * wing));
+
+        return Geometry.Parse($"M {end.X},{end.Y} L {left.X},{left.Y} L {right.X},{right.Y} Z");
+    }
+
+    private sealed record EdgeRoute(Geometry PathGeometry, Geometry ArrowGeometry, double LabelX, double LabelY);
 }

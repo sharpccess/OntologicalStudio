@@ -50,15 +50,21 @@
                     <TextBox Watermark="{DynamicResource canvas.relationshipType}"
                              Text="{Binding SelectedRelationshipTypeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              IsEnabled="{Binding HasSelectedUniverse}"/>
-                    <ComboBox ItemsSource="{Binding RelationshipTypes}"
-                              SelectedItem="{Binding SelectedRelationshipType, Mode=TwoWay}"
-                              IsEnabled="{Binding HasSelectedUniverse}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding DisplayName}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <ComboBox ItemsSource="{Binding RelationshipTypes}"
+                                  SelectedItem="{Binding SelectedRelationshipType, Mode=TwoWay}"
+                                  IsEnabled="{Binding HasSelectedUniverse}"
+                                  MinWidth="220">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayName}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <Button Content="{DynamicResource relationship.removeTypeFromHistory}"
+                                Command="{Binding DeleteActiveRelationshipTypeFromHistoryCommand}"
+                                IsEnabled="{Binding HasSelectedUniverse}"/>
+                    </StackPanel>
                     <TextBlock Text="{DynamicResource canvas.target}" Opacity="0.7" FontSize="11"/>
                     <ComboBox ItemsSource="{Binding Nodes}"
                               SelectedItem="{Binding LinkTarget, Mode=TwoWay}"
@@ -90,6 +96,8 @@
                              AcceptsReturn="True"
                              TextWrapping="Wrap"
                              Height="60"/>
+                    <TextBox Watermark="#RRGGBB"
+                             Text="{Binding SelectedNodeColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <Button Content="{DynamicResource canvas.saveNode}"
                                 Click="OnSaveSelectedNodeClick"/>
@@ -101,15 +109,20 @@
                     <TextBlock Text="{DynamicResource canvas.selectedRelationship}" FontWeight="SemiBold"/>
                     <TextBox Watermark="{DynamicResource canvas.relationshipType}"
                              Text="{Binding SelectedNodeRelationshipTypeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    <ComboBox ItemsSource="{Binding RelationshipTypes}"
-                              SelectedItem="{Binding SelectedNodeRelationshipType, Mode=TwoWay}"
-                              SelectionChanged="OnSelectedRelationshipTypeComboChanged">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding DisplayName}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <ComboBox ItemsSource="{Binding RelationshipTypes}"
+                                  SelectedItem="{Binding SelectedNodeRelationshipType, Mode=TwoWay}"
+                                  SelectionChanged="OnSelectedRelationshipTypeComboChanged"
+                                  MinWidth="220">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayName}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <Button Content="{DynamicResource relationship.removeTypeFromHistory}"
+                                Command="{Binding DeleteSelectedRelationshipTypeFromHistoryCommand}"/>
+                    </StackPanel>
                     <TextBox Watermark="{DynamicResource canvas.relationshipDescription}"
                              Text="{Binding SelectedNodeRelationshipDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              AcceptsReturn="True"

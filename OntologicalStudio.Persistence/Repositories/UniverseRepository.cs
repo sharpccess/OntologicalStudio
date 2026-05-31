@@ -53,7 +53,9 @@ public class UniverseRepository : IUniverseRepository
 
     public async Task DeleteAsync(Universe universe)
     {
+        var originalName = universe.Name?.Trim() ?? "universe";
         universe.IsDeleted = true;
+        universe.Name = $"{originalName}__deleted__{DateTime.UtcNow:yyyyMMddHHmmssfff}";
         universe.UpdatedAt = DateTime.UtcNow;
         _universes.Update(universe);
         await _context.SaveChangesAsync();

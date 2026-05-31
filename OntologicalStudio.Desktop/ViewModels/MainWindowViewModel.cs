@@ -56,6 +56,30 @@ public partial class MainWindowViewModel : ObservableObject
     private string languageLabel = "Language";
 
     [ObservableProperty]
+    private string aiSettingsToggleLabel = "AI";
+
+    [ObservableProperty]
+    private string aiSettingsTitle = "AI Settings";
+
+    [ObservableProperty]
+    private string aiSettingsProviderLabel = "Provider";
+
+    [ObservableProperty]
+    private string aiSettingsEndpointLabel = "API endpoint";
+
+    [ObservableProperty]
+    private string aiSettingsModelLabel = "Model";
+
+    [ObservableProperty]
+    private string aiSettingsApiKeyLabel = "API key";
+
+    [ObservableProperty]
+    private string aiSettingsSaveLabel = "Save AI settings";
+
+    [ObservableProperty]
+    private string aiSettingsClearLabel = "Clear AI settings";
+
+    [ObservableProperty]
     private string selectedLanguageCode = "en";
 
     public ObservableCollection<LanguageOption> AvailableLanguages { get; } = new();
@@ -146,6 +170,14 @@ public partial class MainWindowViewModel : ObservableObject
         AppTitle = _localization.T("app.title");
         AppSubtitle = _localization.T("app.subtitle");
         LanguageLabel = _localization.T("app.language");
+        AiSettingsToggleLabel = _localization.T("ai.settings.toggle");
+        AiSettingsTitle = _localization.T("ai.settings.title");
+        AiSettingsProviderLabel = _localization.T("ai.settings.provider");
+        AiSettingsEndpointLabel = _localization.T("ai.settings.endpoint");
+        AiSettingsModelLabel = _localization.T("ai.settings.model");
+        AiSettingsApiKeyLabel = _localization.T("ai.settings.apiKey");
+        AiSettingsSaveLabel = _localization.T("ai.settings.save");
+        AiSettingsClearLabel = _localization.T("ai.settings.clear");
         UniversesTabHeader = _localization.T("tab.universes");
         CanvasTabHeader = _localization.T("tab.canvas");
         EntitiesTabHeader = _localization.T("tab.entities");

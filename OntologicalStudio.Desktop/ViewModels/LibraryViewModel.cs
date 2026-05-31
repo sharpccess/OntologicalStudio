@@ -38,6 +38,28 @@ public partial class LibraryViewModel : ObservableObject
     [ObservableProperty]
     private string statusMessage = string.Empty;
 
+    public async Task SaveEntityItemAsync(EntityLibraryItem item)
+    {
+        await ScopedRunner.RunAsync<ILibraryCatalogService, EntityLibraryItem>(
+            _provider,
+            service => service.SaveEntityAsync(item));
+
+        await LoadAsync();
+        SelectedEntityItem = EntityItems.FirstOrDefault(x => x.Id == item.Id || (x.Name == item.Name && x.EntityTypeName == item.EntityTypeName));
+        StatusMessage = $"Entity '{item.Name}' updated in library.";
+    }
+
+    public async Task SaveUniverseModelItemAsync(UniverseModelLibraryItem item)
+    {
+        await ScopedRunner.RunAsync<ILibraryCatalogService, UniverseModelLibraryItem>(
+            _provider,
+            service => service.SaveUniverseModelAsync(item));
+
+        await LoadAsync();
+        SelectedUniverseModelItem = UniverseModelItems.FirstOrDefault(x => x.Id == item.Id || x.Name == item.Name);
+        StatusMessage = $"Universe model '{item.Name}' updated in library.";
+    }
+
     public LibraryViewModel(IServiceProvider provider, UniversesViewModel universes, EntitiesViewModel entities, UniverseCanvasViewModel canvas)
     {
         _provider = provider;

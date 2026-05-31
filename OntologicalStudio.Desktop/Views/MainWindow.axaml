@@ -6,6 +6,7 @@
         xmlns:views="using:OntologicalStudio.Desktop.Views"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="OntologicalStudio.Desktop.Views.MainWindow"
+        x:Name="RootWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="Ontological Studio"
         Width="1200" Height="800"
@@ -19,7 +20,7 @@
                     <TextBlock Text="{Binding AppSubtitle}" FontSize="12" Opacity="0.6" VerticalAlignment="Center"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
-                    <Button Content="{DynamicResource ai.settings.toggle}"
+                    <Button Content="{Binding AiSettingsToggleLabel}"
                             Command="{Binding ToggleAiSettingsCommand}"/>
                     <TextBlock Text="{Binding LanguageLabel}" VerticalAlignment="Center" Opacity="0.75"/>
                     <ComboBox Width="90"
@@ -44,14 +45,20 @@
                 BorderThickness="1"
                 CornerRadius="4"
                 IsVisible="{Binding IsAiSettingsVisible}">
-            <StackPanel Spacing="8" DataContext="{Binding AiSettings}">
-                <TextBlock Text="{DynamicResource ai.settings.title}" FontWeight="SemiBold"/>
-                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{DynamicResource ai.settings.provider}" VerticalAlignment="Center" Margin="0,0,8,6"/>
+            <StackPanel Spacing="8">
+                <TextBlock Text="{Binding AiSettingsTitle}" FontWeight="SemiBold"/>
+                <Grid ColumnDefinitions="150,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                    <TextBlock Grid.Row="0"
+                               Grid.Column="0"
+                               Text="{Binding AiSettingsProviderLabel}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,12,6"/>
                     <ComboBox Grid.Row="0" Grid.Column="1"
                               Margin="0,0,0,6"
-                              ItemsSource="{Binding Providers}"
-                              SelectedItem="{Binding SelectedProvider, Mode=TwoWay}">
+                              ItemsSource="{Binding AiSettings.Providers}"
+                              SelectedItem="{Binding AiSettings.SelectedProvider, Mode=TwoWay}"
+                              HorizontalAlignment="Stretch"
+                              MinWidth="220">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding DisplayName}"/>
@@ -59,33 +66,48 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
 
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource ai.settings.endpoint}" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="1"
+                               Grid.Column="0"
+                               Text="{Binding AiSettingsEndpointLabel}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,12,6"/>
                     <TextBox Grid.Row="1" Grid.Column="1"
                              Margin="0,0,0,6"
-                             Text="{Binding OllamaEndpoint, Mode=TwoWay}"
+                             Text="{Binding AiSettings.OllamaEndpoint, Mode=TwoWay}"
+                             HorizontalAlignment="Stretch"
                              Watermark="https://ollama.com/api"/>
 
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="{DynamicResource ai.settings.model}" VerticalAlignment="Center" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="2"
+                               Grid.Column="0"
+                               Text="{Binding AiSettingsModelLabel}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,12,6"/>
                     <TextBox Grid.Row="2" Grid.Column="1"
                              Margin="0,0,0,6"
-                             Text="{Binding OllamaModel, Mode=TwoWay}"
+                             Text="{Binding AiSettings.OllamaModel, Mode=TwoWay}"
+                             HorizontalAlignment="Stretch"
                              Watermark="gpt-oss:120b"/>
 
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="{DynamicResource ai.settings.apiKey}" VerticalAlignment="Center" Margin="0,0,8,6"/>
+                    <TextBlock Grid.Row="3"
+                               Grid.Column="0"
+                               Text="{Binding AiSettingsApiKeyLabel}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,12,6"/>
                     <TextBox Grid.Row="3" Grid.Column="1"
                              Margin="0,0,0,6"
-                             Text="{Binding OllamaApiKey, Mode=TwoWay}"/>
+                             Text="{Binding AiSettings.OllamaApiKey, Mode=TwoWay}"
+                             HorizontalAlignment="Stretch"/>
 
                     <TextBlock Grid.Row="4" Grid.Column="1"
-                               Text="{Binding StatusMessage}"
+                               Text="{Binding AiSettings.StatusMessage}"
                                Opacity="0.7"
                                TextWrapping="Wrap"/>
                 </Grid>
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="{DynamicResource ai.settings.save}"
-                            Command="{Binding SaveCommand}"/>
-                    <Button Content="{DynamicResource ai.settings.clear}"
-                            Command="{Binding ClearCommand}"/>
+                    <Button Content="{Binding AiSettingsSaveLabel}"
+                            Command="{Binding AiSettings.SaveCommand}"/>
+                    <Button Content="{Binding AiSettingsClearLabel}"
+                            Command="{Binding AiSettings.ClearCommand}"/>
                 </StackPanel>
             </StackPanel>
         </Border>
