@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace OntologicalStudio.AIProviders;
@@ -41,34 +42,19 @@ public class ConfigurableAIProvider : IAIProvider
 
     public async Task<string> GeneratePromptAsync(PromptContext context)
     {
-        string? openAiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
-        string? ollamaEndpoint = Environment.GetEnvironmentVariable("OLLAMA_ENDPOINT") ?? "http://localhost:11434";
-
-        string prompt = context.CurrentContext;
-        string systemPrompt = context.OutputFormat;
-
-        if (!string.IsNullOrEmpty(openAiKey))
+        var builder = new StringBuilder();
+        await foreach (var chunk in StreamAsync(new AIRequest
         {
-            try
-            {
-                return await GenerateOpenAiAsync(prompt, systemPrompt, openAiKey);
-            }
-            catch (Exception ex)
-            {
-                return $"OpenAI error (falling back): {ex.Message}\n\n" + GenerateHeuristicAnalysis(prompt);
-            }
-        }
-
-        try
+            UserPrompt = context.CurrentContext,
+            SystemPrompt = context.OutputFormat,
+            OutputFormat = context.OutputFormat,
+            JsonMode = false
+        }))
         {
-            // Try Ollama
-            return await GenerateOllamaAsync(prompt, systemPrompt, ollamaEndpoint);
+            if (chunk is TextChunk textChunk)
+                builder.Append(textChunk.Text);
         }
-        catch
-        {
-            // Fallback to Heuristics
-            return GenerateHeuristicAnalysis(prompt);
-        }
+        return builder.ToString();
     }
 
     public async Task<HydrationResult> HydrateEntityAsync(Entity entity, HydrationOptions options)
@@ -120,6 +106,59 @@ public class ConfigurableAIProvider : IAIProvider
 
         // Offline Heuristic Fallback
         return GenerateHeuristicHydration(entity);
+    }
+
+    public async IAsyncEnumerable<AIChunk> StreamAsync(
+        AIRequest request,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        string text;
+        string? openAiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+        string? ollamaEndpoint = Environment.GetEnvironmentVariable("OLLAMA_ENDPOINT") ?? "http://localhost:11434";
+
+        if (!string.IsNullOrEmpty(openAiKey))
+        {
+            try
+            {
+                text = await GenerateOpenAiAsync(request.UserPrompt, request.SystemPrompt, openAiKey, request.JsonMode);
+                foreach (var chunk in ChunkText(text))
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    yield return new TextChunk(chunk);
+                    await Task.Delay(20, cancellationToken);
+                }
+                yield return new DoneChunk(request.UserPrompt.Length / 4, text.Length / 4);
+                yield break;
+            }
+            catch (Exception ex)
+            {
+                text = $"OpenAI error (falling back): {ex.Message}\n\n" + GenerateHeuristicAnalysis(request.UserPrompt);
+                foreach (var chunk in ChunkText(text))
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    yield return new TextChunk(chunk);
+                }
+                yield return new DoneChunk(request.UserPrompt.Length / 4, text.Length / 4);
+                yield break;
+            }
+        }
+
+        try
+        {
+            text = await GenerateOllamaAsync(request.UserPrompt, request.SystemPrompt, ollamaEndpoint, request.JsonMode);
+        }
+        catch
+        {
+            text = GenerateHeuristicAnalysis(request.UserPrompt);
+        }
+
+        foreach (var chunk in ChunkText(text))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return new TextChunk(chunk);
+            await Task.Delay(20, cancellationToken);
+        }
+        yield return new DoneChunk(request.UserPrompt.Length / 4, text.Length / 4);
     }
 
     public async Task<IEnumerable<RelationshipSuggestion>> SuggestRelationshipsAsync(Entity entity)
@@ -276,5 +315,14 @@ public class ConfigurableAIProvider : IAIProvider
         sb.AppendLine("3. Formulate key hypotheses regarding team incentive structures and pilot for 30 days.");
         
         return sb.ToString();
+    }
+
+    private static IEnumerable<string> ChunkText(string text, int chunkSize = 160)
+    {
+        if (string.IsNullOrEmpty(text))
+            yield break;
+
+        for (var index = 0; index < text.Length; index += chunkSize)
+            yield return text.Substring(index, Math.Min(chunkSize, text.Length - index));
     }
 }

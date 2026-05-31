@@ -57,7 +57,18 @@ public class SolutionService : ISolutionService
         string providerName;
         try
         {
-            responseText = await _ai.GeneratePromptAsync(ctx);
+            var builder = new System.Text.StringBuilder();
+            await foreach (var chunk in _ai.StreamAsync(new AIRequest
+            {
+                UserPrompt = prompt,
+                SystemPrompt = "markdown",
+                OutputFormat = "markdown"
+            }, ct))
+            {
+                if (chunk is TextChunk textChunk)
+                    builder.Append(textChunk.Text);
+            }
+            responseText = builder.ToString();
             providerName = _ai.ProviderName ?? "Unknown";
         }
         catch (Exception ex)

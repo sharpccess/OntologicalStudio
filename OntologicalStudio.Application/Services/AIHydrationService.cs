@@ -50,6 +50,23 @@ public class AIHydrationService : IAIHydrationService
         return await _aiProvider.GeneratePromptAsync(context);
     }
 
+    public async Task<string> GeneratePromptStreamingAsync(PromptContext context, CancellationToken cancellationToken = default)
+    {
+        var builder = new StringBuilder();
+        await foreach (var chunk in _aiProvider.StreamAsync(new AIRequest
+        {
+            UserPrompt = context.CurrentContext,
+            SystemPrompt = context.OutputFormat,
+            OutputFormat = context.OutputFormat
+        }, cancellationToken))
+        {
+            if (chunk is TextChunk textChunk)
+                builder.Append(textChunk.Text);
+        }
+
+        return builder.ToString();
+    }
+
     public async Task<string> AnalyzeScenarioAsync(Guid scenarioId)
     {
         var scenario = await _scenarioRepository.GetByIdAsync(scenarioId);
