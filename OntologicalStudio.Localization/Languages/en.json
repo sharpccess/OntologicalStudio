@@ -1,6 +1,7 @@
 {
   "app.title": "Ontological Studio",
   "app.subtitle": "Ontology-Augmented Reasoning System",
+  "app.language": "Language",
   "tab.universes": "Universes",
   "tab.canvas": "Universe Canvas",
   "tab.entities": "Entities",

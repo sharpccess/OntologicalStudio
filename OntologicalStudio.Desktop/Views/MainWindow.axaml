@@ -19,7 +19,7 @@
                     <TextBlock Text="{Binding AppSubtitle}" FontSize="12" Opacity="0.6" VerticalAlignment="Center"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="Language" VerticalAlignment="Center" Opacity="0.75"/>
+                    <TextBlock Text="{Binding LanguageLabel}" VerticalAlignment="Center" Opacity="0.75"/>
                     <ComboBox Width="90"
                               ItemsSource="{Binding AvailableLanguages}"
                               SelectedItem="{Binding SelectedLanguageCode, Mode=TwoWay}"/>

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Shapes;
+using Avalonia.Collections;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
@@ -133,6 +134,13 @@ public partial class UniverseCanvasView : UserControl
         if (_canvas is null)
             return;
 
+        if (_viewModel is not null && _viewModel.IsLinkMode)
+        {
+            var previewPoint = e.GetPosition(_canvas);
+            _viewModel.UpdateLinkPreview(previewPoint.X, previewPoint.Y);
+            RenderScene();
+        }
+
         if (!e.GetCurrentPoint(_canvas).Properties.IsLeftButtonPressed)
             return;
 
@@ -250,6 +258,23 @@ public partial class UniverseCanvasView : UserControl
             Canvas.SetLeft(label, edge.LabelX);
             Canvas.SetTop(label, edge.LabelY);
             _canvas.Children.Add(label);
+        }
+
+        if (_viewModel.IsLinkMode && _viewModel.LinkSource is not null && _viewModel.HasLinkPreview)
+        {
+            var startX = _viewModel.LinkSource.X + (_viewModel.LinkSource.Width / 2);
+            var startY = _viewModel.LinkSource.Y + (_viewModel.LinkSource.Height / 2);
+            var endX = _viewModel.LinkPreviewX;
+            var endY = _viewModel.LinkPreviewY;
+            var control = Math.Max(48, Math.Min(140, Math.Abs(endX - startX) / 2));
+            var previewPath = new ShapePath
+            {
+                Data = Geometry.Parse($"M {startX},{startY} C {startX + control},{startY} {endX - control},{endY} {endX},{endY}"),
+                Stroke = new SolidColorBrush(Color.Parse("#c596ff")),
+                StrokeThickness = 2,
+                StrokeDashArray = new AvaloniaList<double> { 6, 4 }
+            };
+            _canvas.Children.Add(previewPath);
         }
 
         foreach (var node in _viewModel.Nodes)
@@ -432,6 +457,25 @@ public partial class UniverseCanvasView : UserControl
             if (_viewModel is not null)
                 _viewModel.SelectedNodeName = value ?? string.Empty;
         });
+        nameBox.AttachedToVisualTree += (_, _) => nameBox.Focus();
+        nameBox.KeyDown += async (_, args) =>
+        {
+            if (_viewModel is null)
+                return;
+
+            if (args.Key == Key.Enter && !args.KeyModifiers.HasFlag(KeyModifiers.Shift))
+            {
+                await _viewModel.SaveSelectedNodeAsync();
+                RenderScene();
+                args.Handled = true;
+            }
+            else if (args.Key == Key.Escape)
+            {
+                _viewModel.SelectNode(null);
+                RenderScene();
+                args.Handled = true;
+            }
+        };
         layout.Children.Add(nameBox);
 
         var typeBox = new ComboBox
@@ -461,6 +505,25 @@ public partial class UniverseCanvasView : UserControl
             if (_viewModel is not null)
                 _viewModel.SelectedNodeDescription = value ?? string.Empty;
         });
+        descriptionBox.KeyDown += async (_, args) =>
+        {
+            if (_viewModel is null)
+                return;
+
+            if ((args.Key == Key.Enter && args.KeyModifiers.HasFlag(KeyModifiers.Control)) ||
+                (args.Key == Key.Enter && !args.KeyModifiers.HasFlag(KeyModifiers.Shift)))
+            {
+                await _viewModel.SaveSelectedNodeAsync();
+                RenderScene();
+                args.Handled = true;
+            }
+            else if (args.Key == Key.Escape)
+            {
+                _viewModel.SelectNode(null);
+                RenderScene();
+                args.Handled = true;
+            }
+        };
         layout.Children.Add(descriptionBox);
 
         var buttons = new StackPanel
@@ -567,6 +630,20 @@ public partial class UniverseCanvasView : UserControl
         }
         existingHeader.ItemsSource = existingItems;
         items.Add(existingHeader);
+
+        if (_viewModel.IsLinkMode)
+        {
+            var cancelLinkItem = new MenuItem
+            {
+                Header = "Cancel connection mode"
+            };
+            cancelLinkItem.Click += (_, _) =>
+            {
+                _viewModel.CancelConnection();
+                RenderScene();
+            };
+            items.Add(cancelLinkItem);
+        }
 
         menu.ItemsSource = items;
         _canvas.ContextMenu = menu;

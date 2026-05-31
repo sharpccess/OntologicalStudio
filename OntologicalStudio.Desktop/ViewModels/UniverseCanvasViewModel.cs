@@ -78,6 +78,15 @@ public partial class UniverseCanvasViewModel : ObservableObject
     [ObservableProperty]
     private CanvasRelationshipEdgeViewModel? selectedEdge;
 
+    [ObservableProperty]
+    private double linkPreviewX;
+
+    [ObservableProperty]
+    private double linkPreviewY;
+
+    [ObservableProperty]
+    private bool hasLinkPreview;
+
     public UniverseCanvasViewModel(IServiceProvider provider, UniversesViewModel universes)
     {
         _provider = provider;
@@ -338,6 +347,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
         IsLinkMode = true;
         LinkSource = node;
         LinkTarget = null;
+        HasLinkPreview = false;
         StatusMessage = $"Connection mode: source is '{node.Name}'. Click another node to create the relationship.";
     }
 
@@ -346,7 +356,21 @@ public partial class UniverseCanvasViewModel : ObservableObject
         IsLinkMode = false;
         LinkSource = null;
         LinkTarget = null;
+        HasLinkPreview = false;
         StatusMessage = "Connection mode cancelled.";
+    }
+
+    public void UpdateLinkPreview(double x, double y)
+    {
+        if (!IsLinkMode || LinkSource is null)
+        {
+            HasLinkPreview = false;
+            return;
+        }
+
+        LinkPreviewX = x;
+        LinkPreviewY = y;
+        HasLinkPreview = true;
     }
 
     public async Task DeleteNodeAsync(CanvasEntityNodeViewModel node)
@@ -558,6 +582,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
             IsLinkMode = false;
             LinkSource = null;
             LinkTarget = null;
+            HasLinkPreview = false;
             await LoadAsync();
             _universes.NotifyDataChanged();
         }

@@ -3,6 +3,7 @@ using OntologicalStudio.Localization.Services;
 using System;
 using System.Collections.ObjectModel;
 using Microsoft.Extensions.DependencyInjection;
+using System.IO;
 
 namespace OntologicalStudio.Desktop.ViewModels;
 
@@ -36,6 +37,9 @@ public partial class MainWindowViewModel : ObservableObject
 
     [ObservableProperty]
     private string promptPreviewTabHeader = "Prompt Preview";
+
+    [ObservableProperty]
+    private string languageLabel = "Language";
 
     [ObservableProperty]
     private string selectedLanguageCode = "en";
@@ -96,6 +100,7 @@ public partial class MainWindowViewModel : ObservableObject
     {
         AppTitle = _localization.T("app.title");
         AppSubtitle = _localization.T("app.subtitle");
+        LanguageLabel = _localization.T("app.language");
         UniversesTabHeader = _localization.T("tab.universes");
         CanvasTabHeader = _localization.T("tab.canvas");
         EntitiesTabHeader = _localization.T("tab.entities");
