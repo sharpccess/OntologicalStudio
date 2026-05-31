@@ -4,9 +4,11 @@ using OntologicalStudio.Application.Services;
 using OntologicalStudio.Core.Interfaces;
 using OntologicalStudio.Core.Models;
 using OntologicalStudio.Desktop.Services;
+using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Nodes;
@@ -67,7 +69,6 @@ public partial class UniverseCanvasViewModel : ObservableObject
     [ObservableProperty]
     private double zoomScale = 1.0;
 
-    [ObservableProperty]
     private bool isLinkMode;
 
     [ObservableProperty]
@@ -75,6 +76,9 @@ public partial class UniverseCanvasViewModel : ObservableObject
 
     [ObservableProperty]
     private string selectedNodeDescription = string.Empty;
+
+    [ObservableProperty]
+    private string selectedNodeNotes = string.Empty;
 
     [ObservableProperty]
     private EntityType? selectedNodeEntityType;
@@ -98,12 +102,18 @@ public partial class UniverseCanvasViewModel : ObservableObject
     private bool hasLinkPreview;
 
     public bool HasSelectedUniverse => _universes.SelectedUniverse is not null;
+    public bool IsLinkMode
+    {
+        get => isLinkMode;
+        set => SetProperty(ref isLinkMode, value);
+    }
 
-    partial void OnSelectedNodeNameChanged(string value) => QueueSelectedNodeAutosave();
-    partial void OnSelectedNodeDescriptionChanged(string value) => QueueSelectedNodeAutosave();
-    partial void OnSelectedNodeEntityTypeChanged(EntityType? value) => QueueSelectedNodeAutosave();
-    partial void OnSelectedNodeRelationshipTypeChanged(RelationshipType? value) => QueueSelectedRelationshipAutosave();
-    partial void OnSelectedNodeRelationshipDescriptionChanged(string value) => QueueSelectedRelationshipAutosave();
+    partial void OnSelectedNodeNameChanged(string value) { }
+    partial void OnSelectedNodeDescriptionChanged(string value) { }
+    partial void OnSelectedNodeNotesChanged(string value) { }
+    partial void OnSelectedNodeEntityTypeChanged(EntityType? value) { }
+    partial void OnSelectedNodeRelationshipTypeChanged(RelationshipType? value) { }
+    partial void OnSelectedNodeRelationshipDescriptionChanged(string value) { }
 
     public UniverseCanvasViewModel(IServiceProvider provider, UniversesViewModel universes)
     {
@@ -153,13 +163,15 @@ public partial class UniverseCanvasViewModel : ObservableObject
         if (EntityTypes.Count == 0 || RelationshipTypes.Count == 0)
             await LoadReferenceDataAsync();
 
-        Nodes.Clear();
-        Edges.Clear();
-
         var universe = _universes.SelectedUniverse;
         if (universe is null)
         {
-            StatusMessage = "Select a universe to work on the graph canvas.";
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                Nodes.Clear();
+                Edges.Clear();
+                StatusMessage = "Select a universe to work on the graph canvas.";
+            });
             return;
         }
 
@@ -170,6 +182,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
                 service => service.GetByUniverseAsync(universe.Id))).ToList();
 
             var index = 0;
+            var loadedNodes = new List<CanvasEntityNodeViewModel>();
             foreach (var entity in entities.OrderBy(x => x.Name))
             {
                 var (width, height) = GetNodeSize(entity);
@@ -177,14 +190,14 @@ public partial class UniverseCanvasViewModel : ObservableObject
                     ? GetDefaultPosition(index++)
                     : (entity.PositionX, entity.PositionY);
 
-                Nodes.Add(new CanvasEntityNodeViewModel(entity, x, y, width, height));
+                loadedNodes.Add(new CanvasEntityNodeViewModel(entity, x, y, width, height));
             }
 
-            var nodeById = Nodes.ToDictionary(x => x.Id);
+            var nodeById = loadedNodes.ToDictionary(x => x.Id);
             var relationList = new List<Relationship>();
             var seen = new HashSet<Guid>();
 
-            foreach (var node in Nodes)
+            foreach (var node in loadedNodes)
             {
                 var relations = await ScopedRunner.RunAsync<IRelationshipService, IEnumerable<Relationship>>(
                     _provider,
@@ -201,11 +214,12 @@ public partial class UniverseCanvasViewModel : ObservableObject
                 }
             }
 
+            var loadedEdges = new List<CanvasRelationshipEdgeViewModel>();
             foreach (var relation in relationList.OrderBy(x => x.RelationshipType?.Name).ThenBy(x => x.Id))
             {
                 var source = nodeById[relation.SourceEntityId];
                 var target = nodeById[relation.TargetEntityId];
-                Edges.Add(new CanvasRelationshipEdgeViewModel(
+                loadedEdges.Add(new CanvasRelationshipEdgeViewModel(
                     relation.Id,
                     source,
                     target,
@@ -213,16 +227,28 @@ public partial class UniverseCanvasViewModel : ObservableObject
                     relation.Description));
             }
 
-            LinkSource = LinkSource is not null ? Nodes.FirstOrDefault(x => x.Id == LinkSource.Id) : Nodes.FirstOrDefault();
-            LinkTarget = LinkTarget is not null ? Nodes.FirstOrDefault(x => x.Id == LinkTarget.Id) : Nodes.Skip(1).FirstOrDefault() ?? Nodes.FirstOrDefault();
-            SelectedNode = SelectedNode is not null ? Nodes.FirstOrDefault(x => x.Id == SelectedNode.Id) : SelectedNode;
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                Nodes.Clear();
+                Edges.Clear();
 
-            var maxX = Nodes.Count == 0 ? 1600 : Math.Max(1600, Nodes.Max(x => x.X + x.Width + 120));
-            var maxY = Nodes.Count == 0 ? 1000 : Math.Max(1000, Nodes.Max(x => x.Y + x.Height + 120));
-            CanvasWidth = maxX;
-            CanvasHeight = maxY;
+                foreach (var node in loadedNodes)
+                    Nodes.Add(node);
 
-            StatusMessage = $"{Nodes.Count} node(s) and {Edges.Count} relationship(s) in '{universe.Name}'. Double-click on the canvas to place a new entity.";
+                foreach (var edge in loadedEdges)
+                    Edges.Add(edge);
+
+                LinkSource = LinkSource is not null ? Nodes.FirstOrDefault(x => x.Id == LinkSource.Id) : Nodes.FirstOrDefault();
+                LinkTarget = LinkTarget is not null ? Nodes.FirstOrDefault(x => x.Id == LinkTarget.Id) : Nodes.Skip(1).FirstOrDefault() ?? Nodes.FirstOrDefault();
+                SelectedNode = SelectedNode is not null ? Nodes.FirstOrDefault(x => x.Id == SelectedNode.Id) : SelectedNode;
+
+                var maxX = Nodes.Count == 0 ? 1600 : Math.Max(1600, Nodes.Max(x => x.X + x.Width + 120));
+                var maxY = Nodes.Count == 0 ? 1000 : Math.Max(1000, Nodes.Max(x => x.Y + x.Height + 120));
+                CanvasWidth = maxX;
+                CanvasHeight = maxY;
+
+                StatusMessage = $"{Nodes.Count} node(s) and {Edges.Count} relationship(s) in '{universe.Name}'. Double-click on the canvas to place a new entity.";
+            });
         }
         catch (Exception ex)
         {
@@ -262,30 +288,47 @@ public partial class UniverseCanvasViewModel : ObservableObject
 
             entity.PositionX = Math.Max(24, x);
             entity.PositionY = Math.Max(24, y);
+            entity.EntityType = entityType;
+            entity.UniverseId = universe.Id;
+            entity.Properties = UpdateNodeLayoutProperties(entity.Properties, CanvasEntityNodeViewModel.DefaultWidth, CanvasEntityNodeViewModel.DefaultHeight);
 
             await ScopedRunner.RunAsync<IEntityService>(
                 _provider,
-                async service =>
-                {
-                    var persisted = await service.GetByIdAsync(entity.Id);
-                    if (persisted is null)
-                        throw new InvalidOperationException($"Entity '{entity.Id}' not found after creation.");
+                service => service.UpdateAsync(entity));
 
-                    persisted.PositionX = entity.PositionX;
-                    persisted.PositionY = entity.PositionY;
-                    persisted.Properties = UpdateNodeLayoutProperties(persisted.Properties, CanvasEntityNodeViewModel.DefaultWidth, CanvasEntityNodeViewModel.DefaultHeight);
-                    await service.UpdateAsync(persisted);
-                });
+            var persistedEntity = await ScopedRunner.RunAsync<IEntityService, Entity>(
+                _provider,
+                service => service.GetByIdAsync(entity.Id));
 
-            NewEntityName = string.Empty;
-            NewEntityDescription = string.Empty;
-            await LoadAsync();
-            _universes.NotifyDataChanged();
-            SelectedNode = Nodes.FirstOrDefault(node => node.Id == entity.Id);
-            if (SelectedNode is not null)
+            if (persistedEntity is null)
             {
-                ApplySelectedNodeSnapshot(SelectedNode);
+                StatusMessage = "Create node failed: entity was not persisted.";
+                WriteStartupLog($"UniverseCanvasViewModel CreateNodeAtAsync validation failed | entity={entity.Id}");
+                await LoadAsync();
+                return;
             }
+
+            persistedEntity.EntityType = EntityTypes.FirstOrDefault(x => x.Id == persistedEntity.EntityTypeId) ?? entityType;
+
+            var node = new CanvasEntityNodeViewModel(
+                persistedEntity,
+                persistedEntity.PositionX,
+                persistedEntity.PositionY,
+                CanvasEntityNodeViewModel.DefaultWidth,
+                CanvasEntityNodeViewModel.DefaultHeight);
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                NewEntityName = string.Empty;
+                NewEntityDescription = string.Empty;
+                Nodes.Add(node);
+                SelectedNode = node;
+                if (SelectedNode is not null)
+                    ApplySelectedNodeSnapshot(SelectedNode);
+
+                CanvasWidth = Math.Max(CanvasWidth, node.X + node.Width + 120);
+                CanvasHeight = Math.Max(CanvasHeight, node.Y + node.Height + 120);
+            });
             StatusMessage = "Item created. Edit it directly on the canvas or in the side panel.";
             WriteStartupLog($"UniverseCanvasViewModel CreateNodeAtAsync success | entity={entity.Id}");
         }
@@ -300,16 +343,12 @@ public partial class UniverseCanvasViewModel : ObservableObject
     {
         try
         {
+            node.Entity.PositionX = node.X;
+            node.Entity.PositionY = node.Y;
+            node.Entity.Properties = UpdateNodeLayoutProperties(node.Entity.Properties, node.Width, node.Height);
             await ScopedRunner.RunAsync<IEntityService>(
                 _provider,
-                async service =>
-                {
-                    var entity = await service.GetByIdAsync(node.Id);
-                    entity.PositionX = node.X;
-                    entity.PositionY = node.Y;
-                    entity.Properties = UpdateNodeLayoutProperties(entity.Properties, node.Width, node.Height);
-                    await service.UpdateAsync(entity);
-                });
+                service => service.UpdateAsync(node.Entity));
 
             var maxX = Math.Max(1600, Nodes.Max(x => x.X + x.Width + 120));
             var maxY = Math.Max(1000, Nodes.Max(x => x.Y + x.Height + 120));
@@ -405,15 +444,11 @@ public partial class UniverseCanvasViewModel : ObservableObject
     {
         try
         {
+            node.Entity.PositionX = Math.Max(24, x);
+            node.Entity.PositionY = Math.Max(24, y);
             await ScopedRunner.RunAsync<IEntityService>(
                 _provider,
-                async service =>
-                {
-                    var entity = await service.GetByIdAsync(node.Id);
-                    entity.PositionX = Math.Max(24, x);
-                    entity.PositionY = Math.Max(24, y);
-                    await service.UpdateAsync(entity);
-                });
+                service => service.UpdateAsync(node.Entity));
 
             await LoadAsync();
             _universes.NotifyDataChanged();
@@ -435,38 +470,63 @@ public partial class UniverseCanvasViewModel : ObservableObject
         if (SelectedNode is null)
             return;
 
-        var selectedNode = SelectedNode;
+        await SaveNodeAsync(
+            SelectedNode,
+            SelectedNodeName,
+            SelectedNodeDescription,
+            SelectedNodeNotes,
+            SelectedNodeEntityType);
+    }
+
+    public async Task SaveNodeAsync(
+        CanvasEntityNodeViewModel targetNode,
+        string? nodeName,
+        string? nodeDescription,
+        string? nodeNotes,
+        EntityType? nodeEntityType)
+    {
+        var selectedNode = targetNode;
         var nodeId = selectedNode.Id;
-        var nodeName = string.IsNullOrWhiteSpace(SelectedNodeName) ? "New Item" : SelectedNodeName.Trim();
-        var nodeDescription = SelectedNodeDescription.Trim();
-        var nodeEntityType = SelectedNodeEntityType;
+        var normalizedName = string.IsNullOrWhiteSpace(nodeName) ? "New Item" : nodeName.Trim();
+        var normalizedDescription = nodeDescription?.Trim() ?? string.Empty;
+        var normalizedNotes = nodeNotes?.Trim() ?? string.Empty;
 
         try
         {
-            await ScopedRunner.RunAsync<IEntityService>(
-                _provider,
-                async service =>
-                {
-                    var entity = await service.GetByIdAsync(nodeId);
-                    if (entity is null)
-                        throw new InvalidOperationException($"Entity '{nodeId}' not found.");
-
-                    entity.Name = nodeName;
-                    entity.Description = nodeDescription;
-                    if (nodeEntityType is not null)
-                        entity.EntityTypeId = nodeEntityType.Id;
-                    await service.UpdateAsync(entity);
-                });
-
-            selectedNode.Entity.Name = nodeName;
-            selectedNode.Entity.Description = nodeDescription;
+            selectedNode.Entity.Name = normalizedName;
+            selectedNode.Entity.Description = normalizedDescription;
+            selectedNode.Entity.Notes = normalizedNotes;
             if (nodeEntityType is not null)
             {
                 selectedNode.Entity.EntityTypeId = nodeEntityType.Id;
                 selectedNode.Entity.EntityType = nodeEntityType;
             }
+
+            await ScopedRunner.RunAsync<IEntityService>(
+                _provider,
+                service => service.UpdateAsync(selectedNode.Entity));
+
+            var persistedEntity = await ScopedRunner.RunAsync<IEntityService, Entity>(
+                _provider,
+                service => service.GetByIdAsync(nodeId));
+
+            if (persistedEntity is null)
+            {
+                StatusMessage = "Save node skipped: entity no longer exists.";
+                WriteStartupLog($"UniverseCanvasViewModel SaveNodeAsync validation failed | entity={nodeId}");
+                await LoadAsync();
+                return;
+            }
+
+            selectedNode.Entity.Name = persistedEntity.Name;
+            selectedNode.Entity.Description = persistedEntity.Description;
+            selectedNode.Entity.Notes = persistedEntity.Notes;
+            selectedNode.Entity.EntityTypeId = persistedEntity.EntityTypeId;
+            selectedNode.Entity.EntityType = EntityTypes.FirstOrDefault(x => x.Id == persistedEntity.EntityTypeId)
+                ?? persistedEntity.EntityType
+                ?? selectedNode.Entity.EntityType;
+
             selectedNode.RefreshDisplay();
-            _universes.NotifyDataChanged();
             if (SelectedNode?.Id == selectedNode.Id)
                 ApplySelectedNodeSnapshot(selectedNode);
         }
@@ -505,7 +565,6 @@ public partial class UniverseCanvasViewModel : ObservableObject
                 SelectedEdge.Description = relationshipDescription;
                 ApplySelectedRelationshipSnapshot(SelectedEdge);
             }
-            _universes.NotifyDataChanged();
         }
         catch (Exception ex)
         {
@@ -528,7 +587,6 @@ public partial class UniverseCanvasViewModel : ObservableObject
                 });
 
             await LoadAsync();
-            _universes.NotifyDataChanged();
             SelectedEdge = Edges.FirstOrDefault(x => x.Id == edge.Id);
             SelectedNodeRelationshipType = relationshipType;
             StatusMessage = $"Relationship changed to '{relationshipType.Name}'.";
@@ -548,7 +606,6 @@ public partial class UniverseCanvasViewModel : ObservableObject
                 service => service.DeleteAsync(edge.Id));
 
             await LoadAsync();
-            _universes.NotifyDataChanged();
             SelectedEdge = null;
             ApplySelectedRelationshipSnapshot(null);
             StatusMessage = "Relationship deleted.";
@@ -624,7 +681,6 @@ public partial class UniverseCanvasViewModel : ObservableObject
             LinkTarget = null;
             HasLinkPreview = false;
             await LoadAsync();
-            _universes.NotifyDataChanged();
         }
         catch (Exception ex)
         {
@@ -644,7 +700,6 @@ public partial class UniverseCanvasViewModel : ObservableObject
                 _provider,
                 service => service.DeleteAsync(SelectedNode.Id));
             await LoadAsync();
-            _universes.NotifyDataChanged();
         }
         catch (Exception ex)
         {
@@ -664,12 +719,14 @@ public partial class UniverseCanvasViewModel : ObservableObject
             {
                 SelectedNodeName = string.Empty;
                 SelectedNodeDescription = string.Empty;
+                SelectedNodeNotes = string.Empty;
                 SelectedNodeEntityType = null;
                 return;
             }
 
             SelectedNodeName = node.Name;
             SelectedNodeDescription = node.Description;
+            SelectedNodeNotes = node.Entity.Notes ?? string.Empty;
             SelectedNodeEntityType = EntityTypes.FirstOrDefault(x => x.Id == node.Entity.EntityTypeId);
         }
         finally
@@ -820,16 +877,9 @@ public partial class CanvasEntityNodeViewModel : ObservableObject
     public string TypeName => Entity.EntityType?.Name ?? "Entity";
     public string Description => Entity.Description;
 
-    [ObservableProperty]
     private double x;
-
-    [ObservableProperty]
     private double y;
-
-    [ObservableProperty]
     private double width;
-
-    [ObservableProperty]
     private double height;
 
     public event EventHandler? PositionChanged;
@@ -843,6 +893,46 @@ public partial class CanvasEntityNodeViewModel : ObservableObject
         this.height = height;
     }
 
+    public double X
+    {
+        get => x;
+        set
+        {
+            if (SetProperty(ref x, value))
+                PositionChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    public double Y
+    {
+        get => y;
+        set
+        {
+            if (SetProperty(ref y, value))
+                PositionChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    public double Width
+    {
+        get => width;
+        set
+        {
+            if (SetProperty(ref width, value))
+                PositionChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    public double Height
+    {
+        get => height;
+        set
+        {
+            if (SetProperty(ref height, value))
+                PositionChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
     public void RefreshDisplay()
     {
         OnPropertyChanged(nameof(Name));
@@ -850,10 +940,6 @@ public partial class CanvasEntityNodeViewModel : ObservableObject
         OnPropertyChanged(nameof(Description));
     }
 
-    partial void OnXChanged(double value) => PositionChanged?.Invoke(this, EventArgs.Empty);
-    partial void OnYChanged(double value) => PositionChanged?.Invoke(this, EventArgs.Empty);
-    partial void OnWidthChanged(double value) => PositionChanged?.Invoke(this, EventArgs.Empty);
-    partial void OnHeightChanged(double value) => PositionChanged?.Invoke(this, EventArgs.Empty);
 }
 
 public class CanvasRelationshipEdgeViewModel

@@ -7,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Threading;
 using OntologicalStudio.Core.Models;
 using OntologicalStudio.Desktop.ViewModels;
 using System.Collections.Specialized;
@@ -310,7 +311,14 @@ public partial class UniverseCanvasView : UserControl
 
         if (e.Key == Key.Delete)
         {
-            _viewModel.DeleteSelectedNodeCommand.Execute(null);
+            if (_viewModel.SelectedEdge is not null)
+            {
+                _ = _viewModel.DeleteEdgeAsync(_viewModel.SelectedEdge);
+            }
+            else
+            {
+                _viewModel.DeleteSelectedNodeCommand.Execute(null);
+            }
             e.Handled = true;
         }
     }
@@ -318,6 +326,9 @@ public partial class UniverseCanvasView : UserControl
     private void RenderScene()
     {
         if (_canvas is null || _viewModel is null)
+            return;
+
+        if (_canvas.Parent is null)
             return;
 
         _canvas.Children.Clear();
@@ -413,6 +424,9 @@ public partial class UniverseCanvasView : UserControl
     private async void OnNodePointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (_viewModel is null || _canvas is null || sender is not Border border || border.Tag is not CanvasEntityNodeViewModel node)
+            return;
+
+        if (e.Source is TextBox or ComboBox or Button)
             return;
 
         var point = e.GetCurrentPoint(border);
@@ -542,17 +556,39 @@ public partial class UniverseCanvasView : UserControl
             Spacing = 6
         };
 
+        TextBox? descriptionBox = null;
+        TextBox? notesBox = null;
+        ComboBox? typeBox = null;
+        var suppressInitialAutosave = true;
+        var isSavingInlineNode = false;
+        var pendingComboSave = false;
+
         var nameBox = new TextBox
         {
             Text = _viewModel?.SelectedNodeName ?? node.Name,
             Watermark = "Name"
         };
+        nameBox.PointerPressed += (_, args) => args.Handled = true;
         nameBox.GetObservable(TextBox.TextProperty).Subscribe(value =>
         {
+            node.Entity.Name = string.IsNullOrWhiteSpace(value) ? "New Item" : value;
+            node.RefreshDisplay();
             if (_viewModel is not null)
                 _viewModel.SelectedNodeName = value ?? string.Empty;
         });
-        nameBox.AttachedToVisualTree += (_, _) => nameBox.Focus();
+        nameBox.LostFocus += async (_, _) =>
+        {
+            if (suppressInitialAutosave || isSavingInlineNode)
+                return;
+            if (pendingComboSave)
+                return;
+            await SaveInlineNodeAsync();
+        };
+        nameBox.AttachedToVisualTree += (_, _) =>
+        {
+            nameBox.Focus();
+            Dispatcher.UIThread.Post(() => suppressInitialAutosave = false, DispatcherPriority.Background);
+        };
         nameBox.KeyDown += async (_, args) =>
         {
             if (_viewModel is null)
@@ -560,8 +596,7 @@ public partial class UniverseCanvasView : UserControl
 
             if (args.Key == Key.Enter && !args.KeyModifiers.HasFlag(KeyModifiers.Shift))
             {
-                await _viewModel.SaveSelectedNodeAsync();
-                RenderScene();
+                await SaveInlineNodeAsync();
                 args.Handled = true;
             }
             else if (args.Key == Key.Escape)
@@ -573,33 +608,59 @@ public partial class UniverseCanvasView : UserControl
         };
         layout.Children.Add(nameBox);
 
-        var typeBox = new ComboBox
+        typeBox = new ComboBox
         {
             ItemsSource = _viewModel?.EntityTypes,
             SelectedItem = _viewModel?.SelectedNodeEntityType,
             HorizontalAlignment = HorizontalAlignment.Stretch
         };
+        typeBox.PointerPressed += (_, args) => args.Handled = true;
         typeBox.ItemTemplate = new FuncDataTemplate<EntityType>((entityType, _) =>
             new TextBlock { Text = entityType?.Name ?? string.Empty });
-        typeBox.SelectionChanged += (_, _) =>
+        typeBox.SelectionChanged += async (_, _) =>
         {
+            if (suppressInitialAutosave || isSavingInlineNode)
+                return;
+
+            if (typeBox.SelectedItem is EntityType selectedType)
+            {
+                node.Entity.EntityTypeId = selectedType.Id;
+                node.Entity.EntityType = selectedType;
+                node.RefreshDisplay();
+            }
+
             if (_viewModel is not null)
                 _viewModel.SelectedNodeEntityType = typeBox.SelectedItem as EntityType;
+
+            pendingComboSave = true;
+            await SaveInlineNodeAsync();
+            pendingComboSave = false;
         };
         layout.Children.Add(typeBox);
 
-        var descriptionBox = new TextBox
+        descriptionBox = new TextBox
         {
             Text = _viewModel?.SelectedNodeDescription ?? node.Description,
             Watermark = "Description",
             AcceptsReturn = true,
             Height = Math.Max(44, node.Height - 88)
         };
+        descriptionBox.PointerPressed += (_, args) => args.Handled = true;
         descriptionBox.GetObservable(TextBox.TextProperty).Subscribe(value =>
         {
+            node.Entity.Description = value ?? string.Empty;
+            node.RefreshDisplay();
             if (_viewModel is not null)
                 _viewModel.SelectedNodeDescription = value ?? string.Empty;
         });
+        descriptionBox.LostFocus += async (_, _) =>
+        {
+            if (suppressInitialAutosave || isSavingInlineNode)
+                return;
+            if (pendingComboSave)
+                return;
+            await SaveInlineNodeAsync();
+        };
         descriptionBox.KeyDown += async (_, args) =>
         {
             if (_viewModel is null)
@@ -608,8 +669,7 @@ public partial class UniverseCanvasView : UserControl
             if ((args.Key == Key.Enter && args.KeyModifiers.HasFlag(KeyModifiers.Control)) ||
                 (args.Key == Key.Enter && !args.KeyModifiers.HasFlag(KeyModifiers.Shift)))
             {
-                await _viewModel.SaveSelectedNodeAsync();
-                RenderScene();
+                await SaveInlineNodeAsync();
                 args.Handled = true;
             }
             else if (args.Key == Key.Escape)
@@ -620,6 +680,52 @@ public partial class UniverseCanvasView : UserControl
             }
         };
         layout.Children.Add(descriptionBox);
+
+        notesBox = new TextBox
+        {
+            Text = _viewModel?.SelectedNodeNotes ?? node.Entity.Notes ?? string.Empty,
+            Watermark = "Notes",
+            AcceptsReturn = true,
+            Height = 60
+        };
+
+        async Task SaveInlineNodeAsync()
+        {
+            if (_viewModel is null || isSavingInlineNode || descriptionBox is null || notesBox is null || typeBox is null)
+                return;
+
+            isSavingInlineNode = true;
+            try
+            {
+                await _viewModel.SaveNodeAsync(
+                    node,
+                    nameBox.Text,
+                    descriptionBox.Text,
+                    notesBox.Text,
+                    typeBox.SelectedItem as EntityType);
+            }
+            finally
+            {
+                isSavingInlineNode = false;
+            }
+        }
+
+        notesBox.PointerPressed += (_, args) => args.Handled = true;
+        notesBox.GetObservable(TextBox.TextProperty).Subscribe(value =>
+        {
+            node.Entity.Notes = value ?? string.Empty;
+            if (_viewModel is not null)
+                _viewModel.SelectedNodeNotes = value ?? string.Empty;
+        });
+        notesBox.LostFocus += async (_, _) =>
+        {
+            if (suppressInitialAutosave || isSavingInlineNode)
+                return;
+            if (pendingComboSave)
+                return;
+            await SaveInlineNodeAsync();
+        };
+        layout.Children.Add(notesBox);
 
         var buttons = new StackPanel
         {
@@ -789,6 +895,13 @@ public partial class UniverseCanvasView : UserControl
     {
         if (_viewModel is null || sender is not ShapePath path || path.Tag is not CanvasRelationshipEdgeViewModel edge)
             return;
+
+        if (e.ClickCount >= 2)
+        {
+            _ = _viewModel.DeleteEdgeAsync(edge);
+            e.Handled = true;
+            return;
+        }
 
         if (e.GetCurrentPoint(path).Properties.IsRightButtonPressed)
         {

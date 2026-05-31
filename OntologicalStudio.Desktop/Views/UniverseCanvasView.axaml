@@ -93,6 +93,10 @@
                              Text="{Binding SelectedNodeDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              AcceptsReturn="True"
                              Height="70"/>
+                    <TextBox Watermark="{DynamicResource entities.notes}"
+                             Text="{Binding SelectedNodeNotes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             AcceptsReturn="True"
+                             Height="60"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <Button Content="{DynamicResource canvas.saveNode}"
                                 Click="OnSaveSelectedNodeClick"/>

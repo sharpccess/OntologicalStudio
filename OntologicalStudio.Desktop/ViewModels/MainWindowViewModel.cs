@@ -219,6 +219,33 @@ public partial class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(HasActiveUniverse));
         if (!HasActiveUniverse && SelectedTabIndex > 0)
             SelectedTabIndex = 0;
+
+        _ = ReloadUniverseScopedViewModelsAsync();
+    }
+
+    private async Task ReloadUniverseScopedViewModelsAsync()
+    {
+        try
+        {
+            if (UniverseCanvas is not null)
+                await UniverseCanvas.LoadAsync();
+
+            if (Entities is not null)
+                await Entities.LoadAsync();
+
+            if (Relationships is not null)
+                await Relationships.ReloadForUniverseAsync();
+
+            if (Scenarios is not null)
+                await Scenarios.LoadAsync();
+
+            if (Prompt is not null)
+                await Prompt.ReloadScenariosAsync();
+        }
+        catch (Exception ex)
+        {
+            WriteStartupLog($"MainWindowViewModel ReloadUniverseScopedViewModelsAsync error: {ex}");
+        }
     }
 
     private static void WriteStartupLog(string message)
