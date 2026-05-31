@@ -69,6 +69,7 @@ public partial class UniverseCanvasView : UserControl
     }
 
     private void OnSceneCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
         RenderScene();
     }
 
@@ -125,7 +126,7 @@ public partial class UniverseCanvasView : UserControl
         RenderScene();
     }
 
-    private void OnCanvasPointerReleased(object? sender, PointerReleasedEventArgs e)
+    private async void OnCanvasPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
         if (_canvas is null)
             return;
