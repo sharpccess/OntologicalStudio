@@ -32,3 +32,6 @@ C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_desktop\OntologicalStudio.AIProviders.deps.json
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_desktop\OntologicalStudio.AIProviders.dll
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_desktop\OntologicalStudio.AIProviders.pdb
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_api\OntologicalStudio.AIProviders.deps.json
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_api\OntologicalStudio.AIProviders.dll
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_api\OntologicalStudio.AIProviders.pdb

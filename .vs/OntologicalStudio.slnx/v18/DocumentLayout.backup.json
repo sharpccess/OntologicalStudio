@@ -1,37 +1,12 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\",
-  "Documents": [
-    {
-      "AbsoluteMoniker": "D:0:0:{C1C883FF-F0E8-40FB-52BB-9A320188FE4C}|OntologicalStudio.Api\\OntologicalStudio.Api.csproj|c:\\users\\emoti\\source\\repos\\ontogenesisplus\\ontologicalstudio\\ontologicalstudio.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C1C883FF-F0E8-40FB-52BB-9A320188FE4C}|OntologicalStudio.Api\\OntologicalStudio.Api.csproj|solutionrelative:ontologicalstudio.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    }
-  ],
+  "Documents": [],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
       "VerticalTabListWidth": 256,
-      "DocumentGroups": [
-        {
-          "DockedWidth": 200,
-          "SelectedChildIndex": 0,
-          "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Api\\Program.cs",
-              "RelativeDocumentMoniker": "OntologicalStudio.Api\\Program.cs",
-              "ToolTip": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Api\\Program.cs",
-              "RelativeToolTip": "OntologicalStudio.Api\\Program.cs",
-              "ViewState": "AgIAAFsAAAAAAAAAAAAswGgAAABLAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-31T07:56:14.619Z",
-              "EditorCaption": ""
-            }
-          ]
-        }
-      ]
+      "DocumentGroups": []
     }
   ]
 }

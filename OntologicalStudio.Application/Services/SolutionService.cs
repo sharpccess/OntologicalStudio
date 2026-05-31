@@ -60,10 +60,13 @@ public class SolutionService : ISolutionService
             var builder = new System.Text.StringBuilder();
             await foreach (var chunk in _ai.StreamAsync(new AIRequest
             {
-                UserPrompt = prompt,
+                UserPrompt = $"{prompt}{Environment.NewLine}{Environment.NewLine}" +
+                             (languageCode == "es"
+                                ? "Recuerda: responde únicamente en español y mantén total relación con el universo y escenario proporcionados."
+                                : "Reminder: respond only in English and stay fully grounded in the provided universe and scenario."),
                 SystemPrompt = languageCode == "es"
-                    ? "Responde exclusivamente en español. Usa markdown claro, estructurado y profesional."
-                    : "Respond exclusively in English. Use clear, structured, professional markdown.",
+                    ? "Responde exclusivamente en español. Usa markdown claro, estructurado y profesional. No respondas con contenido genérico. Basa todo en el escenario y entidades proporcionadas."
+                    : "Respond exclusively in English. Use clear, structured, professional markdown. Do not answer generically. Base everything on the provided scenario and entities.",
                 OutputFormat = "markdown"
             }, ct))
             {

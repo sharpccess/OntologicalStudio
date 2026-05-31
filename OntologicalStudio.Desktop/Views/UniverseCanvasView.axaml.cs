@@ -535,6 +535,32 @@ public partial class UniverseCanvasView : UserControl
         Grid.SetColumn(deleteButton, 1);
         layout.Children.Add(deleteButton);
 
+        var hydrateButton = new Button
+        {
+            Content = "Hydrate",
+            MinWidth = 68,
+            Height = 22,
+            Padding = new Thickness(6, 0)
+        };
+        hydrateButton.PointerPressed += (_, args) => args.Handled = true;
+        hydrateButton.Click += async (_, _) =>
+        {
+            try
+            {
+                await HydrateNodeAsync(node);
+            }
+            catch (Exception ex)
+            {
+                if (_viewModel is not null)
+                    _viewModel.StatusMessage = $"Hydration failed: {ex.Message}";
+            }
+        };
+        Grid.SetRow(hydrateButton, 0);
+        Grid.SetColumn(hydrateButton, 0);
+        hydrateButton.HorizontalAlignment = HorizontalAlignment.Left;
+        hydrateButton.Margin = new Thickness(0, 22, 0, 0);
+        layout.Children.Add(hydrateButton);
+
         var body = new StackPanel
         {
             Spacing = 4,
@@ -753,38 +779,15 @@ public partial class UniverseCanvasView : UserControl
         hydrateButton.PointerPressed += (_, args) => args.Handled = true;
         hydrateButton.Click += async (_, _) =>
         {
-            if (_viewModel is null)
-                return;
-
-            var prompt = await ShowHydrationPromptDialogAsync(node);
-            if (prompt is null)
-                return;
-
-            _viewModel.SelectNode(node);
-            var hydrated = await _viewModel.Hydration.HydrateCurrentNodeAsync(prompt);
-            if (!hydrated)
-                return;
-
-            var refreshedEntity = await ScopedRunner.RunAsync<IEntityService, Entity>(
-                _viewModel.ServiceProvider,
-                service => service.GetByIdAsync(node.Id));
-            if (refreshedEntity is null)
-                return;
-
-            refreshedEntity.EntityType = _viewModel.EntityTypes.FirstOrDefault(x => x.Id == refreshedEntity.EntityTypeId)
-                ?? refreshedEntity.EntityType;
-
-            node.Entity.Name = refreshedEntity.Name;
-            node.Entity.Description = refreshedEntity.Description;
-            node.Entity.Notes = refreshedEntity.Notes;
-            node.Entity.HydrationData = refreshedEntity.HydrationData;
-            node.Entity.ConfidenceLevel = refreshedEntity.ConfidenceLevel;
-            node.Entity.CompletenessScore = refreshedEntity.CompletenessScore;
-            node.Entity.EntityTypeId = refreshedEntity.EntityTypeId;
-            node.Entity.EntityType = refreshedEntity.EntityType;
-            node.RefreshDisplay();
-            _viewModel.SelectNode(node);
-            RenderScene();
+            try
+            {
+                await HydrateNodeAsync(node);
+            }
+            catch (Exception ex)
+            {
+                if (_viewModel is not null)
+                    _viewModel.StatusMessage = $"Hydration failed: {ex.Message}";
+            }
         };
 
         var buttons = new StackPanel
@@ -841,7 +844,8 @@ public partial class UniverseCanvasView : UserControl
             CanResize = true,
             ShowInTaskbar = false,
             SystemDecorations = SystemDecorations.Full,
-            Topmost = true
+            Topmost = true,
+            ShowActivated = true
         };
 
         var cancelButton = new Button
@@ -888,16 +892,46 @@ public partial class UniverseCanvasView : UserControl
             }
         };
 
-        dialog.Closed += (_, _) =>
-        {
-            owner.IsEnabled = true;
-            owner.Activate();
-            owner.Focus();
-        };
-
-        owner.IsEnabled = false;
         await dialog.ShowDialog(owner);
+        owner.Activate();
+        owner.Focus();
         return result;
+    }
+
+    private async Task HydrateNodeAsync(CanvasEntityNodeViewModel node)
+    {
+        if (_viewModel is null)
+            return;
+
+        var prompt = await ShowHydrationPromptDialogAsync(node);
+        if (prompt is null)
+            return;
+
+        _viewModel.SelectNode(node);
+        var hydrated = await _viewModel.Hydration.HydrateCurrentNodeAsync(prompt);
+        if (!hydrated)
+            return;
+
+        var refreshedEntity = await ScopedRunner.RunAsync<IEntityService, Entity>(
+            _viewModel.ServiceProvider,
+            service => service.GetByIdAsync(node.Id));
+        if (refreshedEntity is null)
+            return;
+
+        refreshedEntity.EntityType = _viewModel.EntityTypes.FirstOrDefault(x => x.Id == refreshedEntity.EntityTypeId)
+            ?? refreshedEntity.EntityType;
+
+        node.Entity.Name = refreshedEntity.Name;
+        node.Entity.Description = refreshedEntity.Description;
+        node.Entity.Notes = refreshedEntity.Notes;
+        node.Entity.HydrationData = refreshedEntity.HydrationData;
+        node.Entity.ConfidenceLevel = refreshedEntity.ConfidenceLevel;
+        node.Entity.CompletenessScore = refreshedEntity.CompletenessScore;
+        node.Entity.EntityTypeId = refreshedEntity.EntityTypeId;
+        node.Entity.EntityType = refreshedEntity.EntityType;
+        node.RefreshDisplay();
+        _viewModel.SelectNode(node);
+        RenderScene();
     }
 
     private void ShowCanvasContextMenu()

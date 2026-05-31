@@ -45,6 +45,8 @@ public class UniverseRepository : IUniverseRepository
     public async Task UpdateAsync(Universe universe)
     {
         universe.UpdatedAt = DateTime.UtcNow;
+        universe.Entities = new List<Entity>();
+        universe.Scenarios = new List<Scenario>();
         _universes.Update(universe);
         await _context.SaveChangesAsync();
     }

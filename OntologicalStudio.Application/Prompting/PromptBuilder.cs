@@ -55,7 +55,7 @@ public class PromptBuilder : IPromptBuilder
         var sb = new StringBuilder();
         var isSpanish = string.Equals(languageCode, "es", StringComparison.OrdinalIgnoreCase);
 
-        sb.AppendLine(isSpanish ? "### MODELO DE CONTEXTO PARA RAZONAR" : "### CONTEXT MODEL FOR REASONING");
+        sb.AppendLine(isSpanish ? "### MODELO DE CONTEXTO PARA RAZONAMIENTO" : "### CONTEXT MODEL FOR REASONING");
         sb.AppendLine(isSpanish ? $"**Universo:** {universe.Name}" : $"**Universe:** {universe.Name}");
         if (!string.IsNullOrWhiteSpace(universe.Description))
             sb.AppendLine(isSpanish ? $"**Descripción del universo:** {universe.Description}" : $"**Universe Description:** {universe.Description}");
@@ -64,6 +64,14 @@ public class PromptBuilder : IPromptBuilder
         sb.AppendLine(isSpanish ? $"**Descripción de la situación:** {scenario.Description}" : $"**Situation Description:** {scenario.Description}");
         if (!string.IsNullOrWhiteSpace(scenario.Goals))
             sb.AppendLine(isSpanish ? $"**Objetivos y restricciones:** {scenario.Goals}" : $"**Objectives & Constraints:** {scenario.Goals}");
+        sb.AppendLine();
+
+        sb.AppendLine(isSpanish
+            ? "### TAREA PRINCIPAL"
+            : "### PRIMARY TASK");
+        sb.AppendLine(isSpanish
+            ? "Debes responder usando exclusivamente la información del universo, escenario, entidades y relaciones listadas abajo. Si la información es insuficiente, dilo explícitamente antes de proponer hipótesis."
+            : "You must respond using only the universe, scenario, entities, and relationships listed below. If information is insufficient, say so explicitly before proposing hypotheses.");
         sb.AppendLine();
 
         sb.AppendLine(isSpanish ? "### ENTIDADES CLAVE" : "### KEY ENTITIES");
@@ -99,21 +107,25 @@ public class PromptBuilder : IPromptBuilder
         sb.AppendLine(isSpanish ? "### INSTRUCCIONES DE RAZONAMIENTO" : "### REASONING INSTRUCTIONS");
         if (isSpanish)
         {
-            sb.AppendLine("Responde exclusivamente en español. Actúa como un analista estratégico de sistemas. Usando el modelo anterior:");
-            sb.AppendLine("1. Resume la situación principal.");
-            sb.AppendLine("2. Identifica dinámicas sistémicas y bucles de retroalimentación entre entidades.");
-            sb.AppendLine("3. Expón contradicciones, puntos ciegos e incentivos ocultos.");
-            sb.AppendLine("4. Evalúa riesgos si no se interviene.");
-            sb.AppendLine("5. Propón 3-5 intervenciones de alto impacto, ordenadas por prioridad.");
+            sb.AppendLine("Responde exclusivamente en español. Actúa como un analista estratégico de sistemas y consultor práctico.");
+            sb.AppendLine("Devuelve la respuesta en este formato exacto:");
+            sb.AppendLine("1. Resumen ejecutivo");
+            sb.AppendLine("2. Dinámica principal del sistema");
+            sb.AppendLine("3. Riesgos y contradicciones");
+            sb.AppendLine("4. Recomendaciones concretas priorizadas");
+            sb.AppendLine("5. Próximos pasos accionables");
+            sb.AppendLine("No inventes entidades ni relaciones que no estén en el modelo.");
         }
         else
         {
-            sb.AppendLine("Respond exclusively in English. Act as a strategic systems analyst. Using the model above:");
-            sb.AppendLine("1. Summarize the core situation.");
-            sb.AppendLine("2. Identify systemic dynamics and feedback loops between entities.");
-            sb.AppendLine("3. Surface contradictions, blind spots, and hidden incentives.");
-            sb.AppendLine("4. Assess risks if no intervention is made.");
-            sb.AppendLine("5. Propose 3-5 high-leverage interventions, ranked by impact.");
+            sb.AppendLine("Respond exclusively in English. Act as a strategic systems analyst and practical consultant.");
+            sb.AppendLine("Return the answer in this exact structure:");
+            sb.AppendLine("1. Executive summary");
+            sb.AppendLine("2. Main system dynamic");
+            sb.AppendLine("3. Risks and contradictions");
+            sb.AppendLine("4. Prioritized concrete recommendations");
+            sb.AppendLine("5. Actionable next steps");
+            sb.AppendLine("Do not invent entities or relationships that are not present in the model.");
         }
 
         if (!string.IsNullOrWhiteSpace(extraInstructions))
@@ -122,6 +134,14 @@ public class PromptBuilder : IPromptBuilder
             sb.AppendLine(isSpanish ? "### INSTRUCCIONES ADICIONALES" : "### ADDITIONAL INSTRUCTIONS");
             sb.AppendLine(extraInstructions);
         }
+
+        sb.AppendLine();
+        sb.AppendLine(isSpanish
+            ? "### REGLA FINAL DE IDIOMA"
+            : "### FINAL LANGUAGE RULE");
+        sb.AppendLine(isSpanish
+            ? "Toda la respuesta debe estar en español."
+            : "The entire response must be in English.");
         return sb.ToString();
     }
 }

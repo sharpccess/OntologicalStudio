@@ -59,10 +59,22 @@ public class EntityRepository : IEntityRepository
 
     public async Task UpdateAsync(Entity entity)
     {
-        entity.UpdatedAt = DateTime.UtcNow;
-        entity.EntityType = null!;
-        entity.Universe = null!;
-        _entities.Update(entity);
+        var existing = await _entities.FirstOrDefaultAsync(e => e.Id == entity.Id && !e.IsDeleted);
+        if (existing is null)
+            throw new InvalidOperationException($"Entity '{entity.Id}' not found.");
+
+        existing.Name = entity.Name;
+        existing.Description = entity.Description;
+        existing.Notes = entity.Notes;
+        existing.EntityTypeId = entity.EntityTypeId;
+        existing.UniverseId = entity.UniverseId;
+        existing.PositionX = entity.PositionX;
+        existing.PositionY = entity.PositionY;
+        existing.Properties = entity.Properties;
+        existing.HydrationData = entity.HydrationData;
+        existing.ConfidenceLevel = entity.ConfidenceLevel;
+        existing.CompletenessScore = entity.CompletenessScore;
+        existing.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
     }
 

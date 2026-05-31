@@ -20,3 +20,7 @@ C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_desktop
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_desktop\OntologicalStudio.Persistence.runtimeconfig.json
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_desktop\OntologicalStudio.Persistence.dll
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_desktop\OntologicalStudio.Persistence.pdb
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_api\OntologicalStudio.Persistence.deps.json
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_api\OntologicalStudio.Persistence.runtimeconfig.json
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_api\OntologicalStudio.Persistence.dll
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_api\OntologicalStudio.Persistence.pdb
