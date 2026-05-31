@@ -537,7 +537,9 @@ public partial class UniverseCanvasView : UserControl
 
         var hydrateButton = new Button
         {
-            Content = "Hydrate",
+            Content = App.Current?.Resources.TryGetValue("entity.hydrate", out var hydrateText) == true
+                ? hydrateText?.ToString()
+                : "Hydrate",
             MinWidth = 68,
             Height = 22,
             Padding = new Thickness(6, 0)
@@ -552,7 +554,9 @@ public partial class UniverseCanvasView : UserControl
             catch (Exception ex)
             {
                 if (_viewModel is not null)
-                    _viewModel.StatusMessage = $"Hydration failed: {ex.Message}";
+                    _viewModel.StatusMessage = App.Current?.Resources.TryGetValue("ai.hydrate.failed", out var hydrateFailed) == true
+                        ? string.Format(hydrateFailed?.ToString() ?? "Hydration failed: {0}", ex.Message)
+                        : $"Hydration failed: {ex.Message}";
             }
         };
         Grid.SetRow(hydrateButton, 0);
@@ -773,7 +777,9 @@ public partial class UniverseCanvasView : UserControl
 
         var hydrateButton = new Button
         {
-            Content = "Hydrate",
+            Content = App.Current?.Resources.TryGetValue("entity.hydrate", out var hydrateText) == true
+                ? hydrateText?.ToString()
+                : "Hydrate",
             MinWidth = 80
         };
         hydrateButton.PointerPressed += (_, args) => args.Handled = true;
@@ -786,7 +792,9 @@ public partial class UniverseCanvasView : UserControl
             catch (Exception ex)
             {
                 if (_viewModel is not null)
-                    _viewModel.StatusMessage = $"Hydration failed: {ex.Message}";
+                    _viewModel.StatusMessage = App.Current?.Resources.TryGetValue("ai.hydrate.failed", out var hydrateFailed) == true
+                        ? string.Format(hydrateFailed?.ToString() ?? "Hydration failed: {0}", ex.Message)
+                        : $"Hydration failed: {ex.Message}";
             }
         };
 
@@ -831,13 +839,17 @@ public partial class UniverseCanvasView : UserControl
             TextWrapping = TextWrapping.Wrap,
             Height = 180,
             Width = 420,
-            Watermark = $"Hydration prompt for {node.Name}"
+            Watermark = App.Current?.Resources.TryGetValue("ai.hydrate.promptWatermark", out var promptWatermark) == true
+                ? string.Format(promptWatermark?.ToString() ?? "Hydration prompt for {0}", node.Name)
+                : $"Hydration prompt for {node.Name}"
         };
 
         string? result = null;
         var dialog = new Window
         {
-            Title = "Hydrate entity",
+            Title = App.Current?.Resources.TryGetValue("ai.hydrate.title", out var titleText) == true
+                ? titleText?.ToString()
+                : "Hydrate entity",
             Width = 500,
             Height = 330,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
@@ -850,14 +862,18 @@ public partial class UniverseCanvasView : UserControl
 
         var cancelButton = new Button
         {
-            Content = "Cancel",
+            Content = App.Current?.Resources.TryGetValue("ai.hydrate.cancel", out var cancelText) == true
+                ? cancelText?.ToString()
+                : "Cancel",
             MinWidth = 90
         };
         cancelButton.Click += (_, _) => dialog.Close();
 
         var hydrateButton = new Button
         {
-            Content = "Hydrate",
+            Content = App.Current?.Resources.TryGetValue("entity.hydrate", out var hydrateButtonText) == true
+                ? hydrateButtonText?.ToString()
+                : "Hydrate",
             MinWidth = 90
         };
         hydrateButton.Click += (_, _) =>
@@ -874,7 +890,9 @@ public partial class UniverseCanvasView : UserControl
             {
                 new TextBlock
                 {
-                    Text = $"Write the hydration prompt for '{node.Name}'. Leave it empty to use a generic hydration.",
+                    Text = App.Current?.Resources.TryGetValue("ai.hydrate.instructions", out var instructionsText) == true
+                        ? string.Format(instructionsText?.ToString() ?? "Write the hydration prompt for '{0}'. Leave it empty to use a generic hydration.", node.Name)
+                        : $"Write the hydration prompt for '{node.Name}'. Leave it empty to use a generic hydration.",
                     TextWrapping = TextWrapping.Wrap
                 },
                 promptBox,
