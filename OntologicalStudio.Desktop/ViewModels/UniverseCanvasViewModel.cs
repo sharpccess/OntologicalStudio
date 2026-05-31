@@ -102,6 +102,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
     private bool hasLinkPreview;
 
     public bool HasSelectedUniverse => _universes.SelectedUniverse is not null;
+    public IServiceProvider ServiceProvider => _provider;
     public bool IsLinkMode
     {
         get => isLinkMode;

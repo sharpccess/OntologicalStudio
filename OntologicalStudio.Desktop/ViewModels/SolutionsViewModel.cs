@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using OntologicalStudio.Application.Services;
 using OntologicalStudio.Core.Models;
 using OntologicalStudio.Desktop.Services;
@@ -18,6 +19,7 @@ public partial class SolutionsViewModel : ObservableObject
     private readonly ILocalizationService _localization;
 
     public ObservableCollection<Solution> Items { get; } = new();
+    public ObservableCollection<SolutionArtifactViewModel> SelectedSolutionArtifacts { get; } = new();
 
     [ObservableProperty]
     private Scenario? currentScenario;
@@ -38,9 +40,20 @@ public partial class SolutionsViewModel : ObservableObject
     {
         _provider = provider;
         _localization = provider.GetRequiredService<ILocalizationService>();
+        _localization.OnLanguageChanged += HandleLanguageChanged;
     }
 
     partial void OnCurrentScenarioChanged(Scenario? value) => _ = LoadAsync();
+
+    partial void OnSelectedSolutionChanged(Solution? value)
+    {
+        RebuildSelectedArtifacts();
+    }
+
+    private void HandleLanguageChanged()
+    {
+        _ = LoadAsync();
+    }
 
     public async Task LoadAsync()
     {
@@ -48,7 +61,7 @@ public partial class SolutionsViewModel : ObservableObject
         SelectedSolution = null;
         if (CurrentScenario is null)
         {
-            StatusMessage = "Select a scenario to view its solutions.";
+            StatusMessage = _localization.T("scenarios.selectScenarioToViewSolutions");
             return;
         }
         try
@@ -56,7 +69,7 @@ public partial class SolutionsViewModel : ObservableObject
             var data = await ScopedRunner.RunAsync<ISolutionService, IEnumerable<Solution>>(
                 _provider, s => s.GetByScenarioAsync(CurrentScenario.Id));
             foreach (var s in data)
-                Items.Add(s);
+                Items.Add(LocalizeSolution(s));
             SelectedSolution = Items.FirstOrDefault();
             StatusMessage = $"{Items.Count} solution(s).";
         }
@@ -69,10 +82,10 @@ public partial class SolutionsViewModel : ObservableObject
     [RelayCommand]
     private async Task RunAsync()
     {
-        if (CurrentScenario is null) { StatusMessage = "Select a scenario first."; return; }
+        if (CurrentScenario is null) { StatusMessage = _localization.T("scenarios.selectScenarioFirst"); return; }
         if (IsRunning) return;
         IsRunning = true;
-        StatusMessage = "Running scenario against AI provider...";
+        StatusMessage = _localization.T("scenarios.running");
         try
         {
             var sol = await ScopedRunner.RunAsync<ISolutionService, Solution>(
@@ -84,7 +97,7 @@ public partial class SolutionsViewModel : ObservableObject
             ExtraInstructions = string.Empty;
             await LoadAsync();
             SelectedSolution = Items.FirstOrDefault(x => x.Id == sol.Id);
-            StatusMessage = $"Solution created with {sol.Artifacts.Count} artifact(s).";
+            StatusMessage = _localization.T("scenarios.solutionCreated", sol.Artifacts.Count);
         }
         catch (Exception ex)
         {
@@ -127,4 +140,66 @@ public partial class SolutionsViewModel : ObservableObject
             StatusMessage = $"Update failed: {ex.Message}";
         }
     }
+
+    private Solution LocalizeSolution(Solution solution)
+    {
+        foreach (var artifact in solution.Artifacts)
+        {
+            artifact.Label = LocalizeArtifactLabel(artifact.Label);
+        }
+
+        return solution;
+    }
+
+    private void RebuildSelectedArtifacts()
+    {
+        SelectedSolutionArtifacts.Clear();
+        if (SelectedSolution is null)
+            return;
+
+        foreach (var artifact in SelectedSolution.Artifacts.OrderBy(x => x.Order))
+        {
+            SelectedSolutionArtifacts.Add(new SolutionArtifactViewModel
+            {
+                Label = LocalizeArtifactLabel(artifact.Label),
+                KindDisplay = LocalizeArtifactKind(artifact.Kind),
+                MimeType = artifact.MimeType,
+                InlineContent = artifact.InlineContent
+            });
+        }
+    }
+
+    private string LocalizeArtifactKind(ArtifactKind kind)
+    {
+        return kind switch
+        {
+            ArtifactKind.Text => _localization.T("artifact.kind.text"),
+            ArtifactKind.Markdown => _localization.T("artifact.kind.markdown"),
+            ArtifactKind.Json => _localization.T("artifact.kind.json"),
+            ArtifactKind.Image => _localization.T("artifact.kind.image"),
+            ArtifactKind.File => _localization.T("artifact.kind.file"),
+            _ => kind.ToString()
+        };
+    }
+
+    private string LocalizeArtifactLabel(string label)
+    {
+        if (string.IsNullOrWhiteSpace(label))
+            return label;
+
+        return label switch
+        {
+            "AI response" => _localization.CurrentLanguageCode == "es" ? "Respuesta de IA" : "AI response",
+            "Respuesta de IA" => _localization.CurrentLanguageCode == "es" ? "Respuesta de IA" : "AI response",
+            _ => label
+        };
+    }
+}
+
+public class SolutionArtifactViewModel
+{
+    public string Label { get; set; } = string.Empty;
+    public string KindDisplay { get; set; } = string.Empty;
+    public string MimeType { get; set; } = string.Empty;
+    public string InlineContent { get; set; } = string.Empty;
 }

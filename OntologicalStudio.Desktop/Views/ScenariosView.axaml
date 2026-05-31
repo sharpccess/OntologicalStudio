@@ -100,14 +100,14 @@
                                  BorderThickness="0"/>
                     </TabItem>
                     <TabItem Header="{DynamicResource scenarios.artifacts}">
-                        <ItemsControl ItemsSource="{Binding SelectedSolution.Artifacts}">
+                        <ItemsControl ItemsSource="{Binding SelectedSolutionArtifacts}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="m:SolutionArtifact">
+                                <DataTemplate x:DataType="vm:SolutionArtifactViewModel">
                                     <Border BorderBrush="#333" BorderThickness="0,0,0,1" Padding="0,6">
                                         <StackPanel Spacing="4">
                                             <StackPanel Orientation="Horizontal" Spacing="6">
                                                 <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>
-                                                <TextBlock Text="{Binding Kind}" Opacity="0.6" FontSize="11"/>
+                                                <TextBlock Text="{Binding KindDisplay}" Opacity="0.6" FontSize="11"/>
                                                 <TextBlock Text="{Binding MimeType}" Opacity="0.4" FontSize="11"/>
                                             </StackPanel>
                                             <TextBox Text="{Binding InlineContent, Mode=OneWay}"

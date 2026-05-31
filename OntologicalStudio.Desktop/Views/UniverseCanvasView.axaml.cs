@@ -8,6 +8,8 @@ using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Microsoft.Extensions.DependencyInjection;
+using OntologicalStudio.Application.Services;
 using OntologicalStudio.Core.Models;
 using OntologicalStudio.Desktop.ViewModels;
 using System.Collections.Specialized;
@@ -106,7 +108,7 @@ public partial class UniverseCanvasView : UserControl
 
     private void OnCanvasPointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (_canvas is null || _scrollViewer is null)
+        if (_canvas is null || _scrollViewer is null || _viewModel is null)
             return;
 
         var source = e.Source as Control;
@@ -146,6 +148,18 @@ public partial class UniverseCanvasView : UserControl
             _panOffset = _scrollViewer.Offset;
             e.Pointer.Capture(_canvas);
         }
+
+        if (point.Properties.IsLeftButtonPressed)
+        {
+            var taggedControl = FindTaggedAncestor(e.Source as Control);
+            if (taggedControl is null && source is not ShapePath)
+            {
+                _viewModel.SelectEdge(null);
+                _viewModel.SelectNode(null);
+                RenderScene();
+            }
+        }
+
         Focus();
     }
 
@@ -537,6 +551,7 @@ public partial class UniverseCanvasView : UserControl
                     FontSize = 11,
                     TextWrapping = TextWrapping.Wrap,
                     Width = Math.Max(60, node.Width - 20),
+                    MaxHeight = Math.Max(36, node.Height - 54),
                     Opacity = 0.8
                 }
             }
@@ -643,7 +658,8 @@ public partial class UniverseCanvasView : UserControl
             Text = _viewModel?.SelectedNodeDescription ?? node.Description,
             Watermark = "Description",
             AcceptsReturn = true,
-            Height = Math.Max(44, node.Height - 88)
+            TextWrapping = TextWrapping.Wrap,
+            Height = Math.Max(72, node.Height - 112)
         };
         descriptionBox.PointerPressed += (_, args) => args.Handled = true;
         descriptionBox.GetObservable(TextBox.TextProperty).Subscribe(value =>
@@ -686,6 +702,7 @@ public partial class UniverseCanvasView : UserControl
             Text = _viewModel?.SelectedNodeNotes ?? node.Entity.Notes ?? string.Empty,
             Watermark = "Notes",
             AcceptsReturn = true,
+            TextWrapping = TextWrapping.Wrap,
             Height = 60
         };
 
@@ -727,11 +744,53 @@ public partial class UniverseCanvasView : UserControl
         };
         layout.Children.Add(notesBox);
 
+        var hydrateButton = new Button
+        {
+            Content = "Hydrate",
+            MinWidth = 80
+        };
+        hydrateButton.PointerPressed += (_, args) => args.Handled = true;
+        hydrateButton.Click += async (_, _) =>
+        {
+            if (_viewModel is null)
+                return;
+
+            var prompt = await ShowHydrationPromptDialogAsync(node);
+            if (prompt is null)
+                return;
+
+            _viewModel.SelectNode(node);
+            var hydrated = await _viewModel.Hydration.HydrateCurrentNodeAsync(prompt);
+            if (!hydrated)
+                return;
+
+            var entityService = _viewModel.ServiceProvider.GetRequiredService<IEntityService>();
+            var refreshedEntity = await entityService.GetByIdAsync(node.Id);
+            if (refreshedEntity is null)
+                return;
+
+            refreshedEntity.EntityType = _viewModel.EntityTypes.FirstOrDefault(x => x.Id == refreshedEntity.EntityTypeId)
+                ?? refreshedEntity.EntityType;
+
+            node.Entity.Name = refreshedEntity.Name;
+            node.Entity.Description = refreshedEntity.Description;
+            node.Entity.Notes = refreshedEntity.Notes;
+            node.Entity.HydrationData = refreshedEntity.HydrationData;
+            node.Entity.ConfidenceLevel = refreshedEntity.ConfidenceLevel;
+            node.Entity.CompletenessScore = refreshedEntity.CompletenessScore;
+            node.Entity.EntityTypeId = refreshedEntity.EntityTypeId;
+            node.Entity.EntityType = refreshedEntity.EntityType;
+            node.RefreshDisplay();
+            _viewModel.SelectNode(node);
+            RenderScene();
+        };
+
         var buttons = new StackPanel
         {
             Orientation = Orientation.Horizontal,
             Spacing = 6
         };
+        buttons.Children.Add(hydrateButton);
 
         var deleteButton = new Button
         {
@@ -753,6 +812,79 @@ public partial class UniverseCanvasView : UserControl
 
         layout.Children.Add(buttons);
         return layout;
+    }
+
+    private async Task<string?> ShowHydrationPromptDialogAsync(CanvasEntityNodeViewModel node)
+    {
+        var owner = TopLevel.GetTopLevel(this) as Window;
+        if (owner is null)
+            return null;
+
+        var promptBox = new TextBox
+        {
+            AcceptsReturn = true,
+            TextWrapping = TextWrapping.Wrap,
+            Height = 180,
+            Width = 420,
+            Watermark = $"Hydration prompt for {node.Name}"
+        };
+
+        string? result = null;
+        var dialog = new Window
+        {
+            Title = "Hydrate entity",
+            Width = 500,
+            Height = 330,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            CanResize = true
+        };
+
+        var cancelButton = new Button
+        {
+            Content = "Cancel",
+            MinWidth = 90
+        };
+        cancelButton.Click += (_, _) => dialog.Close();
+
+        var hydrateButton = new Button
+        {
+            Content = "Hydrate",
+            MinWidth = 90
+        };
+        hydrateButton.Click += (_, _) =>
+        {
+            result = promptBox.Text ?? string.Empty;
+            dialog.Close();
+        };
+
+        dialog.Content = new StackPanel
+        {
+            Margin = new Thickness(16),
+            Spacing = 12,
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = $"Write the hydration prompt for '{node.Name}'. Leave it empty to use a generic hydration.",
+                    TextWrapping = TextWrapping.Wrap
+                },
+                promptBox,
+                new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Spacing = 8,
+                    Children =
+                    {
+                        cancelButton,
+                        hydrateButton
+                    }
+                }
+            }
+        };
+
+        await dialog.ShowDialog(owner);
+        return result;
     }
 
     private void ShowCanvasContextMenu()

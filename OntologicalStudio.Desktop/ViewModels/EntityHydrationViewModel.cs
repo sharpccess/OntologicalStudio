@@ -67,9 +67,7 @@ public partial class EntityHydrationViewModel : ObservableObject
         DiffHydrationData = string.Empty;
         DiffNotes = string.Empty;
         DiffScores = string.Empty;
-        CustomPrompt = value is null
-            ? string.Empty
-            : $"Hydrate entity '{value.Name}' ({value.TypeName}) using motivations, fears, incentives and behavioral patterns. Existing description: {value.Description}";
+        CustomPrompt = string.Empty;
         _ = LoadHistoryAsync();
     }
 
@@ -81,6 +79,26 @@ public partial class EntityHydrationViewModel : ObservableObject
     public async Task PreviewCurrentNodeAsync()
     {
         await PreviewAsync();
+    }
+
+    public async Task<bool> HydrateCurrentNodeAsync(string? customPrompt = null)
+    {
+        if (SelectedNode is null || IsBusy)
+            return false;
+
+        CustomPrompt = customPrompt?.Trim() ?? string.Empty;
+        await PreviewAsync();
+        if (Preview is null)
+            return false;
+
+        await ApplyAsync();
+        return Preview is not null;
+    }
+
+    [RelayCommand]
+    private async Task HydrateCurrentNode()
+    {
+        await HydrateCurrentNodeAsync(CustomPrompt);
     }
 
     public async Task LoadHistoryAsync()
