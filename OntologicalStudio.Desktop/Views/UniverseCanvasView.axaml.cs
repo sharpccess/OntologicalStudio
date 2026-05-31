@@ -6,6 +6,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using OntologicalStudio.Core.Models;
 using OntologicalStudio.Desktop.ViewModels;
 using System.Collections.Specialized;
 using ShapePath = Avalonia.Controls.Shapes.Path;
