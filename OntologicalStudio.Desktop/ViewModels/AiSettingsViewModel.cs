@@ -17,7 +17,8 @@ public partial class AiSettingsViewModel : ObservableObject
         new AiProviderOption("ollama", "Ollama"),
         new AiProviderOption("openrouter", "OpenRouter"),
         new AiProviderOption("openai", "OpenAI / GPT"),
-        new AiProviderOption("anthropic", "Anthropic / Claude")
+        new AiProviderOption("anthropic", "Anthropic / Claude"),
+        new AiProviderOption("vscode", "VSCode / TRAE Bridge")
     };
 
     [ObservableProperty]
@@ -37,6 +38,36 @@ public partial class AiSettingsViewModel : ObservableObject
 
     [ObservableProperty]
     private bool isBusy;
+
+    /// <summary>True when the currently selected provider does not need an API key (e.g. local bridges).</summary>
+    public bool IsApiKeyRequired => SelectedProvider?.Key != "vscode";
+
+    /// <summary>Hint text shown next to the endpoint field, varies per provider.</summary>
+    public string EndpointHint => SelectedProvider?.Key switch
+    {
+        "vscode" => "http://localhost:39217  (VSCode/TRAE bridge)",
+        "openrouter" => "https://openrouter.ai/api/v1/chat/completions",
+        "openai" => "https://api.openai.com/v1/chat/completions",
+        "anthropic" => "https://api.anthropic.com/v1/messages",
+        _ => "http://localhost:11434"
+    };
+
+    /// <summary>Hint for the api key field, becomes a clear "not needed" message when the bridge is selected.</summary>
+    public string ApiKeyHint => SelectedProvider?.Key == "vscode"
+        ? "Not required — handled by VSCode/TRAE"
+        : string.Empty;
+
+    partial void OnSelectedProviderChanged(AiProviderOption? value)
+    {
+        OnPropertyChanged(nameof(IsApiKeyRequired));
+        OnPropertyChanged(nameof(EndpointHint));
+        OnPropertyChanged(nameof(ApiKeyHint));
+
+        // Pre-fill sensible defaults when switching to a provider that has them
+        // and the user has not entered anything custom yet.
+        if (value?.Key == "vscode" && string.IsNullOrWhiteSpace(OllamaEndpoint))
+            OllamaEndpoint = "http://localhost:39217";
+    }
 
     public AiSettingsViewModel(IServiceProvider provider)
     {

@@ -122,6 +122,47 @@ app.MapPost("/api/scenarios/{id:guid}/solve", async (
     });
 });
 
+// --- Endpoints used by the VSCode/TRAE bridge panel ---
+
+app.MapGet("/api/scenarios/{id:guid}/solutions", async (Guid id, [FromServices] ISolutionService solutions) =>
+{
+    var items = await solutions.GetByScenarioAsync(id);
+    return Results.Ok(items.Select(x => new
+    {
+        x.Id,
+        x.Title,
+        x.ProviderUsed,
+        x.Status,
+        x.CreatedAt,
+        x.ScenarioId
+    }));
+});
+
+app.MapGet("/api/solutions/{id:guid}", async (Guid id, [FromServices] ISolutionService solutions) =>
+{
+    var solution = await solutions.GetByIdAsync(id);
+    if (solution is null) return Results.NotFound();
+    return Results.Ok(new
+    {
+        solution.Id,
+        solution.Title,
+        solution.ProviderUsed,
+        solution.Status,
+        solution.PromptSnapshot,
+        solution.CreatedAt,
+        solution.ScenarioId,
+        Artifacts = solution.Artifacts.Select(a => new
+        {
+            a.Id,
+            a.Kind,
+            a.Label,
+            a.MimeType,
+            a.InlineContent,
+            a.BlobPath
+        })
+    });
+});
+
 app.Run("http://127.0.0.1:53821");
 
 public record SolveScenarioRequest(string? ExtraInstructions, string? LanguageCode);
