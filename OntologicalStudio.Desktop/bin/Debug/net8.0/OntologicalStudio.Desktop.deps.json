@@ -22,6 +22,7 @@
           "OntologicalStudio.Application": "1.0.0",
           "OntologicalStudio.Core": "1.0.0",
           "OntologicalStudio.Infrastructure": "1.0.0",
+          "OntologicalStudio.Localization": "1.0.0",
           "OntologicalStudio.Persistence": "1.0.0"
         },
         "runtime": {
@@ -1363,6 +1364,19 @@
           }
         }
       },
+      "OntologicalStudio.Localization/1.0.0": {
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "8.0.0",
+          "Microsoft.Extensions.Configuration.Json": "8.0.0",
+          "Microsoft.Extensions.DependencyInjection": "8.0.1"
+        },
+        "runtime": {
+          "OntologicalStudio.Localization.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
       "OntologicalStudio.Persistence/1.0.0": {
         "dependencies": {
           "Microsoft.EntityFrameworkCore.Sqlite": "8.0.0",
@@ -1917,6 +1931,11 @@
       "sha512": ""
     },
     "OntologicalStudio.Infrastructure/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "OntologicalStudio.Localization/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

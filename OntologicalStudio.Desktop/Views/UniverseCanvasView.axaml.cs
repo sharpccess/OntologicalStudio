@@ -20,9 +20,12 @@ public partial class UniverseCanvasView : UserControl
     private ScrollViewer? _scrollViewer;
     private UniverseCanvasViewModel? _viewModel;
     private CanvasEntityNodeViewModel? _dragNode;
+    private CanvasEntityNodeViewModel? _resizeNode;
     private Point _dragStart;
     private double _originX;
     private double _originY;
+    private double _originWidth;
+    private double _originHeight;
     private bool _isPanning;
     private Point _panStart;
     private Vector _panOffset;
@@ -97,6 +100,8 @@ public partial class UniverseCanvasView : UserControl
 
         if (point.Properties.IsRightButtonPressed)
         {
+            if (e.Source != _canvas)
+                return;
             ShowCanvasContextMenu();
             Focus();
             return;
@@ -124,10 +129,24 @@ public partial class UniverseCanvasView : UserControl
             return;
         }
 
-        if (_canvas is null || _dragNode is null)
+        if (_canvas is null)
             return;
 
         if (!e.GetCurrentPoint(_canvas).Properties.IsLeftButtonPressed)
+            return;
+
+        if (_resizeNode is not null)
+        {
+            var currentResize = e.GetPosition(_canvas);
+            var resizeDeltaX = currentResize.X - _dragStart.X;
+            var resizeDeltaY = currentResize.Y - _dragStart.Y;
+            _resizeNode.Width = Math.Max(160, _originWidth + resizeDeltaX);
+            _resizeNode.Height = Math.Max(100, _originHeight + resizeDeltaY);
+            RenderScene();
+            return;
+        }
+
+        if (_dragNode is null)
             return;
 
         var current = e.GetPosition(_canvas);
@@ -157,7 +176,17 @@ public partial class UniverseCanvasView : UserControl
             _dragNode = null;
             e.Pointer.Capture(null);
             if (_viewModel is not null)
-                await _viewModel.PersistNodePositionAsync(node);
+                await _viewModel.PersistNodeLayoutAsync(node);
+            RenderScene();
+        }
+
+        if (_resizeNode is not null)
+        {
+            var node = _resizeNode;
+            _resizeNode = null;
+            e.Pointer.Capture(null);
+            if (_viewModel is not null)
+                await _viewModel.PersistNodeLayoutAsync(node);
             RenderScene();
         }
     }
@@ -245,6 +274,21 @@ public partial class UniverseCanvasView : UserControl
             Canvas.SetLeft(border, node.X);
             Canvas.SetTop(border, node.Y);
             _canvas.Children.Add(border);
+
+            var resizeHandle = new Border
+            {
+                Width = 14,
+                Height = 14,
+                Background = new SolidColorBrush(Color.Parse("#7b8ea1")),
+                CornerRadius = new CornerRadius(3),
+                BorderBrush = new SolidColorBrush(Color.Parse("#d0e3f7")),
+                BorderThickness = new Thickness(1),
+                Tag = node
+            };
+            resizeHandle.PointerPressed += OnResizeHandlePointerPressed;
+            Canvas.SetLeft(resizeHandle, node.X + node.Width - 10);
+            Canvas.SetTop(resizeHandle, node.Y + node.Height - 10);
+            _canvas.Children.Add(resizeHandle);
         }
     }
 
@@ -275,6 +319,24 @@ public partial class UniverseCanvasView : UserControl
         _originX = node.X;
         _originY = node.Y;
         e.Pointer.Capture(_canvas);
+        RenderScene();
+    }
+
+    private void OnResizeHandlePointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (_viewModel is null || _canvas is null || sender is not Border border || border.Tag is not CanvasEntityNodeViewModel node)
+            return;
+
+        if (!e.GetCurrentPoint(border).Properties.IsLeftButtonPressed)
+            return;
+
+        _viewModel.SelectNode(node);
+        _resizeNode = node;
+        _dragStart = e.GetPosition(_canvas);
+        _originWidth = node.Width;
+        _originHeight = node.Height;
+        e.Pointer.Capture(_canvas);
+        e.Handled = true;
         RenderScene();
     }
 
@@ -412,7 +474,14 @@ public partial class UniverseCanvasView : UserControl
             MinWidth = 56
         };
         saveButton.PointerPressed += (_, args) => args.Handled = true;
-        saveButton.Click += (_, _) => _viewModel?.SaveSelectedNodeCommand.Execute(null);
+        saveButton.Click += async (_, _) =>
+        {
+            if (_viewModel is not null)
+            {
+                await _viewModel.SaveSelectedNodeCommand.ExecuteAsync(null);
+                RenderScene();
+            }
+        };
         buttons.Children.Add(saveButton);
 
         var deleteButton = new Button
@@ -499,6 +568,7 @@ public partial class UniverseCanvasView : UserControl
         items.Add(existingHeader);
 
         menu.ItemsSource = items;
+        _canvas.ContextMenu = menu;
         menu.Open(_canvas);
     }
 
@@ -539,6 +609,7 @@ public partial class UniverseCanvasView : UserControl
         {
             ItemsSource = new object[] { editItem, connectItem, cancelConnectionItem, deleteItem }
         };
+        target.ContextMenu = menu;
         menu.Open(target);
     }
 
@@ -598,6 +669,7 @@ public partial class UniverseCanvasView : UserControl
         {
             ItemsSource = new object[] { selectItem, typeHeader, deleteItem }
         };
+        target.ContextMenu = menu;
         menu.Open(target);
     }
 }

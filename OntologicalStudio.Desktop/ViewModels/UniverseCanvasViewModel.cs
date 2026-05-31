@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace OntologicalStudio.Desktop.ViewModels;
@@ -140,11 +141,12 @@ public partial class UniverseCanvasViewModel : ObservableObject
             var index = 0;
             foreach (var entity in entities.OrderBy(x => x.Name))
             {
+                var (width, height) = GetNodeSize(entity);
                 var (x, y) = entity.PositionX == 0 && entity.PositionY == 0
                     ? GetDefaultPosition(index++)
                     : (entity.PositionX, entity.PositionY);
 
-                Nodes.Add(new CanvasEntityNodeViewModel(entity, x, y));
+                Nodes.Add(new CanvasEntityNodeViewModel(entity, x, y, width, height));
             }
 
             var nodeById = Nodes.ToDictionary(x => x.Id);
@@ -234,6 +236,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
                     var persisted = await service.GetByIdAsync(entity.Id);
                     persisted.PositionX = entity.PositionX;
                     persisted.PositionY = entity.PositionY;
+                    persisted.Properties = UpdateNodeLayoutProperties(persisted.Properties, CanvasEntityNodeViewModel.DefaultWidth, CanvasEntityNodeViewModel.DefaultHeight);
                     await service.UpdateAsync(persisted);
                 });
 
@@ -256,7 +259,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
         }
     }
 
-    public async Task PersistNodePositionAsync(CanvasEntityNodeViewModel node)
+    public async Task PersistNodeLayoutAsync(CanvasEntityNodeViewModel node)
     {
         try
         {
@@ -267,6 +270,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
                     var entity = await service.GetByIdAsync(node.Id);
                     entity.PositionX = node.X;
                     entity.PositionY = node.Y;
+                    entity.Properties = UpdateNodeLayoutProperties(entity.Properties, node.Width, node.Height);
                     await service.UpdateAsync(entity);
                 });
 
@@ -593,6 +597,42 @@ public partial class UniverseCanvasViewModel : ObservableObject
         var row = index / 5;
         return (80 + (column * 240), 80 + (row * 160));
     }
+
+    private static (double width, double height) GetNodeSize(Entity entity)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(entity.Properties))
+                return (CanvasEntityNodeViewModel.DefaultWidth, CanvasEntityNodeViewModel.DefaultHeight);
+
+            var json = JsonNode.Parse(entity.Properties)?.AsObject();
+            var width = json?["canvasWidth"]?.GetValue<double?>() ?? CanvasEntityNodeViewModel.DefaultWidth;
+            var height = json?["canvasHeight"]?.GetValue<double?>() ?? CanvasEntityNodeViewModel.DefaultHeight;
+            return (Math.Max(160, width), Math.Max(100, height));
+        }
+        catch
+        {
+            return (CanvasEntityNodeViewModel.DefaultWidth, CanvasEntityNodeViewModel.DefaultHeight);
+        }
+    }
+
+    private static string UpdateNodeLayoutProperties(string? currentProperties, double width, double height)
+    {
+        JsonObject json;
+        try
+        {
+            json = JsonNode.Parse(string.IsNullOrWhiteSpace(currentProperties) ? "{}" : currentProperties!)?.AsObject()
+                ?? new JsonObject();
+        }
+        catch
+        {
+            json = new JsonObject();
+        }
+
+        json["canvasWidth"] = Math.Max(160, width);
+        json["canvasHeight"] = Math.Max(100, height);
+        return json.ToJsonString();
+    }
 }
 
 public partial class CanvasEntityNodeViewModel : ObservableObject
@@ -605,8 +645,6 @@ public partial class CanvasEntityNodeViewModel : ObservableObject
     public string Name => Entity.Name;
     public string TypeName => Entity.EntityType?.Name ?? "Entity";
     public string Description => Entity.Description;
-    public double Width => DefaultWidth;
-    public double Height => DefaultHeight;
 
     [ObservableProperty]
     private double x;
@@ -614,17 +652,27 @@ public partial class CanvasEntityNodeViewModel : ObservableObject
     [ObservableProperty]
     private double y;
 
+    [ObservableProperty]
+    private double width;
+
+    [ObservableProperty]
+    private double height;
+
     public event EventHandler? PositionChanged;
 
-    public CanvasEntityNodeViewModel(Entity entity, double x, double y)
+    public CanvasEntityNodeViewModel(Entity entity, double x, double y, double width, double height)
     {
         Entity = entity;
         this.x = x;
         this.y = y;
+        this.width = width;
+        this.height = height;
     }
 
     partial void OnXChanged(double value) => PositionChanged?.Invoke(this, EventArgs.Empty);
     partial void OnYChanged(double value) => PositionChanged?.Invoke(this, EventArgs.Empty);
+    partial void OnWidthChanged(double value) => PositionChanged?.Invoke(this, EventArgs.Empty);
+    partial void OnHeightChanged(double value) => PositionChanged?.Invoke(this, EventArgs.Empty);
 }
 
 public class CanvasRelationshipEdgeViewModel
