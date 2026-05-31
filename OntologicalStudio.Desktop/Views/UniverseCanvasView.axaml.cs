@@ -278,6 +278,10 @@ public partial class UniverseCanvasView : UserControl
 
     private Control BuildNodeContent(CanvasEntityNodeViewModel node)
     {
+        var isSelected = _viewModel?.SelectedNode?.Id == node.Id;
+        if (isSelected && _viewModel is not null)
+            return BuildSelectedNodeEditor(node);
+
         var layout = new Grid();
         layout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
         layout.RowDefinitions.Add(new RowDefinition(GridLength.Star));
@@ -346,6 +350,89 @@ public partial class UniverseCanvasView : UserControl
         return layout;
     }
 
+    private Control BuildSelectedNodeEditor(CanvasEntityNodeViewModel node)
+    {
+        var layout = new StackPanel
+        {
+            Spacing = 6
+        };
+
+        var nameBox = new TextBox
+        {
+            Text = _viewModel?.SelectedNodeName ?? node.Name,
+            Watermark = "Name"
+        };
+        nameBox.GetObservable(TextBox.TextProperty).Subscribe(value =>
+        {
+            if (_viewModel is not null)
+                _viewModel.SelectedNodeName = value ?? string.Empty;
+        });
+        layout.Children.Add(nameBox);
+
+        var typeBox = new ComboBox
+        {
+            ItemsSource = _viewModel?.EntityTypes,
+            SelectedItem = _viewModel?.SelectedNodeEntityType,
+            HorizontalAlignment = HorizontalAlignment.Stretch
+        };
+        typeBox.SelectionChanged += (_, _) =>
+        {
+            if (_viewModel is not null)
+                _viewModel.SelectedNodeEntityType = typeBox.SelectedItem as EntityType;
+        };
+        layout.Children.Add(typeBox);
+
+        var descriptionBox = new TextBox
+        {
+            Text = _viewModel?.SelectedNodeDescription ?? node.Description,
+            Watermark = "Description",
+            AcceptsReturn = true,
+            Height = 44
+        };
+        descriptionBox.GetObservable(TextBox.TextProperty).Subscribe(value =>
+        {
+            if (_viewModel is not null)
+                _viewModel.SelectedNodeDescription = value ?? string.Empty;
+        });
+        layout.Children.Add(descriptionBox);
+
+        var buttons = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 6
+        };
+
+        var saveButton = new Button
+        {
+            Content = "Save",
+            MinWidth = 56
+        };
+        saveButton.PointerPressed += (_, args) => args.Handled = true;
+        saveButton.Click += (_, _) => _viewModel?.SaveSelectedNodeCommand.Execute(null);
+        buttons.Children.Add(saveButton);
+
+        var deleteButton = new Button
+        {
+            Content = "×",
+            Width = 26,
+            Height = 26,
+            Padding = new Thickness(0)
+        };
+        deleteButton.PointerPressed += (_, args) => args.Handled = true;
+        deleteButton.Click += async (_, _) =>
+        {
+            if (_viewModel is not null)
+            {
+                await _viewModel.DeleteNodeAsync(node);
+                RenderScene();
+            }
+        };
+        buttons.Children.Add(deleteButton);
+
+        layout.Children.Add(buttons);
+        return layout;
+    }
+
     private void ShowCanvasContextMenu()
     {
         if (_canvas is null || _viewModel is null)
@@ -353,6 +440,17 @@ public partial class UniverseCanvasView : UserControl
 
         var menu = new ContextMenu();
         var items = new List<object>();
+
+        var blankItem = new MenuItem
+        {
+            Header = "Create blank item here"
+        };
+        blankItem.Click += async (_, _) =>
+        {
+            await _viewModel.CreateNodeAtAsync(_lastCanvasPoint.X, _lastCanvasPoint.Y);
+            RenderScene();
+        };
+        items.Add(blankItem);
 
         var createHeader = new MenuItem
         {

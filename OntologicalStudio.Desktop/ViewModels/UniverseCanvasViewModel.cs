@@ -583,7 +583,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
 public partial class CanvasEntityNodeViewModel : ObservableObject
 {
     public const double DefaultWidth = 180;
-    public const double DefaultHeight = 88;
+    public const double DefaultHeight = 120;
 
     public Entity Entity { get; }
     public Guid Id => Entity.Id;
