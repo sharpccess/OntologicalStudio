@@ -80,10 +80,17 @@
                     <Separator Margin="0,4"/>
                     <TextBlock Text="{DynamicResource canvas.selectedNode}" FontWeight="SemiBold"/>
                     <TextBox Watermark="{DynamicResource canvas.nodeName}"
-                             Text="{Binding SelectedNodeName, Mode=TwoWay}"/>
-                    <TextBlock Text="{Binding SelectedNode.TypeName}" Opacity="0.7" FontSize="11"/>
+                             Text="{Binding SelectedNodeName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    <ComboBox ItemsSource="{Binding EntityTypes}"
+                              SelectedItem="{Binding SelectedNodeEntityType, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                     <TextBox Watermark="{DynamicResource canvas.nodeDescription}"
-                             Text="{Binding SelectedNodeDescription, Mode=TwoWay}"
+                             Text="{Binding SelectedNodeDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              AcceptsReturn="True"
                              Height="70"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">
@@ -104,7 +111,7 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                     <TextBox Watermark="{DynamicResource canvas.relationshipDescription}"
-                             Text="{Binding SelectedNodeRelationshipDescription, Mode=TwoWay}"
+                             Text="{Binding SelectedNodeRelationshipDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              AcceptsReturn="True"
                              Height="60"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">

@@ -627,22 +627,6 @@ public partial class UniverseCanvasView : UserControl
             Spacing = 6
         };
 
-        var saveButton = new Button
-        {
-            Content = "Save",
-            MinWidth = 56
-        };
-        saveButton.PointerPressed += (_, args) => args.Handled = true;
-        saveButton.Click += async (_, _) =>
-        {
-            if (_viewModel is not null)
-            {
-                await _viewModel.SaveSelectedNodeAsync();
-                RenderScene();
-            }
-        };
-        buttons.Children.Add(saveButton);
-
         var deleteButton = new Button
         {
             Content = "×",

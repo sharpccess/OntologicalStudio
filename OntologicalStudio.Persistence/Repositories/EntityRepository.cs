@@ -60,6 +60,8 @@ public class EntityRepository : IEntityRepository
     public async Task UpdateAsync(Entity entity)
     {
         entity.UpdatedAt = DateTime.UtcNow;
+        entity.EntityType = null!;
+        entity.Universe = null!;
         _entities.Update(entity);
         await _context.SaveChangesAsync();
     }
