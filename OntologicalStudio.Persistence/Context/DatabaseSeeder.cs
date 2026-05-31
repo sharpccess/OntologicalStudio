@@ -11,32 +11,35 @@ public static class DatabaseSeeder
         // Apply migrations automatically
         await context.Database.MigrateAsync();
 
-        // Seed EntityTypes if empty
-        if (!await context.EntityTypes.AnyAsync())
+        var requiredEntityTypes = new List<EntityType>
         {
-            var businessTypes = new List<EntityType>
-            {
-                new() { Name = "CEO", Description = "Chief Executive Officer - Executive leadership role", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "authorityStyle", "keyIncentives", "stressTriggers" }) },
-                new() { Name = "Founder", Description = "Company Founder - Often represents historical values and direct authority", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "attachmentLevel", "strategicVision", "blindSpots" }) },
-                new() { Name = "Manager", Description = "Middle Manager - Coordinates teams and translates strategies to operations", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "spanOfControl", "incentiveAlignment" }) },
-                new() { Name = "Team", Description = "Operational Unit / Team - Executes operational tasks", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "moraleLevel", "skillGaps", "turnoverRisk" }) },
-                new() { Name = "Competitor", Description = "External competitor - Market player affecting strategy", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "marketShare", "competitiveAdvantage" }) },
-                new() { Name = "Customer", Description = "Target audience or consumer - Source of demand", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "satisfactionLevel", "retentionRate" }) },
-                new() { Name = "Stakeholder", Description = "Shareholder or board member - General interested party", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "equityPercentage", "influenceLevel" }) }
-            };
+            new() { Name = "Person", Description = "Individual person - supports personal, family, team and stakeholder modelling", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "personality", "motivations", "fears", "values", "communicationStyle", "relationships" }) },
+            new() { Name = "CEO", Description = "Chief Executive Officer - Executive leadership role", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "authorityStyle", "keyIncentives", "stressTriggers" }) },
+            new() { Name = "Founder", Description = "Company Founder - Often represents historical values and direct authority", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "attachmentLevel", "strategicVision", "blindSpots" }) },
+            new() { Name = "Manager", Description = "Middle Manager - Coordinates teams and translates strategies to operations", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "spanOfControl", "incentiveAlignment" }) },
+            new() { Name = "Team", Description = "Operational Unit / Team - Executes operational tasks", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "moraleLevel", "skillGaps", "turnoverRisk" }) },
+            new() { Name = "Competitor", Description = "External competitor - Market player affecting strategy", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "marketShare", "competitiveAdvantage" }) },
+            new() { Name = "Customer", Description = "Target audience or consumer - Source of demand", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "satisfactionLevel", "retentionRate" }) },
+            new() { Name = "Stakeholder", Description = "Shareholder or board member - General interested party", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "equityPercentage", "influenceLevel" }) },
+            new() { Name = "Belief", Description = "Core Belief - Internalized conviction guiding behavior", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "origin", "rigidity", "impactOnDecisions" }) },
+            new() { Name = "Fear", Description = "Fear / Blocker - Emotional obstacle preventing action", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "underlyingThreat", "copingMechanism" }) },
+            new() { Name = "Goal", Description = "Strategic or Personal Goal - Desired future state", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "targetDate", "priority", "motivationSource" }) },
+            new() { Name = "Habit", Description = "Behavioral Habit - Repeated automated action pattern", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "cue", "routine", "reward", "frequency" }) },
+            new() { Name = "Trigger", Description = "Emotional Trigger - Internal or external event triggering specific reactions", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "stimulusType", "immediateReaction" }) },
+            new() { Name = "Conflict", Description = "Internal Conflict - Contradictory desires or dualities", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "competingDesires", "tensionLevel" }) }
+        };
 
-            var personalTypes = new List<EntityType>
-            {
-                new() { Name = "Belief", Description = "Core Belief - Internalized conviction guiding behavior", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "origin", "rigidity", "impactOnDecisions" }) },
-                new() { Name = "Fear", Description = "Fear / Blocker - Emotional obstacle preventing action", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "underlyingThreat", "copingMechanism" }) },
-                new() { Name = "Goal", Description = "Strategic or Personal Goal - Desired future state", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "targetDate", "priority", "motivationSource" }) },
-                new() { Name = "Habit", Description = "Behavioral Habit - Repeated automated action pattern", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "cue", "routine", "reward", "frequency" }) },
-                new() { Name = "Trigger", Description = "Emotional Trigger - Internal or external event triggering specific reactions", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "stimulusType", "immediateReaction" }) },
-                new() { Name = "Conflict", Description = "Internal Conflict - Contradictory desires or dualities", IsDefaultTemplate = true, SuggestedHydrationFields = JsonSerializer.Serialize(new[] { "competingDesires", "tensionLevel" }) }
-            };
+        var existingTypeNames = await context.EntityTypes
+            .Select(x => x.Name)
+            .ToListAsync();
 
-            await context.EntityTypes.AddRangeAsync(businessTypes);
-            await context.EntityTypes.AddRangeAsync(personalTypes);
+        var missingTypes = requiredEntityTypes
+            .Where(x => !existingTypeNames.Contains(x.Name))
+            .ToList();
+
+        if (missingTypes.Count > 0)
+        {
+            await context.EntityTypes.AddRangeAsync(missingTypes);
         }
 
         // Seed RelationshipTypes if empty

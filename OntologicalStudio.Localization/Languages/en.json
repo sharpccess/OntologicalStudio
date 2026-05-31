@@ -1,6 +1,12 @@
 {
   "app.title": "Ontological Studio",
   "app.subtitle": "Ontology-Augmented Reasoning System",
+  "tab.universes": "Universes",
+  "tab.canvas": "Universe Canvas",
+  "tab.entities": "Entities",
+  "tab.relationships": "Relationships",
+  "tab.scenarios": "Scenarios",
+  "tab.promptPreview": "Prompt Preview",
   
   "menu.file": "File",
   "menu.file.new": "New",

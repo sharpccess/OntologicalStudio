@@ -33,6 +33,7 @@
     <ProjectReference Include="..\OntologicalStudio.Infrastructure\OntologicalStudio.Infrastructure.csproj" />
     <ProjectReference Include="..\OntologicalStudio.Persistence\OntologicalStudio.Persistence.csproj" />
     <ProjectReference Include="..\OntologicalStudio.Core\OntologicalStudio.Core.csproj" />
+    <ProjectReference Include="..\OntologicalStudio.Localization\OntologicalStudio.Localization.csproj" />
   </ItemGroup>
 
 </Project>

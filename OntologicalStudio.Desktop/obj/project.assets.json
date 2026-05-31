@@ -1963,6 +1963,21 @@
           "bin/placeholder/OntologicalStudio.Infrastructure.dll": {}
         }
       },
+      "OntologicalStudio.Localization/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "8.0.0",
+          "Microsoft.Extensions.Configuration.Json": "8.0.0",
+          "Microsoft.Extensions.DependencyInjection": "8.0.0"
+        },
+        "compile": {
+          "bin/placeholder/OntologicalStudio.Localization.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/OntologicalStudio.Localization.dll": {}
+        }
+      },
       "OntologicalStudio.Persistence/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
@@ -4823,6 +4838,11 @@
       "path": "../OntologicalStudio.Infrastructure/OntologicalStudio.Infrastructure.csproj",
       "msbuildProject": "../OntologicalStudio.Infrastructure/OntologicalStudio.Infrastructure.csproj"
     },
+    "OntologicalStudio.Localization/1.0.0": {
+      "type": "project",
+      "path": "../OntologicalStudio.Localization/OntologicalStudio.Localization.csproj",
+      "msbuildProject": "../OntologicalStudio.Localization/OntologicalStudio.Localization.csproj"
+    },
     "OntologicalStudio.Persistence/1.0.0": {
       "type": "project",
       "path": "../OntologicalStudio.Persistence/OntologicalStudio.Persistence.csproj",
@@ -4845,6 +4865,7 @@
       "OntologicalStudio.Application >= 1.0.0",
       "OntologicalStudio.Core >= 1.0.0",
       "OntologicalStudio.Infrastructure >= 1.0.0",
+      "OntologicalStudio.Localization >= 1.0.0",
       "OntologicalStudio.Persistence >= 1.0.0"
     ]
   },
@@ -4894,6 +4915,9 @@
             },
             "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Infrastructure\\OntologicalStudio.Infrastructure.csproj": {
               "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Infrastructure\\OntologicalStudio.Infrastructure.csproj"
+            },
+            "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Localization\\OntologicalStudio.Localization.csproj": {
+              "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Localization\\OntologicalStudio.Localization.csproj"
             },
             "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Persistence\\OntologicalStudio.Persistence.csproj": {
               "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Persistence\\OntologicalStudio.Persistence.csproj"

@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OntologicalStudio.Desktop.ViewModels;
 using OntologicalStudio.Desktop.Views;
 using OntologicalStudio.Infrastructure;
+using OntologicalStudio.Localization.Services;
 using OntologicalStudio.Persistence.Context;
 using System;
 using System.IO;
@@ -60,6 +61,7 @@ public partial class App : Avalonia.Application
 
         var services = new ServiceCollection();
         services.AddInfrastructure(connectionString);
+        services.AddLocalization(Path.Combine(AppContext.BaseDirectory, "Languages"));
         return services.BuildServiceProvider();
     }
 }
