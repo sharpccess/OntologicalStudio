@@ -161,70 +161,98 @@
                         </Grid>
                     </TabItem>
                     <TabItem Header="{DynamicResource scenarios.artifacts}">
-                        <StackPanel Spacing="8">
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <Button Content="TXT" Click="OnExportTxtClick"/>
-                                <Button Content="MD" Click="OnExportMarkdownClick"/>
-                                <Button Content="PDF" Click="OnExportPdfClick"/>
-                                <Button Content="Word" Click="OnExportWordClick"/>
-                                <Button Content="{DynamicResource prompt.copy}" Click="OnCopyFormattedArtifactClick"/>
-                            </StackPanel>
-                            <TabControl>
+                        <Grid RowDefinitions="Auto,*">
+                            <Border Grid.Row="0"
+                                    Margin="0,0,0,8"
+                                    Padding="8"
+                                    Background="#1A2028"
+                                    BorderBrush="#333"
+                                    BorderThickness="1"
+                                    CornerRadius="4">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Button Content="TXT" Click="OnExportTxtClick"/>
+                                    <Button Content="MD" Click="OnExportMarkdownClick"/>
+                                    <Button Content="PDF" Click="OnExportPdfClick"/>
+                                    <Button Content="Word" Click="OnExportWordClick"/>
+                                    <Button Content="{DynamicResource prompt.copy}" Click="OnCopyFormattedArtifactClick"/>
+                                </StackPanel>
+                            </Border>
+                            <TabControl Grid.Row="1">
                                 <TabItem Header="Preview">
-                                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                                  HorizontalScrollBarVisibility="Disabled">
-                                        <ItemsControl ItemsSource="{Binding SelectedArtifactMarkdownBlocks}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate x:DataType="vm:MarkdownPreviewViewModel">
-                                                    <Border Background="{Binding Background}"
-                                                            BorderBrush="{Binding BorderBrush}"
-                                                            BorderThickness="{Binding BorderThickness}"
-                                                            CornerRadius="4"
-                                                            Padding="{Binding Padding}"
-                                                            Margin="{Binding Margin}">
-                                                        <TextBlock Text="{Binding Text}"
-                                                                   TextWrapping="Wrap"
-                                                                   FontSize="{Binding FontSize}"
-                                                                   FontWeight="{Binding FontWeight}"
-                                                                   Foreground="{Binding Foreground}"
-                                                                   FontFamily="{Binding FontFamily}"/>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </ScrollViewer>
+                                    <Border Background="#0F141A"
+                                            BorderBrush="#2A3340"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Margin="0,4,0,0">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                      HorizontalScrollBarVisibility="Disabled"
+                                                      Padding="0">
+                                            <Border Padding="24,20"
+                                                    HorizontalAlignment="Stretch">
+                                                <ItemsControl ItemsSource="{Binding SelectedArtifactMarkdownBlocks}"
+                                                              MaxWidth="780"
+                                                              HorizontalAlignment="Left">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:DataType="vm:MarkdownPreviewViewModel">
+                                                            <Border Background="{Binding Background}"
+                                                                    BorderBrush="{Binding BorderBrush}"
+                                                                    BorderThickness="{Binding BorderThickness}"
+                                                                    CornerRadius="4"
+                                                                    Padding="{Binding Padding}"
+                                                                    Margin="{Binding Margin}">
+                                                                <TextBlock Text="{Binding Text}"
+                                                                           TextWrapping="Wrap"
+                                                                           FontSize="{Binding FontSize}"
+                                                                           FontWeight="{Binding FontWeight}"
+                                                                           Foreground="{Binding Foreground}"
+                                                                           FontFamily="{Binding FontFamily}"
+                                                                           LineHeight="20"/>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </Border>
+                                        </ScrollViewer>
+                                    </Border>
                                 </TabItem>
                                 <TabItem Header="Raw">
-                                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                                  HorizontalScrollBarVisibility="Disabled">
-                                        <ItemsControl ItemsSource="{Binding SelectedSolutionArtifacts}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate x:DataType="vm:SolutionArtifactViewModel">
-                                                    <Border BorderBrush="#333" BorderThickness="0,0,0,1" Padding="0,6">
-                                                        <StackPanel Spacing="4">
-                                                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                                                <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>
-                                                                <TextBlock Text="{Binding KindDisplay}" Opacity="0.6" FontSize="11"/>
-                                                                <TextBlock Text="{Binding MimeType}" Opacity="0.4" FontSize="11"/>
+                                    <Border Background="#0F141A"
+                                            BorderBrush="#2A3340"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Margin="0,4,0,0">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                      HorizontalScrollBarVisibility="Disabled"
+                                                      Padding="12">
+                                            <ItemsControl ItemsSource="{Binding SelectedSolutionArtifacts}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="vm:SolutionArtifactViewModel">
+                                                        <Border BorderBrush="#2A3340" BorderThickness="0,0,0,1" Padding="0,8">
+                                                            <StackPanel Spacing="4">
+                                                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                                                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>
+                                                                    <TextBlock Text="{Binding KindDisplay}" Opacity="0.6" FontSize="11"/>
+                                                                    <TextBlock Text="{Binding MimeType}" Opacity="0.4" FontSize="11"/>
+                                                                </StackPanel>
+                                                                <TextBox Text="{Binding InlineContent, Mode=OneWay}"
+                                                                         IsReadOnly="True"
+                                                                         AcceptsReturn="True"
+                                                                         TextWrapping="Wrap"
+                                                                         FontFamily="Consolas, Menlo, monospace"
+                                                                         FontSize="12"
+                                                                         Background="Transparent"
+                                                                         BorderThickness="0"
+                                                                         MaxHeight="500"/>
                                                             </StackPanel>
-                                                            <TextBox Text="{Binding InlineContent, Mode=OneWay}"
-                                                                     IsReadOnly="True"
-                                                                     AcceptsReturn="True"
-                                                                     TextWrapping="Wrap"
-                                                                     FontFamily="Consolas, Menlo, monospace"
-                                                                     FontSize="12"
-                                                                     Background="Transparent"
-                                                                     BorderThickness="0"
-                                                                     MaxHeight="500"/>
-                                                        </StackPanel>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </ScrollViewer>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </Border>
                                 </TabItem>
                             </TabControl>
-                        </StackPanel>
+                        </Grid>
                     </TabItem>
                 </TabControl>
             </Grid>
