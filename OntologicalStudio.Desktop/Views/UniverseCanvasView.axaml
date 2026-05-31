@@ -7,17 +7,17 @@
         <Border Grid.Column="0" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,8,0">
             <ScrollViewer>
                 <StackPanel Spacing="8">
-                    <TextBlock Text="Universe Canvas" FontWeight="Bold" FontSize="16"/>
+                    <TextBlock Text="{DynamicResource canvas.title}" FontWeight="Bold" FontSize="16"/>
                     <TextBlock Text="{Binding StatusMessage}" Opacity="0.7" TextWrapping="Wrap" FontSize="11"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <Button Content="Zoom -" Command="{Binding ZoomOutCommand}"/>
-                        <Button Content="100%" Command="{Binding ResetZoomCommand}"/>
-                        <Button Content="Zoom +" Command="{Binding ZoomInCommand}"/>
-                        <Button Content="Link mode" Command="{Binding ToggleLinkModeCommand}"/>
+                        <Button Content="{DynamicResource canvas.zoomOut}" Command="{Binding ZoomOutCommand}"/>
+                        <Button Content="{DynamicResource canvas.zoomReset}" Command="{Binding ResetZoomCommand}"/>
+                        <Button Content="{DynamicResource canvas.zoomIn}" Command="{Binding ZoomInCommand}"/>
+                        <Button Content="{DynamicResource canvas.linkMode}" Command="{Binding ToggleLinkModeCommand}"/>
                     </StackPanel>
 
                     <Separator Margin="0,4"/>
-                    <TextBlock Text="Create entity" FontWeight="SemiBold"/>
+                    <TextBlock Text="{DynamicResource canvas.createEntity}" FontWeight="SemiBold"/>
                     <ComboBox ItemsSource="{Binding EntityTypes}"
                               SelectedItem="{Binding SelectedEntityType, Mode=TwoWay}">
                         <ComboBox.ItemTemplate>
@@ -26,20 +26,20 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <TextBox Watermark="Entity name (optional)"
+                    <TextBox Watermark="{DynamicResource canvas.entityNameOptional}"
                              Text="{Binding NewEntityName, Mode=TwoWay}"/>
-                    <TextBox Watermark="Entity description"
+                    <TextBox Watermark="{DynamicResource canvas.entityDescription}"
                              Text="{Binding NewEntityDescription, Mode=TwoWay}"
                              AcceptsReturn="True"
                              Height="72"/>
-                    <TextBlock Text="Double-click or right-click on the canvas to place the entity."
+                    <TextBlock Text="{DynamicResource canvas.createHint}"
                                Opacity="0.6"
                                FontSize="11"
                                TextWrapping="Wrap"/>
 
                     <Separator Margin="0,4"/>
-                    <TextBlock Text="Connect entities" FontWeight="SemiBold"/>
-                    <TextBlock Text="Source" Opacity="0.7" FontSize="11"/>
+                    <TextBlock Text="{DynamicResource canvas.connectEntities}" FontWeight="SemiBold"/>
+                    <TextBlock Text="{DynamicResource canvas.source}" Opacity="0.7" FontSize="11"/>
                     <ComboBox ItemsSource="{Binding Nodes}"
                               SelectedItem="{Binding LinkSource, Mode=TwoWay}">
                         <ComboBox.ItemTemplate>
@@ -48,7 +48,7 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <TextBlock Text="Relationship type" Opacity="0.7" FontSize="11"/>
+                    <TextBlock Text="{DynamicResource canvas.relationshipType}" Opacity="0.7" FontSize="11"/>
                     <ComboBox ItemsSource="{Binding RelationshipTypes}"
                               SelectedItem="{Binding SelectedRelationshipType, Mode=TwoWay}">
                         <ComboBox.ItemTemplate>
@@ -57,7 +57,7 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <TextBlock Text="Target" Opacity="0.7" FontSize="11"/>
+                    <TextBlock Text="{DynamicResource canvas.target}" Opacity="0.7" FontSize="11"/>
                     <ComboBox ItemsSource="{Binding Nodes}"
                               SelectedItem="{Binding LinkTarget, Mode=TwoWay}">
                         <ComboBox.ItemTemplate>
@@ -67,27 +67,27 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Content="Connect" Command="{Binding ConnectCommand}"/>
-                        <Button Content="Refresh" Command="{Binding RefreshCommand}"/>
+                        <Button Content="{DynamicResource canvas.connect}" Command="{Binding ConnectCommand}"/>
+                        <Button Content="{DynamicResource canvas.refresh}" Command="{Binding RefreshCommand}"/>
                     </StackPanel>
 
                     <Separator Margin="0,4"/>
-                    <TextBlock Text="Selected node" FontWeight="SemiBold"/>
-                    <TextBox Watermark="Node name"
+                    <TextBlock Text="{DynamicResource canvas.selectedNode}" FontWeight="SemiBold"/>
+                    <TextBox Watermark="{DynamicResource canvas.nodeName}"
                              Text="{Binding SelectedNodeName, Mode=TwoWay}"/>
                     <TextBlock Text="{Binding SelectedNode.TypeName}" Opacity="0.7" FontSize="11"/>
-                    <TextBox Watermark="Node description"
+                    <TextBox Watermark="{DynamicResource canvas.nodeDescription}"
                              Text="{Binding SelectedNodeDescription, Mode=TwoWay}"
                              AcceptsReturn="True"
                              Height="70"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <Button Content="Save node"/>
-                        <Button Content="Delete selected node"
+                        <Button Content="{DynamicResource canvas.saveNode}"/>
+                        <Button Content="{DynamicResource canvas.deleteSelectedNode}"
                                 Command="{Binding DeleteSelectedNodeCommand}"/>
                     </StackPanel>
 
                     <Separator Margin="0,4"/>
-                    <TextBlock Text="Selected relationship" FontWeight="SemiBold"/>
+                    <TextBlock Text="{DynamicResource canvas.selectedRelationship}" FontWeight="SemiBold"/>
                     <ComboBox ItemsSource="{Binding RelationshipTypes}"
                               SelectedItem="{Binding SelectedNodeRelationshipType, Mode=TwoWay}">
                         <ComboBox.ItemTemplate>
@@ -96,16 +96,16 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <TextBox Watermark="Relationship description"
+                    <TextBox Watermark="{DynamicResource canvas.relationshipDescription}"
                              Text="{Binding SelectedNodeRelationshipDescription, Mode=TwoWay}"
                              AcceptsReturn="True"
                              Height="60"/>
-                    <Button Content="Save relationship" Command="{Binding SaveSelectedRelationshipCommand}"/>
+                    <Button Content="{DynamicResource canvas.saveRelationship}" Command="{Binding SaveSelectedRelationshipCommand}"/>
 
                     <Separator Margin="0,4"/>
                     <StackPanel DataContext="{Binding Hydration}">
-                        <TextBlock Text="Hydration" FontWeight="SemiBold"/>
-                        <TextBox Watermark="Custom prompt for hydration"
+                        <TextBlock Text="{DynamicResource canvas.hydration}" FontWeight="SemiBold"/>
+                        <TextBox Watermark="{DynamicResource canvas.customPrompt}"
                                  Text="{Binding CustomPrompt, Mode=TwoWay}"
                                  AcceptsReturn="True"
                                  Height="72"/>
@@ -116,32 +116,32 @@
                             <CheckBox Content="Patterns" IsChecked="{Binding IncludeBehavioralPatterns, Mode=TwoWay}" Margin="0,0,8,4"/>
                         </WrapPanel>
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <Button Content="Preview hydration" Command="{Binding PreviewCommand}"/>
-                            <Button Content="Apply" Command="{Binding ApplyCommand}"/>
+                            <Button Content="{DynamicResource canvas.previewHydration}" Command="{Binding PreviewCommand}"/>
+                            <Button Content="{DynamicResource canvas.apply}" Command="{Binding ApplyCommand}"/>
                         </StackPanel>
                         <TextBlock Text="{Binding StatusMessage}" Opacity="0.7" FontSize="11" TextWrapping="Wrap"/>
-                        <Expander Header="Preview" IsExpanded="True">
+                        <Expander Header="{DynamicResource canvas.preview}" IsExpanded="True">
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Suggested properties" FontWeight="SemiBold" FontSize="11"/>
+                                <TextBlock Text="{DynamicResource canvas.suggestedProperties}" FontWeight="SemiBold" FontSize="11"/>
                                 <TextBox Text="{Binding Preview.Result.SuggestedProperties, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" Height="90"/>
-                                <TextBlock Text="Suggested notes" FontWeight="SemiBold" FontSize="11"/>
+                                <TextBlock Text="{DynamicResource canvas.suggestedNotes}" FontWeight="SemiBold" FontSize="11"/>
                                 <TextBox Text="{Binding Preview.Result.SuggestedNotes, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" Height="90"/>
-                                <TextBlock Text="Provider / prompt" FontWeight="SemiBold" FontSize="11"/>
+                                <TextBlock Text="{DynamicResource canvas.providerPrompt}" FontWeight="SemiBold" FontSize="11"/>
                                 <TextBox Text="{Binding Preview.PromptUsed, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" Height="70"/>
                             </StackPanel>
                         </Expander>
-                        <Expander Header="Diff / apply selection" IsExpanded="True">
+                        <Expander Header="{DynamicResource canvas.diffApply}" IsExpanded="True">
                             <StackPanel Spacing="4">
-                                <CheckBox Content="Apply hydration data" IsChecked="{Binding ApplyHydrationData, Mode=TwoWay}"/>
+                                <CheckBox Content="{DynamicResource canvas.applyHydrationData}" IsChecked="{Binding ApplyHydrationData, Mode=TwoWay}"/>
                                 <TextBox Text="{Binding DiffHydrationData, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" Height="90"/>
-                                <CheckBox Content="Apply notes" IsChecked="{Binding ApplyNotes, Mode=TwoWay}"/>
+                                <CheckBox Content="{DynamicResource canvas.applyNotes}" IsChecked="{Binding ApplyNotes, Mode=TwoWay}"/>
                                 <TextBox Text="{Binding DiffNotes, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" Height="90"/>
-                                <CheckBox Content="Apply confidence" IsChecked="{Binding ApplyConfidence, Mode=TwoWay}"/>
-                                <CheckBox Content="Apply completeness" IsChecked="{Binding ApplyCompleteness, Mode=TwoWay}"/>
+                                <CheckBox Content="{DynamicResource canvas.applyConfidence}" IsChecked="{Binding ApplyConfidence, Mode=TwoWay}"/>
+                                <CheckBox Content="{DynamicResource canvas.applyCompleteness}" IsChecked="{Binding ApplyCompleteness, Mode=TwoWay}"/>
                                 <TextBox Text="{Binding DiffScores, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" Height="60"/>
                             </StackPanel>
                         </Expander>
-                        <Expander Header="History">
+                        <Expander Header="{DynamicResource canvas.history}">
                             <ItemsControl ItemsSource="{Binding History}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>

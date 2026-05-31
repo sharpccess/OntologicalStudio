@@ -8,8 +8,8 @@
         <Border Grid.Column="0" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,8,0">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,6">
-                    <TextBlock Text="Relationships" FontWeight="Bold" VerticalAlignment="Center"/>
-                    <Button Content="Refresh" Command="{Binding RefreshCommand}"/>
+                    <TextBlock Text="{DynamicResource relationships.title}" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <Button Content="{DynamicResource relationships.refresh}" Command="{Binding RefreshCommand}"/>
                 </StackPanel>
                 <ListBox ItemsSource="{Binding Items}"
                          SelectedItem="{Binding SelectedRelationship, Mode=TwoWay}">
@@ -28,13 +28,13 @@
         <Border Grid.Column="1" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="12">
             <ScrollViewer>
                 <StackPanel Spacing="8">
-                    <TextBlock Text="Readonly relationship index from the canvas." FontWeight="Bold"/>
-                    <TextBlock Text="Use the Universe Canvas to create, connect, edit, or delete relationships." TextWrapping="Wrap" Opacity="0.7"/>
+                    <TextBlock Text="{DynamicResource relationships.readonlyTitle}" FontWeight="Bold"/>
+                    <TextBlock Text="{DynamicResource relationships.readonlyHint}" TextWrapping="Wrap" Opacity="0.7"/>
                     <Separator Margin="0,6"/>
-                    <TextBlock Text="Selected relationship" FontWeight="SemiBold"/>
+                    <TextBlock Text="{DynamicResource relationships.selected}" FontWeight="SemiBold"/>
                     <TextBlock Text="{Binding SelectedRelationship.Display}" FontFamily="Consolas, Menlo, monospace" TextWrapping="Wrap"/>
                     <TextBlock Text="{Binding SelectedRelationship.Description}" TextWrapping="Wrap" Opacity="0.7"/>
-                    <Button Content="Delete selected" Command="{Binding DeleteCommand}"/>
+                    <Button Content="{DynamicResource relationships.deleteSelected}" Command="{Binding DeleteCommand}"/>
                     <TextBlock Text="{Binding StatusMessage}" Opacity="0.7" FontSize="11"/>
                 </StackPanel>
             </ScrollViewer>
