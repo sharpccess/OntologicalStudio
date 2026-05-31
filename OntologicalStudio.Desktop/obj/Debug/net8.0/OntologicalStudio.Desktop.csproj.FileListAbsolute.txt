@@ -231,3 +231,9 @@ C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Desktop\bin\Debug\net8.0\DocumentFormat.OpenXml.dll
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Desktop\bin\Debug\net8.0\DocumentFormat.OpenXml.Framework.dll
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Desktop\bin\Debug\net8.0\System.IO.Packaging.dll
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_desktop\Assets\app-icon.ico
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_desktop\README_ES.txt
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\temp_build_desktop\README_EN.txt
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Desktop\bin\Debug\net8.0\Assets\app-icon.ico
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Desktop\bin\Debug\net8.0\README_ES.txt
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Desktop\bin\Debug\net8.0\README_EN.txt

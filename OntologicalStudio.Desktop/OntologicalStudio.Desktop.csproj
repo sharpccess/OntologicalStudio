@@ -9,6 +9,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <RootNamespace>OntologicalStudio.Desktop</RootNamespace>
+    <ApplicationIcon>Assets\app-icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,6 +41,10 @@
     <None Include="..\OntologicalStudio.Localization\Languages\*.json"
           Link="Languages\%(Filename)%(Extension)"
           CopyToOutputDirectory="PreserveNewest" />
+    <AvaloniaResource Include="Assets\app-icon.png" />
+    <Content Include="Assets\app-icon.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\README_ES.txt" Link="README_ES.txt" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\README_EN.txt" Link="README_EN.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

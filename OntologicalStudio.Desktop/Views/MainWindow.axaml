@@ -20,6 +20,8 @@
                     <TextBlock Text="{Binding AppSubtitle}" FontSize="12" Opacity="0.6" VerticalAlignment="Center"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                    <Button Content="{Binding HelpLabel}"
+                            Command="{Binding OpenHelpCommand}"/>
                     <Button Content="{Binding AiSettingsToggleLabel}"
                             Command="{Binding ToggleAiSettingsCommand}"/>
                     <TextBlock Text="{Binding LanguageLabel}" VerticalAlignment="Center" Opacity="0.75"/>

@@ -319,6 +319,15 @@ public partial class UniverseCanvasView : UserControl
         RenderScene();
     }
 
+    private void OnNodeColorSwatchPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (_viewModel is null || sender is not Border border || border.Tag is not string hex)
+            return;
+
+        _viewModel.SelectedNodeColor = hex;
+        e.Handled = true;
+    }
+
     private void OnSelectedRelationshipTypeComboChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (_viewModel is null)

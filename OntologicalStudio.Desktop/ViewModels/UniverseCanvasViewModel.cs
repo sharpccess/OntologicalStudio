@@ -37,6 +37,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
     public ObservableCollection<CanvasRelationshipEdgeViewModel> Edges { get; } = new();
     public ObservableCollection<EntityType> EntityTypes { get; } = new();
     public ObservableCollection<RelationshipType> RelationshipTypes { get; } = new();
+    public ObservableCollection<NodeColorOption> NodeColorPalette { get; } = new();
     public EntityHydrationViewModel Hydration { get; }
 
     [ObservableProperty]
@@ -99,6 +100,9 @@ public partial class UniverseCanvasViewModel : ObservableObject
     private string selectedNodeColor = "#D7EAF7";
 
     [ObservableProperty]
+    private NodeColorOption? selectedNodeColorOption;
+
+    [ObservableProperty]
     private RelationshipType? selectedNodeRelationshipType;
 
     [ObservableProperty]
@@ -137,11 +141,20 @@ public partial class UniverseCanvasViewModel : ObservableObject
             return;
 
         SelectedNode.NodeColor = NormalizeNodeColor(value);
+        SelectedNodeColorOption = NodeColorPalette.FirstOrDefault(x => x.Hex == SelectedNode.NodeColor);
         SelectedNode.Entity.Properties = UpdateNodeVisualProperties(
             SelectedNode.Entity.Properties,
             SelectedNode.NodeColor);
         SelectedNode.RefreshDisplay();
         QueueSelectedNodeAutosave();
+    }
+    partial void OnSelectedNodeColorOptionChanged(NodeColorOption? value)
+    {
+        if (_suspendSelectedNodeAutosave || value is null || SelectedNode is null)
+            return;
+
+        if (!string.Equals(SelectedNodeColor, value.Hex, StringComparison.OrdinalIgnoreCase))
+            SelectedNodeColor = value.Hex;
     }
     partial void OnSelectedNodeRelationshipTypeChanged(RelationshipType? value)
     {
@@ -168,6 +181,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
         _universes = universes;
         _localization = provider.GetRequiredService<ILocalizationService>();
         Hydration = new EntityHydrationViewModel(provider);
+        InitializeNodeColorPalette();
         _universes.SelectionChanged += async () =>
         {
             OnPropertyChanged(nameof(HasSelectedUniverse));
@@ -821,6 +835,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
                 SelectedNodeNotes = string.Empty;
                 SelectedNodeEntityType = null;
                 SelectedNodeColor = "#D7EAF7";
+                SelectedNodeColorOption = NodeColorPalette.FirstOrDefault(x => x.Hex == SelectedNodeColor);
                 return;
             }
 
@@ -830,6 +845,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
         SelectedNodeEntityType = EntityTypes.FirstOrDefault(x => x.Id == node.Entity.EntityTypeId);
         SelectedNodeEntityTypeText = SelectedNodeEntityType?.DisplayName ?? node.Entity.EntityType?.DisplayName ?? node.Entity.EntityType?.Name ?? string.Empty;
         SelectedNodeColor = node.NodeColor;
+        SelectedNodeColorOption = NodeColorPalette.FirstOrDefault(x => x.Hex == node.NodeColor);
         }
         finally
         {
@@ -1148,12 +1164,43 @@ public partial class UniverseCanvasViewModel : ObservableObject
 
     private static string GenerateSoftRandomColor()
     {
-        var random = Random.Shared;
-        var red = random.Next(180, 236);
-        var green = random.Next(180, 236);
-        var blue = random.Next(180, 236);
-        return $"#{red:X2}{green:X2}{blue:X2}";
+        return SoftNodeColors[Random.Shared.Next(SoftNodeColors.Length)];
     }
+
+    private void InitializeNodeColorPalette()
+    {
+        if (NodeColorPalette.Count > 0)
+            return;
+
+        foreach (var hex in SoftNodeColors)
+            NodeColorPalette.Add(new NodeColorOption(hex));
+    }
+
+    private static readonly string[] SoftNodeColors =
+    {
+        "#F2C9C9",
+        "#F7D7B5",
+        "#F5E6A8",
+        "#D6ECA8",
+        "#BFE3C0",
+        "#BFE5D6",
+        "#C8E8F2",
+        "#C9D9F7",
+        "#D8CCF5",
+        "#F0C9E8",
+        "#E5D4C2",
+        "#D7EAF7"
+    };
+}
+
+public class NodeColorOption
+{
+    public NodeColorOption(string hex)
+    {
+        Hex = hex;
+    }
+
+    public string Hex { get; }
 }
 
 public partial class CanvasEntityNodeViewModel : ObservableObject

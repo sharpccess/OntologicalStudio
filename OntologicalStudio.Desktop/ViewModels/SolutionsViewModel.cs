@@ -5,10 +5,15 @@ using OntologicalStudio.Application.Services;
 using OntologicalStudio.Core.Models;
 using OntologicalStudio.Desktop.Services;
 using OntologicalStudio.Localization.Services;
+using Avalonia;
+using Avalonia.Media;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace OntologicalStudio.Desktop.ViewModels;
@@ -20,6 +25,7 @@ public partial class SolutionsViewModel : ObservableObject
 
     public ObservableCollection<Solution> Items { get; } = new();
     public ObservableCollection<SolutionArtifactViewModel> SelectedSolutionArtifacts { get; } = new();
+    public ObservableCollection<MarkdownPreviewViewModel> SelectedArtifactMarkdownBlocks { get; } = new();
     public ObservableCollection<string> ResolutionStyles { get; } = new();
 
     [ObservableProperty]
@@ -194,6 +200,7 @@ public partial class SolutionsViewModel : ObservableObject
     private void RebuildSelectedArtifacts()
     {
         SelectedSolutionArtifacts.Clear();
+        SelectedArtifactMarkdownBlocks.Clear();
         if (SelectedSolution is null)
             return;
 
@@ -207,6 +214,55 @@ public partial class SolutionsViewModel : ObservableObject
                 InlineContent = artifact.InlineContent
             });
         }
+
+        var markdownArtifact = SelectedSolution.Artifacts
+            .OrderBy(x => x.Order)
+            .FirstOrDefault(x =>
+                x.Kind == ArtifactKind.Markdown
+                || string.Equals(x.MimeType, "text/markdown", StringComparison.OrdinalIgnoreCase));
+
+        var previewSource = markdownArtifact?.InlineContent
+            ?? SelectedSolution.Artifacts.OrderBy(x => x.Order).FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.InlineContent))?.InlineContent
+            ?? string.Empty;
+
+        foreach (var block in BuildMarkdownPreview(previewSource))
+            SelectedArtifactMarkdownBlocks.Add(block);
+    }
+
+    public string BuildSelectedArtifactHtml()
+    {
+        if (SelectedArtifactMarkdownBlocks.Count == 0)
+            return "<html><body></body></html>";
+
+        var html = new StringBuilder();
+        html.Append("<html><body style=\"font-family:Segoe UI, Arial, sans-serif; color:#1f2937;\">");
+
+        foreach (var block in SelectedArtifactMarkdownBlocks)
+        {
+            var text = WebUtility.HtmlEncode(block.Text);
+
+            if (block.IsCode)
+            {
+                html.Append("<pre style=\"background:#f3f4f6; padding:8px; border:1px solid #d1d5db; border-radius:4px; font-family:Consolas, monospace; font-size:10pt; white-space:pre-wrap;\">");
+                html.Append(text);
+                html.Append("</pre>");
+                continue;
+            }
+
+            if (block.FontSize >= 19)
+                html.Append($"<h1>{text}</h1>");
+            else if (block.FontSize >= 15)
+                html.Append($"<h2>{text}</h2>");
+            else if (block.FontSize >= 13 && block.FontWeight == FontWeight.Bold)
+                html.Append($"<h3>{text}</h3>");
+            else if (text.StartsWith("• "))
+                html.Append($"<p style=\"margin-left:12px;\">{text}</p>");
+            else
+                html.Append($"<p>{text}</p>");
+        }
+
+        html.Append("</body></html>");
+        return html.ToString();
     }
 
     private string LocalizeArtifactKind(ArtifactKind kind)
@@ -256,6 +312,146 @@ public partial class SolutionsViewModel : ObservableObject
         }
 
         SelectedResolutionStyle = string.Empty;
+    }
+
+    private static IReadOnlyList<MarkdownPreviewViewModel> BuildMarkdownPreview(string markdown)
+    {
+        var result = new List<MarkdownPreviewViewModel>();
+        if (string.IsNullOrWhiteSpace(markdown))
+            return result;
+
+        var paragraphLines = new List<string>();
+        var codeLines = new List<string>();
+        var inCodeBlock = false;
+
+        void FlushParagraph()
+        {
+            if (paragraphLines.Count == 0)
+                return;
+
+            result.Add(new MarkdownPreviewViewModel
+            {
+                Text = string.Join(" ", paragraphLines).Trim(),
+                FontSize = 12,
+                FontWeight = FontWeight.Normal,
+                Foreground = Brushes.White,
+                Margin = new Thickness(0, 0, 0, 8)
+            });
+            paragraphLines.Clear();
+        }
+
+        foreach (var rawLine in markdown.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n'))
+        {
+            var line = rawLine.TrimEnd();
+
+            if (line.StartsWith("```", StringComparison.Ordinal))
+            {
+                FlushParagraph();
+                if (inCodeBlock)
+                {
+                    result.Add(new MarkdownPreviewViewModel
+                    {
+                        Text = string.Join(Environment.NewLine, codeLines),
+                        FontSize = 11,
+                        FontWeight = FontWeight.Normal,
+                        IsCode = true,
+                        Foreground = new SolidColorBrush(Color.Parse("#E5E7EB")),
+                        Margin = new Thickness(0, 0, 0, 10)
+                    });
+                    codeLines.Clear();
+                    inCodeBlock = false;
+                }
+                else
+                {
+                    inCodeBlock = true;
+                }
+                continue;
+            }
+
+            if (inCodeBlock)
+            {
+                codeLines.Add(rawLine);
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                FlushParagraph();
+                continue;
+            }
+
+            if (line.StartsWith("# ", StringComparison.Ordinal))
+            {
+                FlushParagraph();
+                result.Add(new MarkdownPreviewViewModel
+                {
+                    Text = line[2..].Trim(),
+                    FontSize = 20,
+                    FontWeight = FontWeight.Bold,
+                    Foreground = Brushes.White,
+                    Margin = new Thickness(0, 0, 0, 10)
+                });
+                continue;
+            }
+
+            if (line.StartsWith("## ", StringComparison.Ordinal))
+            {
+                FlushParagraph();
+                result.Add(new MarkdownPreviewViewModel
+                {
+                    Text = line[3..].Trim(),
+                    FontSize = 16,
+                    FontWeight = FontWeight.Bold,
+                    Foreground = Brushes.White,
+                    Margin = new Thickness(0, 4, 0, 8)
+                });
+                continue;
+            }
+
+            if (line.StartsWith("### ", StringComparison.Ordinal))
+            {
+                FlushParagraph();
+                result.Add(new MarkdownPreviewViewModel
+                {
+                    Text = line[4..].Trim(),
+                    FontSize = 13,
+                    FontWeight = FontWeight.Bold,
+                    Foreground = Brushes.White,
+                    Margin = new Thickness(0, 2, 0, 6)
+                });
+                continue;
+            }
+
+            if (line.StartsWith("- ", StringComparison.Ordinal) || line.StartsWith("* ", StringComparison.Ordinal))
+            {
+                FlushParagraph();
+                result.Add(new MarkdownPreviewViewModel
+                {
+                    Text = $"• {line[2..].Trim()}",
+                    FontSize = 12,
+                    FontWeight = FontWeight.Normal,
+                    Foreground = Brushes.White,
+                    Margin = new Thickness(10, 0, 0, 6)
+                });
+                continue;
+            }
+
+            paragraphLines.Add(StripInlineMarkdown(line));
+        }
+
+        FlushParagraph();
+        return result;
+    }
+
+    private static string StripInlineMarkdown(string line)
+    {
+        var text = line;
+        text = Regex.Replace(text, @"\[(.*?)\]\((.*?)\)", "$1");
+        text = text.Replace("**", string.Empty, StringComparison.Ordinal)
+                   .Replace("__", string.Empty, StringComparison.Ordinal)
+                   .Replace("`", string.Empty, StringComparison.Ordinal)
+                   .Replace("_", string.Empty, StringComparison.Ordinal);
+        return text.Trim();
     }
 }
 

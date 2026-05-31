@@ -10,6 +10,7 @@ using System.Diagnostics;
 using Avalonia.Threading;
 using System.IO;
 using System.Text;
+using System.Runtime.InteropServices;
 
 namespace OntologicalStudio.Desktop.ViewModels;
 
@@ -78,6 +79,9 @@ public partial class MainWindowViewModel : ObservableObject
 
     [ObservableProperty]
     private string aiSettingsClearLabel = "Clear AI settings";
+
+    [ObservableProperty]
+    private string helpLabel = "Help";
 
     [ObservableProperty]
     private string selectedLanguageCode = "en";
@@ -178,6 +182,7 @@ public partial class MainWindowViewModel : ObservableObject
         AiSettingsApiKeyLabel = _localization.T("ai.settings.apiKey");
         AiSettingsSaveLabel = _localization.T("ai.settings.save");
         AiSettingsClearLabel = _localization.T("ai.settings.clear");
+        HelpLabel = _localization.T("menu.help");
         UniversesTabHeader = _localization.T("tab.universes");
         CanvasTabHeader = _localization.T("tab.canvas");
         EntitiesTabHeader = _localization.T("tab.entities");
@@ -276,6 +281,38 @@ public partial class MainWindowViewModel : ObservableObject
     private void ToggleAiSettings()
     {
         IsAiSettingsVisible = !IsAiSettingsVisible;
+    }
+
+    [RelayCommand]
+    private void OpenHelp()
+    {
+        try
+        {
+            var fileName = string.Equals(_localization.CurrentLanguageCode, "es", StringComparison.OrdinalIgnoreCase)
+                ? "README_ES.txt"
+                : "README_EN.txt";
+
+            var baseDirectory = AppContext.BaseDirectory;
+            var candidatePaths = new[]
+            {
+                Path.Combine(baseDirectory, fileName),
+                Path.Combine(Directory.GetParent(baseDirectory)?.FullName ?? baseDirectory, fileName),
+                Path.Combine(Directory.GetParent(Directory.GetParent(baseDirectory)?.FullName ?? baseDirectory)?.FullName ?? baseDirectory, fileName)
+            };
+
+            var helpPath = candidatePaths.FirstOrDefault(File.Exists);
+            if (string.IsNullOrWhiteSpace(helpPath))
+                return;
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = helpPath,
+                UseShellExecute = true
+            });
+        }
+        catch
+        {
+        }
     }
 
     private void HandleUniverseStateChanged()

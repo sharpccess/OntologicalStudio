@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Media.Imaging;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Microsoft.EntityFrameworkCore;
@@ -67,6 +68,9 @@ public partial class App : Avalonia.Application
                     {
                         DataContext = viewModel
                     };
+                    var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "app-icon.png");
+                    if (File.Exists(iconPath))
+                        window.Icon = new WindowIcon(new Bitmap(iconPath));
                     desktop.MainWindow = window;
                     WriteStartupLog("MainWindow created");
                 }

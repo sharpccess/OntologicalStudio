@@ -57,7 +57,7 @@
         <Border Grid.Column="1" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,8,0"
                 DataContext="{Binding Solutions}"
                 x:DataType="vm:SolutionsViewModel">
-            <Grid RowDefinitions="Auto,*,Auto,Auto,*,Auto,Auto">
+            <Grid RowDefinitions="Auto,*,Auto,*,Auto,Auto">
                 <TextBlock Grid.Row="0" Text="{DynamicResource scenarios.solutions}" FontWeight="Bold" Margin="0,0,0,6"/>
                 <ListBox Grid.Row="1"
                          ItemsSource="{Binding Items}"
@@ -82,27 +82,45 @@
                               ResizeDirection="Rows"
                               ShowsPreview="True"
                               Margin="0,8,0,8"/>
-                <ComboBox Grid.Row="3"
-                          ItemsSource="{Binding ResolutionStyles}"
-                          SelectedItem="{Binding SelectedResolutionStyle, Mode=TwoWay}"/>
-                <TextBox Grid.Row="4"
-                         Watermark="{DynamicResource scenarios.extraInstructions}"
-                         Text="{Binding ExtraInstructions, Mode=TwoWay}"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         MinHeight="70"/>
-                <GridSplitter Grid.Row="5"
-                              Height="8"
-                              Background="#2d3742"
-                              ResizeDirection="Rows"
-                              ShowsPreview="True"
-                              Margin="0,8,0,8"/>
-                <StackPanel Grid.Row="6" Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
-                    <Button Content="{DynamicResource scenarios.run}" Command="{Binding RunCommand}" IsEnabled="{Binding !IsRunning}"/>
-                    <Button Content="{DynamicResource scenarios.markFinal}" Command="{Binding MarkFinalCommand}"/>
-                    <Button Content="{DynamicResource scenarios.delete}" Command="{Binding DeleteCommand}"/>
+                <StackPanel Grid.Row="3" Spacing="8">
+                    <ComboBox ItemsSource="{Binding ResolutionStyles}"
+                              SelectedItem="{Binding SelectedResolutionStyle, Mode=TwoWay}"/>
+                    <TextBox Watermark="{DynamicResource scenarios.extraInstructions}"
+                             Text="{Binding ExtraInstructions, Mode=TwoWay}"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             MinHeight="96"/>
                 </StackPanel>
-                <TextBlock Grid.Row="7" Text="{Binding StatusMessage}" Opacity="0.7" FontSize="11" Margin="0,8,0,0"/>
+                <Border Grid.Row="4"
+                        Margin="0,8,0,0"
+                        Padding="8"
+                        Background="#1A2028"
+                        BorderBrush="#333"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                    <Grid ColumnDefinitions="Auto,Auto,Auto,*" RowDefinitions="Auto,Auto">
+                        <Button Grid.Row="0" Grid.Column="0"
+                                Margin="0,0,8,0"
+                                Content="{DynamicResource scenarios.run}"
+                                Command="{Binding RunCommand}"
+                                IsEnabled="{Binding !IsRunning}"/>
+                        <Button Grid.Row="0" Grid.Column="1"
+                                Margin="0,0,8,0"
+                                Content="{DynamicResource scenarios.markFinal}"
+                                Command="{Binding MarkFinalCommand}"/>
+                        <Button Grid.Row="0" Grid.Column="2"
+                                Margin="0,0,8,0"
+                                Content="{DynamicResource scenarios.delete}"
+                                Command="{Binding DeleteCommand}"/>
+                        <TextBlock Grid.Row="1"
+                                   Margin="0,8,0,0"
+                                   Grid.ColumnSpan="4"
+                                   Text="{Binding StatusMessage}"
+                                   Opacity="0.7"
+                                   FontSize="11"
+                                   TextWrapping="Wrap"/>
+                    </Grid>
+                </Border>
             </Grid>
         </Border>
 
@@ -118,14 +136,29 @@
                 </StackPanel>
                 <TabControl Grid.Row="1">
                     <TabItem Header="{DynamicResource scenarios.promptSent}">
-                        <TextBox Text="{Binding SelectedSolution.PromptSnapshot, Mode=OneWay}"
-                                 IsReadOnly="True"
-                                 AcceptsReturn="True"
-                                 TextWrapping="Wrap"
-                                 FontFamily="Consolas, Menlo, monospace"
-                                 FontSize="12"
-                                 Background="Transparent"
-                                 BorderThickness="0"/>
+                        <Grid RowDefinitions="Auto,*">
+                            <Border Grid.Row="0"
+                                    Margin="0,0,0,8"
+                                    Padding="8"
+                                    Background="#1A2028"
+                                    BorderBrush="#333"
+                                    BorderThickness="1"
+                                    CornerRadius="4">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Button Content="{DynamicResource prompt.copy}" Click="OnCopyPromptClick"/>
+                                    <Button Content="{DynamicResource menu.file.save}" Click="OnSavePromptClick"/>
+                                </StackPanel>
+                            </Border>
+                            <TextBox Grid.Row="1"
+                                     Text="{Binding SelectedSolution.PromptSnapshot, Mode=OneWay}"
+                                     IsReadOnly="True"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     FontFamily="Consolas, Menlo, monospace"
+                                     FontSize="12"
+                                     Background="Transparent"
+                                     BorderThickness="0"/>
+                        </Grid>
                     </TabItem>
                     <TabItem Header="{DynamicResource scenarios.artifacts}">
                         <StackPanel Spacing="8">
@@ -134,31 +167,59 @@
                                 <Button Content="MD" Click="OnExportMarkdownClick"/>
                                 <Button Content="PDF" Click="OnExportPdfClick"/>
                                 <Button Content="Word" Click="OnExportWordClick"/>
+                                <Button Content="{DynamicResource prompt.copy}" Click="OnCopyFormattedArtifactClick"/>
                             </StackPanel>
-                            <ItemsControl ItemsSource="{Binding SelectedSolutionArtifacts}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="vm:SolutionArtifactViewModel">
-                                        <Border BorderBrush="#333" BorderThickness="0,0,0,1" Padding="0,6">
-                                            <StackPanel Spacing="4">
-                                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>
-                                                    <TextBlock Text="{Binding KindDisplay}" Opacity="0.6" FontSize="11"/>
-                                                    <TextBlock Text="{Binding MimeType}" Opacity="0.4" FontSize="11"/>
-                                                </StackPanel>
-                                                <TextBox Text="{Binding InlineContent, Mode=OneWay}"
-                                                         IsReadOnly="True"
-                                                         AcceptsReturn="True"
-                                                         TextWrapping="Wrap"
-                                                         FontFamily="Consolas, Menlo, monospace"
-                                                         FontSize="12"
-                                                         Background="Transparent"
-                                                         BorderThickness="0"
-                                                         MaxHeight="500"/>
-                                            </StackPanel>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                            <TabControl>
+                                <TabItem Header="Preview">
+                                    <ScrollViewer>
+                                        <ItemsControl ItemsSource="{Binding SelectedArtifactMarkdownBlocks}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:MarkdownPreviewViewModel">
+                                                    <Border Background="{Binding IsCode, Converter={x:Static BooleanToBrushConverter.Instance}}"
+                                                            BorderBrush="#374151"
+                                                            BorderThickness="{Binding IsCode, Converter={x:Static BooleanToThicknessConverter.Instance}}"
+                                                            CornerRadius="4"
+                                                            Padding="{Binding IsCode, Converter={x:Static BooleanToPaddingConverter.Instance}}"
+                                                            Margin="{Binding Margin}">
+                                                        <TextBlock Text="{Binding Text}"
+                                                                   TextWrapping="Wrap"
+                                                                   FontSize="{Binding FontSize}"
+                                                                   FontWeight="{Binding FontWeight}"
+                                                                   Foreground="{Binding Foreground}"
+                                                                   FontFamily="{Binding IsCode, Converter={x:Static BooleanToFontFamilyConverter.Instance}}"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </TabItem>
+                                <TabItem Header="Raw">
+                                    <ItemsControl ItemsSource="{Binding SelectedSolutionArtifacts}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:SolutionArtifactViewModel">
+                                                <Border BorderBrush="#333" BorderThickness="0,0,0,1" Padding="0,6">
+                                                    <StackPanel Spacing="4">
+                                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                                            <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>
+                                                            <TextBlock Text="{Binding KindDisplay}" Opacity="0.6" FontSize="11"/>
+                                                            <TextBlock Text="{Binding MimeType}" Opacity="0.4" FontSize="11"/>
+                                                        </StackPanel>
+                                                        <TextBox Text="{Binding InlineContent, Mode=OneWay}"
+                                                                 IsReadOnly="True"
+                                                                 AcceptsReturn="True"
+                                                                 TextWrapping="Wrap"
+                                                                 FontFamily="Consolas, Menlo, monospace"
+                                                                 FontSize="12"
+                                                                 Background="Transparent"
+                                                                 BorderThickness="0"
+                                                                 MaxHeight="500"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </TabItem>
+                            </TabControl>
                         </StackPanel>
                     </TabItem>
                 </TabControl>
