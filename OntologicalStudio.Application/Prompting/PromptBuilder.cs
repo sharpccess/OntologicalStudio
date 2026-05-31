@@ -79,7 +79,7 @@ public class PromptBuilder : IPromptBuilder
             sb.AppendLine(isSpanish ? "_(todavía no hay entidades definidas)_" : "_(no entities defined yet)_");
         foreach (var e in entities)
         {
-            sb.AppendLine($"- **{e.Name}** ({e.EntityType?.Name ?? (isSpanish ? "Entidad" : "Entity")})");
+            sb.AppendLine($"- **{e.Name}** ({e.EntityType?.DisplayName ?? e.EntityType?.Name ?? (isSpanish ? "Entidad" : "Entity")})");
             if (!string.IsNullOrWhiteSpace(e.Description))
                 sb.AppendLine(isSpanish ? $"  Descripción: {e.Description}" : $"  Description: {e.Description}");
             if (!string.IsNullOrWhiteSpace(e.Notes))
@@ -87,6 +87,8 @@ public class PromptBuilder : IPromptBuilder
             sb.AppendLine(isSpanish
                 ? $"  Confianza: {e.ConfidenceLevel}% | Completitud: {e.CompletenessScore}%"
                 : $"  Confidence: {e.ConfidenceLevel}% | Completeness: {e.CompletenessScore}%");
+            if (!string.IsNullOrWhiteSpace(e.HydrationData))
+                sb.AppendLine(isSpanish ? $"  Datos de hidratación: {e.HydrationData}" : $"  Hydration data: {e.HydrationData}");
         }
         sb.AppendLine();
 
@@ -97,7 +99,7 @@ public class PromptBuilder : IPromptBuilder
         {
             var src = entities.FirstOrDefault(x => x.Id == r.SourceEntityId)?.Name ?? "?";
             var tgt = entities.FirstOrDefault(x => x.Id == r.TargetEntityId)?.Name ?? "?";
-            var type = r.RelationshipType?.Name ?? "relatesTo";
+            var type = r.RelationshipType?.DisplayName ?? r.RelationshipType?.Name ?? "relatesTo";
             sb.AppendLine($"- {src} --({type})--> {tgt}");
             if (!string.IsNullOrWhiteSpace(r.Description))
                 sb.AppendLine($"  {r.Description}");

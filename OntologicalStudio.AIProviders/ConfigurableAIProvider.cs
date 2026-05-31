@@ -99,18 +99,20 @@ public class ConfigurableAIProvider : IAIProvider
         {
             try
             {
-                // Parse AI JSON output
-                var node = JsonNode.Parse(rawResponse);
+                var jsonPayload = ExtractJsonObject(rawResponse);
+                var node = JsonNode.Parse(jsonPayload);
                 if (node != null)
                 {
+                    var analysisNotes = node["analysisNotes"]?.GetValue<string>()?.Trim();
+                    var suggestedPropertiesJson = node["suggestedProperties"]?.ToString() ?? "{}";
                     return new HydrationResult
                     {
                         ConfidenceScore = node["confidenceScore"]?.GetValue<int>() ?? 70,
                         CompletenessScore = node["completenessScore"]?.GetValue<int>() ?? 75,
-                        SuggestedProperties = node["suggestedProperties"]?.ToString() ?? "{}",
-                        SuggestedPropertiesJson = node["suggestedProperties"]?.ToString() ?? "{}",
-                        SuggestedNotes = node["analysisNotes"]?.GetValue<string>() ?? "Completed via AI.",
-                        AnalysisNotes = node["analysisNotes"]?.GetValue<string>() ?? "Completed via AI."
+                        SuggestedProperties = suggestedPropertiesJson,
+                        SuggestedPropertiesJson = suggestedPropertiesJson,
+                        SuggestedNotes = analysisNotes ?? (isSpanish ? "Completado mediante IA." : "Completed via AI."),
+                        AnalysisNotes = analysisNotes ?? (isSpanish ? "Completado mediante IA." : "Completed via AI.")
                     };
                 }
             }
@@ -293,6 +295,17 @@ public class ConfigurableAIProvider : IAIProvider
         }
 
         return builder.ToString().Trim();
+    }
+
+    private static string ExtractJsonObject(string rawResponse)
+    {
+        var trimmed = rawResponse.Trim();
+        var firstBrace = trimmed.IndexOf('{');
+        var lastBrace = trimmed.LastIndexOf('}');
+        if (firstBrace >= 0 && lastBrace > firstBrace)
+            return trimmed[firstBrace..(lastBrace + 1)];
+
+        return trimmed;
     }
 
     private string GenerateHeuristicAnalysis(string promptTemplate)
