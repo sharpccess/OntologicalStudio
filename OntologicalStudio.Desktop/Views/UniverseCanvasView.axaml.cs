@@ -648,7 +648,7 @@ public partial class UniverseCanvasView : UserControl
 
         var blankItem = new MenuItem
         {
-            Header = "Create blank item here"
+            Header = App.Current?.Resources.TryGetValue("canvas.menu.createBlank", out var createBlank) == true ? createBlank?.ToString() : "Create blank item here"
         };
         blankItem.Click += async (_, _) =>
         {
@@ -659,7 +659,7 @@ public partial class UniverseCanvasView : UserControl
 
         var createHeader = new MenuItem
         {
-            Header = "Create new item"
+            Header = App.Current?.Resources.TryGetValue("canvas.menu.createNew", out var createNew) == true ? createNew?.ToString() : "Create new item"
         };
         var createItems = new List<object>();
         foreach (var entityType in _viewModel.EntityTypes.OrderBy(x => x.Name))
@@ -680,7 +680,7 @@ public partial class UniverseCanvasView : UserControl
 
         var existingHeader = new MenuItem
         {
-            Header = "Add existing item here"
+            Header = App.Current?.Resources.TryGetValue("canvas.menu.addExisting", out var addExisting) == true ? addExisting?.ToString() : "Add existing item here"
         };
         var existingItems = new List<object>();
         foreach (var node in _viewModel.Nodes.OrderBy(x => x.Name))
@@ -703,7 +703,7 @@ public partial class UniverseCanvasView : UserControl
         {
             var cancelLinkItem = new MenuItem
             {
-                Header = "Cancel connection mode"
+                Header = App.Current?.Resources.TryGetValue("canvas.menu.cancelConnection", out var cancelConnection) == true ? cancelConnection?.ToString() : "Cancel connection mode"
             };
             cancelLinkItem.Click += (_, _) =>
             {
@@ -730,28 +730,28 @@ public partial class UniverseCanvasView : UserControl
         if (_viewModel is null)
             return;
 
-        var editItem = new MenuItem { Header = "Edit this node in panel" };
+        var editItem = new MenuItem { Header = App.Current?.Resources.TryGetValue("canvas.menu.editNode", out var editNode) == true ? editNode?.ToString() : "Edit this node in panel" };
         editItem.Click += (_, _) =>
         {
             _viewModel.SelectNode(node);
             RenderScene();
         };
 
-        var deleteItem = new MenuItem { Header = "Delete node" };
+        var deleteItem = new MenuItem { Header = App.Current?.Resources.TryGetValue("canvas.menu.deleteNode", out var deleteNode) == true ? deleteNode?.ToString() : "Delete node" };
         deleteItem.Click += async (_, _) =>
         {
             await _viewModel.DeleteNodeAsync(node);
             RenderScene();
         };
 
-        var connectItem = new MenuItem { Header = "Start connection from this node" };
+        var connectItem = new MenuItem { Header = App.Current?.Resources.TryGetValue("canvas.menu.startConnection", out var startConnection) == true ? startConnection?.ToString() : "Start connection from this node" };
         connectItem.Click += (_, _) =>
         {
             _viewModel.StartConnection(node);
             RenderScene();
         };
 
-        var hydrateItem = new MenuItem { Header = "Hydrate this entity" };
+        var hydrateItem = new MenuItem { Header = App.Current?.Resources.TryGetValue("canvas.menu.hydrateEntity", out var hydrateEntity) == true ? hydrateEntity?.ToString() : "Hydrate this entity" };
         hydrateItem.Click += async (_, _) =>
         {
             _viewModel.SelectNode(node);
@@ -759,7 +759,7 @@ public partial class UniverseCanvasView : UserControl
             RenderScene();
         };
 
-        var cancelConnectionItem = new MenuItem { Header = "Cancel connection mode" };
+        var cancelConnectionItem = new MenuItem { Header = App.Current?.Resources.TryGetValue("canvas.menu.cancelConnection", out var cancelNodeConnection) == true ? cancelNodeConnection?.ToString() : "Cancel connection mode" };
         cancelConnectionItem.Click += (_, _) =>
         {
             _viewModel.CancelConnection();
@@ -798,14 +798,14 @@ public partial class UniverseCanvasView : UserControl
         if (_viewModel is null)
             return;
 
-        var selectItem = new MenuItem { Header = "Edit relationship in panel" };
+        var selectItem = new MenuItem { Header = App.Current?.Resources.TryGetValue("canvas.menu.editRelationship", out var editRelationship) == true ? editRelationship?.ToString() : "Edit relationship in panel" };
         selectItem.Click += (_, _) =>
         {
             _viewModel.SelectEdge(edge);
             RenderScene();
         };
 
-        var typeHeader = new MenuItem { Header = "Change relationship type" };
+        var typeHeader = new MenuItem { Header = App.Current?.Resources.TryGetValue("canvas.menu.changeRelationshipType", out var changeRelationshipType) == true ? changeRelationshipType?.ToString() : "Change relationship type" };
         var typeItems = new List<object>();
         foreach (var relationshipType in _viewModel.RelationshipTypes.OrderBy(x => x.Name))
         {
@@ -819,7 +819,7 @@ public partial class UniverseCanvasView : UserControl
         }
         typeHeader.ItemsSource = typeItems;
 
-        var deleteItem = new MenuItem { Header = "Delete relationship" };
+        var deleteItem = new MenuItem { Header = App.Current?.Resources.TryGetValue("canvas.menu.deleteRelationship", out var deleteRelationship) == true ? deleteRelationship?.ToString() : "Delete relationship" };
         deleteItem.Click += async (_, _) =>
         {
             await _viewModel.DeleteEdgeAsync(edge);

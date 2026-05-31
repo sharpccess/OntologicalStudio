@@ -131,6 +131,14 @@ public partial class MainWindowViewModel : ObservableObject
         RelationshipsTabHeader = _localization.T("tab.relationships");
         ScenariosTabHeader = _localization.T("tab.scenarios");
         PromptPreviewTabHeader = _localization.T("tab.promptPreview");
+
+        if (App.Current?.Resources is { } resources)
+        {
+            foreach (var entry in _localization.GetLoadedTranslations())
+            {
+                resources[entry.Key] = entry.Value;
+            }
+        }
     }
 
     private async Task InitializeShellAsync()

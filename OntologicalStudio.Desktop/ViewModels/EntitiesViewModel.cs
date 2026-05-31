@@ -4,6 +4,8 @@ using OntologicalStudio.Application.Services;
 using OntologicalStudio.Core.Interfaces;
 using OntologicalStudio.Core.Models;
 using OntologicalStudio.Desktop.Services;
+using OntologicalStudio.Localization.Services;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,6 +18,7 @@ public partial class EntitiesViewModel : ObservableObject
 {
     private readonly IServiceProvider _provider;
     private readonly UniversesViewModel _universes;
+    private readonly ILocalizationService _localization;
 
     public ObservableCollection<Entity> Items { get; } = new();
     public ObservableCollection<EntityType> EntityTypes { get; } = new();
@@ -41,6 +44,7 @@ public partial class EntitiesViewModel : ObservableObject
     {
         _provider = provider;
         _universes = universes;
+        _localization = provider.GetRequiredService<ILocalizationService>();
         _universes.SelectionChanged += async () => await LoadAsync();
         _universes.UniversesChanged += async () => await LoadAsync();
         _ = InitAsync();
@@ -65,7 +69,9 @@ public partial class EntitiesViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            StatusMessage = $"EntityTypes load failed: {ex.Message}";
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? $"Error cargando tipos de entidad: {ex.Message}"
+                : $"EntityTypes load failed: {ex.Message}";
         }
     }
 
@@ -75,7 +81,7 @@ public partial class EntitiesViewModel : ObservableObject
         Items.Clear();
         if (universe is null)
         {
-            StatusMessage = "Select a universe first.";
+            StatusMessage = _localization.CurrentLanguageCode == "es" ? "Selecciona primero un universo." : "Select a universe first.";
             EntitiesChanged?.Invoke();
             return;
         }
@@ -85,12 +91,16 @@ public partial class EntitiesViewModel : ObservableObject
                 _provider, s => s.GetByUniverseAsync(universe.Id));
             foreach (var e in data.OrderBy(e => e.Name))
                 Items.Add(e);
-            StatusMessage = $"{Items.Count} entity/entities in '{universe.Name}'.";
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? $"{Items.Count} entidad(es) en '{universe.Name}'."
+                : $"{Items.Count} entity/entities in '{universe.Name}'.";
             EntitiesChanged?.Invoke();
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Error: {ex.Message}";
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? $"Error: {ex.Message}"
+                : $"Error: {ex.Message}";
         }
     }
 
@@ -98,9 +108,9 @@ public partial class EntitiesViewModel : ObservableObject
     private async Task CreateAsync()
     {
         var universe = _universes.SelectedUniverse;
-        if (universe is null) { StatusMessage = "Select a universe first."; return; }
-        if (string.IsNullOrWhiteSpace(NewName)) { StatusMessage = "Name is required."; return; }
-        if (NewEntityType is null) { StatusMessage = "Entity type is required."; return; }
+        if (universe is null) { StatusMessage = _localization.CurrentLanguageCode == "es" ? "Selecciona primero un universo." : "Select a universe first."; return; }
+        if (string.IsNullOrWhiteSpace(NewName)) { StatusMessage = _localization.CurrentLanguageCode == "es" ? "El nombre es obligatorio." : "Name is required."; return; }
+        if (NewEntityType is null) { StatusMessage = _localization.CurrentLanguageCode == "es" ? "El tipo de entidad es obligatorio." : "Entity type is required."; return; }
 
         try
         {
@@ -113,7 +123,9 @@ public partial class EntitiesViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Create failed: {ex.Message}";
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? $"Error al crear: {ex.Message}"
+                : $"Create failed: {ex.Message}";
         }
     }
 
@@ -130,7 +142,9 @@ public partial class EntitiesViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Delete failed: {ex.Message}";
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? $"Error al eliminar: {ex.Message}"
+                : $"Delete failed: {ex.Message}";
         }
     }
 }

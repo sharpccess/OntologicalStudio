@@ -4,6 +4,8 @@ using OntologicalStudio.Application.Services;
 using OntologicalStudio.Core.Interfaces;
 using OntologicalStudio.Core.Models;
 using OntologicalStudio.Desktop.Services;
+using OntologicalStudio.Localization.Services;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,6 +18,7 @@ public partial class RelationshipsViewModel : ObservableObject
 {
     private readonly IServiceProvider _provider;
     private readonly UniversesViewModel _universes;
+    private readonly ILocalizationService _localization;
 
     public ObservableCollection<RelationshipRow> Items { get; } = new();
     public ObservableCollection<Entity> UniverseEntities { get; } = new();
@@ -31,6 +34,7 @@ public partial class RelationshipsViewModel : ObservableObject
     {
         _provider = provider;
         _universes = universes;
+        _localization = provider.GetRequiredService<ILocalizationService>();
         _universes.SelectionChanged += async () => await ReloadForUniverseAsync();
         _universes.UniversesChanged += async () => await ReloadForUniverseAsync();
         _ = InitAsync();
@@ -46,7 +50,7 @@ public partial class RelationshipsViewModel : ObservableObject
         UniverseEntities.Clear();
         Items.Clear();
         var u = _universes.SelectedUniverse;
-        if (u is null) { StatusMessage = "Select a universe first."; return; }
+        if (u is null) { StatusMessage = _localization.CurrentLanguageCode == "es" ? "Selecciona primero un universo." : "Select a universe first."; return; }
 
         try
         {
@@ -73,11 +77,15 @@ public partial class RelationshipsViewModel : ObservableObject
                         r.Description));
                 }
             }
-            StatusMessage = $"{Items.Count} relationship(s).";
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? $"{Items.Count} relación(es)."
+                : $"{Items.Count} relationship(s).";
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Error: {ex.Message}";
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? $"Error: {ex.Message}"
+                : $"Error: {ex.Message}";
         }
     }
 
@@ -97,7 +105,9 @@ public partial class RelationshipsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Delete failed: {ex.Message}";
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? $"Error al eliminar: {ex.Message}"
+                : $"Delete failed: {ex.Message}";
         }
     }
 }

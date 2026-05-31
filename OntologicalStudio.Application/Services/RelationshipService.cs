@@ -43,6 +43,17 @@ public class RelationshipService : IRelationshipService
         if (sourceEntity == null || targetEntity == null || relationshipType == null)
             throw new InvalidOperationException("Entity or relationship type not found");
 
+        var existingRelationship = (await _relationshipRepository.GetBySourceEntityAsync(sourceEntityId))
+            .FirstOrDefault(r => r.TargetEntityId == targetEntityId && !r.IsDeleted);
+
+        if (existingRelationship is not null)
+        {
+            existingRelationship.RelationshipTypeId = relationshipTypeId;
+            existingRelationship.RelationshipType = null!;
+            await _relationshipRepository.UpdateAsync(existingRelationship);
+            return existingRelationship;
+        }
+
         var relationship = new Relationship
         {
             SourceEntityId = sourceEntityId,

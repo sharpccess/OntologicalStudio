@@ -3,6 +3,8 @@ using CommunityToolkit.Mvvm.Input;
 using OntologicalStudio.Application.Services;
 using OntologicalStudio.Core.Models;
 using OntologicalStudio.Desktop.Services;
+using OntologicalStudio.Localization.Services;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -13,6 +15,7 @@ namespace OntologicalStudio.Desktop.ViewModels;
 public partial class UniversesViewModel : ObservableObject
 {
     private readonly IServiceProvider _provider;
+    private readonly ILocalizationService _localization;
 
     public ObservableCollection<Universe> Items { get; } = new();
 
@@ -34,6 +37,7 @@ public partial class UniversesViewModel : ObservableObject
     public UniversesViewModel(IServiceProvider provider)
     {
         _provider = provider;
+        _localization = provider.GetRequiredService<ILocalizationService>();
     }
 
     partial void OnSelectedUniverseChanged(Universe? value) => SelectionChanged?.Invoke();
@@ -65,7 +69,7 @@ public partial class UniversesViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(NewName))
         {
-            StatusMessage = "Name is required.";
+            StatusMessage = _localization.CurrentLanguageCode == "es" ? "El nombre es obligatorio." : "Name is required.";
             return;
         }
         try
