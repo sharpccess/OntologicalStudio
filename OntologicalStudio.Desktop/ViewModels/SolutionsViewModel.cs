@@ -20,6 +20,7 @@ public partial class SolutionsViewModel : ObservableObject
 
     public ObservableCollection<Solution> Items { get; } = new();
     public ObservableCollection<SolutionArtifactViewModel> SelectedSolutionArtifacts { get; } = new();
+    public ObservableCollection<string> ResolutionStyles { get; } = new();
 
     [ObservableProperty]
     private Scenario? currentScenario;
@@ -29,6 +30,9 @@ public partial class SolutionsViewModel : ObservableObject
 
     [ObservableProperty]
     private string extraInstructions = string.Empty;
+
+    [ObservableProperty]
+    private string selectedResolutionStyle = string.Empty;
 
     [ObservableProperty]
     private bool isRunning;
@@ -41,6 +45,7 @@ public partial class SolutionsViewModel : ObservableObject
         _provider = provider;
         _localization = provider.GetRequiredService<ILocalizationService>();
         _localization.OnLanguageChanged += HandleLanguageChanged;
+        RebuildResolutionStyles();
     }
 
     partial void OnCurrentScenarioChanged(Scenario? value) => _ = LoadAsync();
@@ -50,8 +55,21 @@ public partial class SolutionsViewModel : ObservableObject
         RebuildSelectedArtifacts();
     }
 
+    partial void OnSelectedResolutionStyleChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return;
+
+        var instruction = value.Trim();
+        if (string.IsNullOrWhiteSpace(ExtraInstructions))
+            ExtraInstructions = instruction;
+        else if (!ExtraInstructions.Contains(instruction, StringComparison.OrdinalIgnoreCase))
+            ExtraInstructions = $"{ExtraInstructions.Trim()}{Environment.NewLine}{instruction}";
+    }
+
     private void HandleLanguageChanged()
     {
+        RebuildResolutionStyles();
         _ = LoadAsync();
     }
 
@@ -193,6 +211,29 @@ public partial class SolutionsViewModel : ObservableObject
             "Respuesta de IA" => _localization.CurrentLanguageCode == "es" ? "Respuesta de IA" : "AI response",
             _ => label
         };
+    }
+
+    private void RebuildResolutionStyles()
+    {
+        ResolutionStyles.Clear();
+        if (_localization.CurrentLanguageCode == "es")
+        {
+            ResolutionStyles.Add("Diagnóstico estratégico");
+            ResolutionStyles.Add("Plan de acción paso a paso");
+            ResolutionStyles.Add("Análisis de riesgos y mitigaciones");
+            ResolutionStyles.Add("Opciones comparadas con pros y contras");
+            ResolutionStyles.Add("Respuesta breve y ejecutiva");
+        }
+        else
+        {
+            ResolutionStyles.Add("Strategic diagnosis");
+            ResolutionStyles.Add("Step-by-step action plan");
+            ResolutionStyles.Add("Risk analysis and mitigations");
+            ResolutionStyles.Add("Compared options with pros and cons");
+            ResolutionStyles.Add("Short executive response");
+        }
+
+        SelectedResolutionStyle = string.Empty;
     }
 }
 

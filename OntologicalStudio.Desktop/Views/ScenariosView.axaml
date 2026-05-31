@@ -8,7 +8,7 @@
 
         <!-- Column 1: Scenarios list & create -->
         <Border Grid.Column="0" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,8,0">
-            <Grid RowDefinitions="Auto,*,Auto,Auto,Auto">
+            <Grid RowDefinitions="Auto,*,Auto,Auto,Auto,*,Auto">
                 <TextBlock Grid.Row="0" Text="{DynamicResource scenarios.title}" FontWeight="Bold" Margin="0,0,0,6"/>
                 <ListBox Grid.Row="1"
                          ItemsSource="{Binding Items}"
@@ -31,8 +31,19 @@
                 <TextBox Grid.Row="3"
                          Watermark="{DynamicResource scenarios.fieldTitle}"
                          Text="{Binding NewTitle, Mode=TwoWay}"/>
-                <StackPanel Grid.Row="4" Spacing="6" Margin="0,8,0,0">
-                    <TextBox Watermark="{DynamicResource scenarios.fieldDescription}" Text="{Binding NewDescription, Mode=TwoWay}" AcceptsReturn="True" Height="80"/>
+                <GridSplitter Grid.Row="4"
+                              Height="8"
+                              Background="#2d3742"
+                              ResizeDirection="Rows"
+                              ShowsPreview="True"
+                              Margin="0,8,0,8"/>
+                <TextBox Grid.Row="5"
+                         Watermark="{DynamicResource scenarios.fieldDescription}"
+                         Text="{Binding NewDescription, Mode=TwoWay}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         MinHeight="80"/>
+                <StackPanel Grid.Row="6" Spacing="6" Margin="0,8,0,0">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <Button Content="{DynamicResource scenarios.create}" Command="{Binding CreateCommand}"/>
                         <Button Content="{DynamicResource scenarios.delete}" Command="{Binding DeleteCommand}"/>
@@ -46,20 +57,10 @@
         <Border Grid.Column="1" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,8,0"
                 DataContext="{Binding Solutions}"
                 x:DataType="vm:SolutionsViewModel">
-            <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Text="{DynamicResource scenarios.solutions}" FontWeight="Bold" Margin="0,0,0,6"/>
-                <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0,8,0,0">
-                    <TextBox Watermark="{DynamicResource scenarios.extraInstructions}"
-                             Text="{Binding ExtraInstructions, Mode=TwoWay}"
-                             AcceptsReturn="True" Height="60"/>
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <Button Content="{DynamicResource scenarios.run}" Command="{Binding RunCommand}" IsEnabled="{Binding !IsRunning}"/>
-                        <Button Content="{DynamicResource scenarios.markFinal}" Command="{Binding MarkFinalCommand}"/>
-                        <Button Content="{DynamicResource scenarios.delete}" Command="{Binding DeleteCommand}"/>
-                    </StackPanel>
-                    <TextBlock Text="{Binding StatusMessage}" Opacity="0.7" FontSize="11"/>
-                </StackPanel>
-                <ListBox ItemsSource="{Binding Items}"
+            <Grid RowDefinitions="Auto,*,Auto,Auto,*,Auto,Auto">
+                <TextBlock Grid.Row="0" Text="{DynamicResource scenarios.solutions}" FontWeight="Bold" Margin="0,0,0,6"/>
+                <ListBox Grid.Row="1"
+                         ItemsSource="{Binding Items}"
                          SelectedItem="{Binding SelectedSolution, Mode=TwoWay}">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="m:Solution">
@@ -75,7 +76,34 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-            </DockPanel>
+                <GridSplitter Grid.Row="2"
+                              Height="8"
+                              Background="#2d3742"
+                              ResizeDirection="Rows"
+                              ShowsPreview="True"
+                              Margin="0,8,0,8"/>
+                <ComboBox Grid.Row="3"
+                          ItemsSource="{Binding ResolutionStyles}"
+                          SelectedItem="{Binding SelectedResolutionStyle, Mode=TwoWay}"/>
+                <TextBox Grid.Row="4"
+                         Watermark="{DynamicResource scenarios.extraInstructions}"
+                         Text="{Binding ExtraInstructions, Mode=TwoWay}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         MinHeight="70"/>
+                <GridSplitter Grid.Row="5"
+                              Height="8"
+                              Background="#2d3742"
+                              ResizeDirection="Rows"
+                              ShowsPreview="True"
+                              Margin="0,8,0,8"/>
+                <StackPanel Grid.Row="6" Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
+                    <Button Content="{DynamicResource scenarios.run}" Command="{Binding RunCommand}" IsEnabled="{Binding !IsRunning}"/>
+                    <Button Content="{DynamicResource scenarios.markFinal}" Command="{Binding MarkFinalCommand}"/>
+                    <Button Content="{DynamicResource scenarios.delete}" Command="{Binding DeleteCommand}"/>
+                </StackPanel>
+                <TextBlock Grid.Row="7" Text="{Binding StatusMessage}" Opacity="0.7" FontSize="11" Margin="0,8,0,0"/>
+            </Grid>
         </Border>
 
         <!-- Column 3: Selected solution detail -->

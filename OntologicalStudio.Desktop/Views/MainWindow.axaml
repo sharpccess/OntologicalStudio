@@ -50,9 +50,6 @@
             <TabItem Header="{Binding ScenariosTabHeader}" IsEnabled="{Binding HasActiveUniverse}">
                 <views:ScenariosView DataContext="{Binding Scenarios}"/>
             </TabItem>
-            <TabItem Header="{Binding PromptPreviewTabHeader}" IsEnabled="{Binding HasActiveUniverse}">
-                <views:PromptPreviewView DataContext="{Binding Prompt}"/>
-            </TabItem>
         </TabControl>
     </Grid>
 </Window>

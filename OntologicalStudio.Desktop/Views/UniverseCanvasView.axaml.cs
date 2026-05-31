@@ -1068,9 +1068,7 @@ public partial class UniverseCanvasView : UserControl
         var hydrateItem = new MenuItem { Header = App.Current?.Resources.TryGetValue("canvas.menu.hydrateEntity", out var hydrateEntity) == true ? hydrateEntity?.ToString() : "Hydrate this entity" };
         hydrateItem.Click += async (_, _) =>
         {
-            _viewModel.SelectNode(node);
-            await _viewModel.Hydration.PreviewCurrentNodeAsync();
-            RenderScene();
+            await HydrateNodeAsync(node);
         };
 
         var cancelConnectionItem = new MenuItem { Header = App.Current?.Resources.TryGetValue("canvas.menu.cancelConnection", out var cancelNodeConnection) == true ? cancelNodeConnection?.ToString() : "Cancel connection mode" };

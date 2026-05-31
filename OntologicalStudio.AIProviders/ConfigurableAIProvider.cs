@@ -310,6 +310,9 @@ public class ConfigurableAIProvider : IAIProvider
 
     private string GenerateHeuristicAnalysis(string promptTemplate)
     {
+        var isSpanish = promptTemplate.Contains("Toda la respuesta debe estar en español.", StringComparison.OrdinalIgnoreCase)
+            || promptTemplate.Contains("Responde exclusivamente en español.", StringComparison.OrdinalIgnoreCase);
+
         // Extract scenario name if possible
         string scenarioName = "Active System modeling";
         if (promptTemplate.Contains("**Problem Title:**"))
@@ -321,33 +324,67 @@ public class ConfigurableAIProvider : IAIProvider
                 scenarioName = titleLine.Replace("**Problem Title:**", "").Trim();
             }
         }
+        else if (promptTemplate.Contains("**Título del problema:**"))
+        {
+            var lines = promptTemplate.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var titleLine = lines.FirstOrDefault(l => l.Contains("**Título del problema:**"));
+            if (titleLine != null)
+            {
+                scenarioName = titleLine.Replace("**Título del problema:**", "").Trim();
+            }
+        }
 
         var sb = new StringBuilder();
-        sb.AppendLine($"# SYSTEMIC DIAGNOSIS: {scenarioName.ToUpper()}");
-        sb.AppendLine();
-        sb.AppendLine("## 1. Executive Situation Summary");
-        sb.AppendLine("This system model represents a highly interdependent network of authority, constraints, and emotional vectors. The primary tension stems from mismatching incentives between leadership structures (Founder/CEO) and operational units, compounded by internalized beliefs and fears that slow adaptability.");
-        sb.AppendLine();
-        sb.AppendLine("## 2. Key Systemic Dynamics");
-        sb.AppendLine("- **Leadership Constraints**: The command structure operates as a central cognitive bottleneck. Key decisions require validation from entities representing legacy ideas, stalling execution.");
-        sb.AppendLine("- **Feedback Loops**: A negative feedback loop is established where operational dependencies trigger fears of failing control, prompting further micro-management.");
-        sb.AppendLine();
-        sb.AppendLine("## 3. Hidden Contradictions & Blind Spots");
-        sb.AppendLine("- **Incentive Gap**: Leadership values delegation but incentivizes compliance, causing team frustration.");
-        sb.AppendLine("- **Conflict of Conviction**: The core operational goals directly contradict the emotional beliefs of founding entities regarding risk tolerance.");
-        sb.AppendLine();
-        sb.AppendLine("## 4. Scenario Risk Assessment");
-        sb.AppendLine("If left unaddressed, the system will likely experience talent attrition, decision paralysis, and eventual stagnation of organizational capacity. In personal contexts, this leads to chronic stress and circular behavioral habits.");
-        sb.AppendLine();
-        sb.AppendLine("## 5. Strategic Intervention Recommendations");
-        sb.AppendLine("1. **Governance Separation**: Redesign the delegation authority boundaries, making operational decisions independent of legacy founders.");
-        sb.AppendLine("2. **Explicit Incentive Redesign**: Align target rewards with collaboration metrics rather than output volume.");
-        sb.AppendLine("3. **Belief Reframing Workshops**: Undertake structured alignment interviews to clarify fears and establish healthy risk boundaries.");
-        sb.AppendLine();
-        sb.AppendLine("## 6. Action Priorities");
-        sb.AppendLine("1. Establish an autonomous task force for operational execution.");
-        sb.AppendLine("2. Map visual coordinates of critical bottlenecks and run reflection sessions.");
-        sb.AppendLine("3. Formulate key hypotheses regarding team incentive structures and pilot for 30 days.");
+        if (isSpanish)
+        {
+            sb.AppendLine($"# DIAGNÓSTICO SISTÉMICO: {scenarioName.ToUpper()}");
+            sb.AppendLine();
+            sb.AppendLine("## 1. Resumen ejecutivo");
+            sb.AppendLine("La situación descrita muestra un sistema con dependencias cruzadas, tensiones entre objetivos y señales de bloqueo en la toma de decisiones. El modelo sugiere que el problema no es aislado, sino producto de dinámicas acumuladas entre actores, creencias y restricciones.");
+            sb.AppendLine();
+            sb.AppendLine("## 2. Dinámica principal del sistema");
+            sb.AppendLine("- Hay interdependencias que convierten decisiones pequeñas en efectos amplificados.");
+            sb.AppendLine("- La relación entre actores clave parece generar fricción, retraso o contradicción operativa.");
+            sb.AppendLine();
+            sb.AppendLine("## 3. Riesgos y contradicciones");
+            sb.AppendLine("- Existen incentivos, miedos o supuestos que pueden estar empujando al sistema en dirección opuesta al objetivo declarado.");
+            sb.AppendLine("- Si no se corrige, el sistema tenderá a repetir el mismo patrón de bloqueo.");
+            sb.AppendLine();
+            sb.AppendLine("## 4. Recomendaciones concretas priorizadas");
+            sb.AppendLine("1. Aclarar responsabilidades y límites entre las entidades más influyentes.");
+            sb.AppendLine("2. Identificar qué relación o supuesto está produciendo mayor fricción.");
+            sb.AppendLine("3. Probar una intervención pequeña y medible antes de rediseñar todo el sistema.");
+            sb.AppendLine();
+            sb.AppendLine("## 5. Próximos pasos accionables");
+            sb.AppendLine("1. Confirmar qué entidades tienen mayor impacto en el problema actual.");
+            sb.AppendLine("2. Revisar si las relaciones dibujadas reflejan el estado real o necesitan ajuste.");
+            sb.AppendLine("3. Ejecutar una prueba corta con una intervención prioritaria y evaluar resultados.");
+        }
+        else
+        {
+            sb.AppendLine($"# SYSTEMIC DIAGNOSIS: {scenarioName.ToUpper()}");
+            sb.AppendLine();
+            sb.AppendLine("## 1. Executive summary");
+            sb.AppendLine("The described situation reflects a system with cross-dependencies, tensions between goals, and signs of decision bottlenecks. The model suggests the problem is systemic rather than isolated.");
+            sb.AppendLine();
+            sb.AppendLine("## 2. Main system dynamic");
+            sb.AppendLine("- Interdependencies appear to turn small decisions into amplified effects.");
+            sb.AppendLine("- Relationships between key actors seem to create friction, delays, or operational contradiction.");
+            sb.AppendLine();
+            sb.AppendLine("## 3. Risks and contradictions");
+            sb.AppendLine("- Incentives, fears, or assumptions may be pushing the system away from its stated objective.");
+            sb.AppendLine("- If nothing changes, the same blocking pattern is likely to repeat.");
+            sb.AppendLine();
+            sb.AppendLine("## 4. Prioritized concrete recommendations");
+            sb.AppendLine("1. Clarify responsibilities and boundaries among the most influential entities.");
+            sb.AppendLine("2. Identify which relationship or assumption is generating the highest friction.");
+            sb.AppendLine("3. Test a small measurable intervention before redesigning the whole system.");
+            sb.AppendLine();
+            sb.AppendLine("## 5. Actionable next steps");
+            sb.AppendLine("1. Confirm which entities have the strongest impact on the current problem.");
+            sb.AppendLine("2. Review whether the mapped relationships reflect the real current state.");
+            sb.AppendLine("3. Run a short pilot with one prioritized intervention and evaluate results.");
+        }
         
         return sb.ToString();
     }
