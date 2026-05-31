@@ -375,6 +375,8 @@ public partial class UniverseCanvasView : UserControl
             SelectedItem = _viewModel?.SelectedNodeEntityType,
             HorizontalAlignment = HorizontalAlignment.Stretch
         };
+        typeBox.ItemTemplate = new FuncDataTemplate<EntityType>((entityType, _) =>
+            new TextBlock { Text = entityType?.Name ?? string.Empty });
         typeBox.SelectionChanged += (_, _) =>
         {
             if (_viewModel is not null)
