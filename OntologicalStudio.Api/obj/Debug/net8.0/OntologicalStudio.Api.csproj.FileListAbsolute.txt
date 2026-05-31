@@ -102,3 +102,4 @@ C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Api\obj\Debug\net8.0\swae.build.ex.cache
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Api\obj\Debug\net8.0\Ontologi.14734C65.Up2Date
 C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Api\obj\Debug\net8.0\OntologicalStudio.Api.genruntimeconfig.cache
+C:\Users\emoti\source\repos\OntogenesisPlus\OntologicalStudio\OntologicalStudio.Api\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

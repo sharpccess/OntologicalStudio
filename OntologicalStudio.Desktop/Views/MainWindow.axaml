@@ -36,22 +36,58 @@
 
         <TabControl Grid.Row="1" Margin="8" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
             <TabItem Header="{Binding UniversesTabHeader}">
-                <views:UniversesView DataContext="{Binding Universes}"/>
+                <ContentControl Content="{Binding Universes}">
+                    <ContentControl.ContentTemplate>
+                        <DataTemplate>
+                            <views:UniversesView DataContext="{Binding}"/>
+                        </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                </ContentControl>
             </TabItem>
             <TabItem Header="{Binding CanvasTabHeader}">
-                <views:UniverseCanvasView DataContext="{Binding UniverseCanvas}"/>
+                <ContentControl Content="{Binding UniverseCanvas}">
+                    <ContentControl.ContentTemplate>
+                        <DataTemplate>
+                            <views:UniverseCanvasView DataContext="{Binding}"/>
+                        </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                </ContentControl>
             </TabItem>
             <TabItem Header="{Binding EntitiesTabHeader}">
-                <views:EntitiesView DataContext="{Binding Entities}"/>
+                <ContentControl Content="{Binding Entities}">
+                    <ContentControl.ContentTemplate>
+                        <DataTemplate>
+                            <views:EntitiesView DataContext="{Binding}"/>
+                        </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                </ContentControl>
             </TabItem>
             <TabItem Header="{Binding RelationshipsTabHeader}">
-                <views:RelationshipsView DataContext="{Binding Relationships}"/>
+                <ContentControl Content="{Binding Relationships}">
+                    <ContentControl.ContentTemplate>
+                        <DataTemplate>
+                            <views:RelationshipsView DataContext="{Binding}"/>
+                        </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                </ContentControl>
             </TabItem>
             <TabItem Header="{Binding ScenariosTabHeader}">
-                <views:ScenariosView DataContext="{Binding Scenarios}"/>
+                <ContentControl Content="{Binding Scenarios}">
+                    <ContentControl.ContentTemplate>
+                        <DataTemplate>
+                            <views:ScenariosView DataContext="{Binding}"/>
+                        </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                </ContentControl>
             </TabItem>
             <TabItem Header="{Binding PromptPreviewTabHeader}">
-                <views:PromptPreviewView DataContext="{Binding Prompt}"/>
+                <ContentControl Content="{Binding Prompt}">
+                    <ContentControl.ContentTemplate>
+                        <DataTemplate>
+                            <views:PromptPreviewView DataContext="{Binding}"/>
+                        </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                </ContentControl>
             </TabItem>
         </TabControl>
     </Grid>

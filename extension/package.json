@@ -4,6 +4,7 @@
   "description": "VSCode integration for Ontological Studio local API",
   "version": "0.0.1",
   "publisher": "local",
+  "license": "UNLICENSED",
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -16,6 +17,12 @@
     "onCommand:ontologicalStudio.solveScenario"
   ],
   "main": "./src/extension.js",
+  "scripts": {
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.9.1"
+  },
   "contributes": {
     "commands": [
       {

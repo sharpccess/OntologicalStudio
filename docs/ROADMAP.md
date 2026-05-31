@@ -77,7 +77,7 @@
 
 ---
 
-## Fase C — Hidratación con preview/diff *(en curso)*
+## Fase C — Hidratación con preview/diff *(MVP completado)*
 
 **Objetivo:** Hidratar entidades con resultado de IA, controlado por el usuario (apply selectivo).
 
@@ -118,6 +118,19 @@
 - [x] Comando: **Ontological Studio: List Universes**.
 - [ ] Auth via token leído del archivo de sesión.
 - [x] Cliente HTTP → backend.
+
+---
+
+## Avance adicional no planificado inicialmente
+
+- [x] Canvas con edición inline de nodos.
+- [x] Canvas con resize persistente por nodo.
+- [x] Menús contextuales separados para fondo / nodo / relación.
+- [x] Selector de idioma EN/ES en la shell principal.
+- [~] Estabilización de arranque del Desktop:
+  - [x] logging de startup
+  - [x] fallback window de error
+  - [ ] terminar de eliminar bloqueos de inicialización diferida
 
 ---
 

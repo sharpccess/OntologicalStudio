@@ -164,14 +164,20 @@
             <ScrollViewer x:Name="CanvasScrollHost"
                           HorizontalScrollBarVisibility="Auto"
                           VerticalScrollBarVisibility="Auto">
-                <Canvas x:Name="CanvasHost"
-                        Width="{Binding CanvasWidth}"
-                        Height="{Binding CanvasHeight}"
-                        RenderTransformOrigin="0,0">
-                    <Canvas.RenderTransform>
-                        <ScaleTransform ScaleX="{Binding ZoomScale}" ScaleY="{Binding ZoomScale}"/>
-                    </Canvas.RenderTransform>
-                </Canvas>
+                <Grid>
+                    <Border x:Name="CanvasContextSurface"
+                            Width="{Binding CanvasWidth}"
+                            Height="{Binding CanvasHeight}"
+                            Background="Transparent"/>
+                    <Canvas x:Name="CanvasHost"
+                            Width="{Binding CanvasWidth}"
+                            Height="{Binding CanvasHeight}"
+                            RenderTransformOrigin="0,0">
+                        <Canvas.RenderTransform>
+                            <ScaleTransform ScaleX="{Binding ZoomScale}" ScaleY="{Binding ZoomScale}"/>
+                        </Canvas.RenderTransform>
+                    </Canvas>
+                </Grid>
             </ScrollViewer>
         </Border>
     </Grid>

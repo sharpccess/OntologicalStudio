@@ -20,12 +20,39 @@ public class LocalizationService : ILocalizationService
         _languagesDirectory = languagesDirectory;
     }
 
+    public void Initialize(string languagesDirectory)
+    {
+        _languagesDirectory = languagesDirectory;
+        Directory.CreateDirectory(_languagesDirectory);
+        LoadLanguagePack("en");
+        _fallbackTranslations = new Dictionary<string, string>(_translations);
+    }
+
     public async Task InitializeAsync(string languagesDirectory)
     {
         _languagesDirectory = languagesDirectory;
         Directory.CreateDirectory(_languagesDirectory);
         await LoadLanguagePackAsync("en");
         _fallbackTranslations = new Dictionary<string, string>(_translations);
+    }
+
+    public void LoadLanguagePack(string languageCode)
+    {
+        var languageFile = Path.Combine(_languagesDirectory, $"{languageCode}.json");
+
+        if (File.Exists(languageFile))
+        {
+            var json = File.ReadAllText(languageFile);
+            var translations = JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
+            _translations = translations;
+        }
+        else
+        {
+            _translations = new Dictionary<string, string>();
+        }
+
+        _currentLanguageCode = languageCode;
+        OnLanguageChanged?.Invoke();
     }
 
     public async Task LoadLanguagePackAsync(string languageCode)

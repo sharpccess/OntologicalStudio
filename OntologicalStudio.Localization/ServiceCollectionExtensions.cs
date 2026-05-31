@@ -12,7 +12,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ILocalizationService>(sp =>
         {
             var localization = new LocalizationService(languagesDirectory);
-            localization.InitializeAsync(languagesDirectory).GetAwaiter().GetResult();
+            localization.Initialize(languagesDirectory);
             return localization;
         });
         return services;

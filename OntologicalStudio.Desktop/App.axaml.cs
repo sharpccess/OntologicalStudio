@@ -60,9 +60,12 @@ public partial class App : Avalonia.Application
                 }
                 else
                 {
+                    WriteStartupLog("Creating MainWindowViewModel");
+                    var viewModel = new MainWindowViewModel(Services);
+                    WriteStartupLog("MainWindowViewModel created");
                     var window = new MainWindow
                     {
-                        DataContext = new MainWindowViewModel(Services)
+                        DataContext = viewModel
                     };
                     desktop.MainWindow = window;
                     WriteStartupLog("MainWindow created");

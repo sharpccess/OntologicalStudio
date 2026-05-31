@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "OntologicalStudio.Api": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:64517;http://localhost:64518"
+    }
+  }
+}

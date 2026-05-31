@@ -19,6 +19,7 @@ namespace OntologicalStudio.Desktop.Views;
 public partial class UniverseCanvasView : UserControl
 {
     private Canvas? _canvas;
+    private Border? _canvasContextSurface;
     private ScrollViewer? _scrollViewer;
     private UniverseCanvasViewModel? _viewModel;
     private CanvasEntityNodeViewModel? _dragNode;
@@ -31,6 +32,7 @@ public partial class UniverseCanvasView : UserControl
     private bool _isPanning;
     private bool _isDraggingNode;
     private bool _isResizingNode;
+    private bool _suppressContextMenu;
     private Point _panStart;
     private Vector _panOffset;
     private Point _lastCanvasPoint;
@@ -39,8 +41,14 @@ public partial class UniverseCanvasView : UserControl
     {
         AvaloniaXamlLoader.Load(this);
         _canvas = this.FindControl<Canvas>("CanvasHost");
+        _canvasContextSurface = this.FindControl<Border>("CanvasContextSurface");
         _scrollViewer = this.FindControl<ScrollViewer>("CanvasScrollHost");
         DataContextChanged += OnDataContextChanged;
+        if (_canvasContextSurface is not null)
+        {
+            _canvasContextSurface.PointerPressed += OnCanvasPointerPressed;
+            _canvasContextSurface.ContextRequested += OnCanvasContextRequested;
+        }
         if (_canvas is not null)
         {
             _canvas.DoubleTapped += OnCanvasDoubleTapped;
@@ -48,6 +56,7 @@ public partial class UniverseCanvasView : UserControl
             _canvas.PointerMoved += OnCanvasPointerMoved;
             _canvas.PointerReleased += OnCanvasPointerReleased;
             _canvas.PointerWheelChanged += OnCanvasPointerWheelChanged;
+            _canvas.ContextRequested += OnCanvasContextRequested;
         }
         KeyDown += OnKeyDown;
         Focusable = true;
@@ -112,6 +121,7 @@ public partial class UniverseCanvasView : UserControl
             {
                 _viewModel?.SelectEdge(edge);
                 ShowEdgeContextMenu(edgePath, edge);
+                _suppressContextMenu = true;
                 e.Handled = true;
                 return;
             }
@@ -120,14 +130,10 @@ public partial class UniverseCanvasView : UserControl
             {
                 _viewModel?.SelectNode(node);
                 ShowNodeContextMenu(border, node);
+                _suppressContextMenu = true;
                 e.Handled = true;
                 return;
             }
-
-            ShowCanvasContextMenu();
-            Focus();
-            e.Handled = true;
-            return;
         }
 
         if (point.Properties.IsMiddleButtonPressed)
@@ -138,6 +144,39 @@ public partial class UniverseCanvasView : UserControl
             e.Pointer.Capture(_canvas);
         }
         Focus();
+    }
+
+    private void OnCanvasContextRequested(object? sender, ContextRequestedEventArgs e)
+    {
+        if (_canvas is null)
+            return;
+
+        if (_suppressContextMenu)
+        {
+            _suppressContextMenu = false;
+            e.Handled = true;
+            return;
+        }
+
+        var source = e.Source as Control;
+        if (source is ShapePath edgePath && edgePath.Tag is CanvasRelationshipEdgeViewModel edge)
+        {
+            _viewModel?.SelectEdge(edge);
+            ShowEdgeContextMenu(edgePath, edge);
+            e.Handled = true;
+            return;
+        }
+
+        if (source is Border border && border.Tag is CanvasEntityNodeViewModel node)
+        {
+            _viewModel?.SelectNode(node);
+            ShowNodeContextMenu(border, node);
+            e.Handled = true;
+            return;
+        }
+
+        ShowCanvasContextMenu();
+        e.Handled = true;
     }
 
     private void OnCanvasPointerMoved(object? sender, PointerEventArgs e)
@@ -524,7 +563,7 @@ public partial class UniverseCanvasView : UserControl
             Text = _viewModel?.SelectedNodeDescription ?? node.Description,
             Watermark = "Description",
             AcceptsReturn = true,
-            Height = 44
+            Height = Math.Max(44, node.Height - 88)
         };
         descriptionBox.GetObservable(TextBox.TextProperty).Subscribe(value =>
         {
@@ -672,6 +711,13 @@ public partial class UniverseCanvasView : UserControl
         }
 
         menu.ItemsSource = items;
+        if (_canvasContextSurface is not null)
+        {
+            _canvasContextSurface.ContextMenu = menu;
+            menu.Open(_canvasContextSurface);
+            return;
+        }
+
         _canvas.ContextMenu = menu;
         menu.Open(_canvas);
     }
