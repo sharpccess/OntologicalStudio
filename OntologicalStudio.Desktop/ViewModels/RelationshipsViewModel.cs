@@ -44,6 +44,7 @@ public partial class RelationshipsViewModel : ObservableObject
         _provider = provider;
         _universes = universes;
         _universes.SelectionChanged += async () => await ReloadForUniverseAsync();
+        _universes.UniversesChanged += async () => await ReloadForUniverseAsync();
         _ = InitAsync();
     }
 

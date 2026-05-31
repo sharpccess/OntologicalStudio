@@ -34,6 +34,7 @@ public partial class PromptPreviewViewModel : ObservableObject
         _provider = provider;
         _universes = universes;
         _universes.SelectionChanged += async () => await ReloadScenariosAsync();
+        _universes.UniversesChanged += async () => await ReloadScenariosAsync();
     }
 
     partial void OnSelectedScenarioChanged(Scenario? value)

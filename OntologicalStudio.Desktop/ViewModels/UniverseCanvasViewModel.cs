@@ -65,6 +65,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
         _universes = universes;
         Hydration = new EntityHydrationViewModel(provider);
         _universes.SelectionChanged += async () => await LoadAsync();
+        _universes.UniversesChanged += async () => await LoadAsync();
         _ = InitializeAsync();
     }
 
@@ -219,6 +220,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
             NewEntityName = string.Empty;
             NewEntityDescription = string.Empty;
             await LoadAsync();
+            _universes.UniversesChanged?.Invoke();
             SelectedNode = Nodes.FirstOrDefault(node => node.Id == entity.Id);
         }
         catch (Exception ex)
@@ -338,6 +340,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
             LinkSource = null;
             LinkTarget = null;
             await LoadAsync();
+            _universes.UniversesChanged?.Invoke();
         }
         catch (Exception ex)
         {
@@ -357,6 +360,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
                 _provider,
                 service => service.DeleteAsync(SelectedNode.Id));
             await LoadAsync();
+            _universes.UniversesChanged?.Invoke();
         }
         catch (Exception ex)
         {

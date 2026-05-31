@@ -42,6 +42,7 @@ public partial class EntitiesViewModel : ObservableObject
         _provider = provider;
         _universes = universes;
         _universes.SelectionChanged += async () => await LoadAsync();
+        _universes.UniversesChanged += async () => await LoadAsync();
         _ = InitAsync();
     }
 
@@ -108,6 +109,7 @@ public partial class EntitiesViewModel : ObservableObject
             NewName = string.Empty;
             NewDescription = string.Empty;
             await LoadAsync();
+            _universes.UniversesChanged?.Invoke();
         }
         catch (Exception ex)
         {
@@ -124,6 +126,7 @@ public partial class EntitiesViewModel : ObservableObject
         {
             await ScopedRunner.RunAsync<IEntityService>(_provider, s => s.DeleteAsync(id));
             await LoadAsync();
+            _universes.UniversesChanged?.Invoke();
         }
         catch (Exception ex)
         {

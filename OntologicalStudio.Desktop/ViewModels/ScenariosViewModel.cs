@@ -43,6 +43,7 @@ public partial class ScenariosViewModel : ObservableObject
         _universes = universes;
         Solutions = new SolutionsViewModel(provider);
         _universes.SelectionChanged += async () => await LoadAsync();
+        _universes.UniversesChanged += async () => await LoadAsync();
     }
 
     public async Task LoadAsync()
