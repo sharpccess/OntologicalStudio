@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "yZ6jcoa/QoQ=",
+  "dgSpecHash": "6oyp3Hgwkko=",
   "success": true,
-  "projectFilePath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Localization\\OntologicalStudio.Localization.csproj",
+  "projectFilePath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Localization\\OntologicalStudio.Localization.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\emoti\\.nuget\\packages\\microsoft.extensions.configuration\\8.0.0\\microsoft.extensions.configuration.8.0.0.nupkg.sha512",
     "C:\\Users\\emoti\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\8.0.0\\microsoft.extensions.configuration.abstractions.8.0.0.nupkg.sha512",
@@ -16,8 +16,8 @@
     "C:\\Users\\emoti\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
     "C:\\Users\\emoti\\.nuget\\packages\\system.text.encodings.web\\8.0.0\\system.text.encodings.web.8.0.0.nupkg.sha512",
     "C:\\Users\\emoti\\.nuget\\packages\\system.text.json\\8.0.0\\system.text.json.8.0.0.nupkg.sha512",
-    "C:\\Users\\emoti\\.nuget\\packages\\microsoft.netcore.app.ref\\8.0.27\\microsoft.netcore.app.ref.8.0.27.nupkg.sha512",
     "C:\\Users\\emoti\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\8.0.27\\microsoft.windowsdesktop.app.ref.8.0.27.nupkg.sha512",
+    "C:\\Users\\emoti\\.nuget\\packages\\microsoft.netcore.app.ref\\8.0.27\\microsoft.netcore.app.ref.8.0.27.nupkg.sha512",
     "C:\\Users\\emoti\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\8.0.27\\microsoft.aspnetcore.app.ref.8.0.27.nupkg.sha512"
   ],
   "logs": []

@@ -47,15 +47,21 @@ public class EntityRepository : IEntityRepository
 
     public async Task AddAsync(Entity entity)
     {
-        entity.Id = Guid.NewGuid();
+        if (entity.Id == Guid.Empty)
+            entity.Id = Guid.NewGuid();
         entity.CreatedAt = DateTime.UtcNow;
+        // Avoid EF tracking duplicate references coming from default-initialized navigation props
+        entity.EntityType = null!;
+        entity.Universe = null!;
         await _entities.AddAsync(entity);
+        await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Entity entity)
     {
         entity.UpdatedAt = DateTime.UtcNow;
         _entities.Update(entity);
+        await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Entity entity)
@@ -63,5 +69,6 @@ public class EntityRepository : IEntityRepository
         entity.IsDeleted = true;
         entity.UpdatedAt = DateTime.UtcNow;
         _entities.Update(entity);
+        await _context.SaveChangesAsync();
     }
 }

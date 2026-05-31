@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Api\\OntologicalStudio.Api.csproj": {}
+    "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Api\\OntologicalStudio.Api.csproj": {}
   },
   "projects": {
-    "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Api\\OntologicalStudio.Api.csproj": {
+    "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Api\\OntologicalStudio.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Api\\OntologicalStudio.Api.csproj",
+        "projectUniqueName": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Api\\OntologicalStudio.Api.csproj",
         "projectName": "OntologicalStudio.Api",
-        "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Api\\OntologicalStudio.Api.csproj",
+        "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Api\\OntologicalStudio.Api.csproj",
         "packagesPath": "C:\\Users\\emoti\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Api\\obj\\",
+        "outputPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Api\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\DevExpress 25.2\\Components\\Offline Packages",
@@ -34,6 +34,7 @@
         },
         "frameworks": {
           "net8.0": {
+            "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {}
           }
@@ -52,6 +53,7 @@
       },
       "frameworks": {
         "net8.0": {
+          "framework": "net8.0",
           "targetAlias": "net8.0",
           "imports": [
             "net461",

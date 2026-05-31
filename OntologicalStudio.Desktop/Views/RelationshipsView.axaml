@@ -1,0 +1,69 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OntologicalStudio.Desktop.ViewModels"
+             xmlns:m="using:OntologicalStudio.Core.Models"
+             x:Class="OntologicalStudio.Desktop.Views.RelationshipsView"
+             x:DataType="vm:RelationshipsViewModel">
+    <Grid ColumnDefinitions="3*,2*" Margin="8">
+        <Border Grid.Column="0" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,8,0">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="Relationships" FontWeight="Bold" Margin="0,0,0,6"/>
+                <ListBox ItemsSource="{Binding Items}"
+                         SelectedItem="{Binding SelectedRelationship, Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:RelationshipRow">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Display}" FontFamily="Consolas, Menlo, monospace"/>
+                                <TextBlock Text="{Binding Description}" Opacity="0.6" FontSize="11"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <Border Grid.Column="1" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="12">
+            <ScrollViewer>
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Create relationship" FontWeight="Bold"/>
+                    <TextBlock Text="Source"/>
+                    <ComboBox ItemsSource="{Binding UniverseEntities}"
+                              SelectedItem="{Binding SourceEntity, Mode=TwoWay}"
+                              HorizontalAlignment="Stretch">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="m:Entity">
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBlock Text="Relationship type"/>
+                    <ComboBox ItemsSource="{Binding RelationshipTypes}"
+                              SelectedItem="{Binding RelationshipType, Mode=TwoWay}"
+                              HorizontalAlignment="Stretch">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="m:RelationshipType">
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBlock Text="Target"/>
+                    <ComboBox ItemsSource="{Binding UniverseEntities}"
+                              SelectedItem="{Binding TargetEntity, Mode=TwoWay}"
+                              HorizontalAlignment="Stretch">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="m:Entity">
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBox Watermark="Description (optional)" Text="{Binding Description, Mode=TwoWay}" AcceptsReturn="True" Height="60"/>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Create" Command="{Binding CreateCommand}"/>
+                        <Button Content="Delete selected" Command="{Binding DeleteCommand}"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding StatusMessage}" Opacity="0.7" FontSize="11"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

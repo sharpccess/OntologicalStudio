@@ -35,15 +35,18 @@ public class UniverseRepository : IUniverseRepository
 
     public async Task AddAsync(Universe universe)
     {
-        universe.Id = Guid.NewGuid();
+        if (universe.Id == Guid.Empty)
+            universe.Id = Guid.NewGuid();
         universe.CreatedAt = DateTime.UtcNow;
         await _universes.AddAsync(universe);
+        await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Universe universe)
     {
         universe.UpdatedAt = DateTime.UtcNow;
         _universes.Update(universe);
+        await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Universe universe)
@@ -51,5 +54,6 @@ public class UniverseRepository : IUniverseRepository
         universe.IsDeleted = true;
         universe.UpdatedAt = DateTime.UtcNow;
         _universes.Update(universe);
+        await _context.SaveChangesAsync();
     }
 }

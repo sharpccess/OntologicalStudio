@@ -1,0 +1,62 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OntologicalStudio.Desktop.ViewModels"
+             xmlns:m="using:OntologicalStudio.Core.Models"
+             x:Class="OntologicalStudio.Desktop.Views.EntitiesView"
+             x:DataType="vm:EntitiesViewModel">
+    <Grid ColumnDefinitions="2*,3*" Margin="8">
+        <Border Grid.Column="0" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,8,0">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="Entities (in selected universe)" FontWeight="Bold" Margin="0,0,0,6"/>
+                <ListBox ItemsSource="{Binding Items}"
+                         SelectedItem="{Binding SelectedEntity, Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="m:Entity">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding EntityType.Name}" Opacity="0.6" FontSize="11"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <Border Grid.Column="1" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="12">
+            <ScrollViewer>
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Create entity" FontWeight="Bold"/>
+                    <TextBox Watermark="Name" Text="{Binding NewName, Mode=TwoWay}"/>
+                    <TextBox Watermark="Description" Text="{Binding NewDescription, Mode=TwoWay}" AcceptsReturn="True" Height="80"/>
+                    <ComboBox ItemsSource="{Binding EntityTypes}"
+                              SelectedItem="{Binding NewEntityType, Mode=TwoWay}"
+                              HorizontalAlignment="Stretch">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="m:EntityType">
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Create" Command="{Binding CreateCommand}"/>
+                        <Button Content="Delete selected" Command="{Binding DeleteCommand}"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding StatusMessage}" Opacity="0.7" FontSize="11"/>
+
+                    <Separator Margin="0,8"/>
+                    <TextBlock Text="Selected entity" FontWeight="Bold"/>
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" Opacity="0.7"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedEntity.Name}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Type:" Opacity="0.7"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEntity.EntityType.Name}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Description:" Opacity="0.7"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedEntity.Description}" TextWrapping="Wrap"/>
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Notes:" Opacity="0.7"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedEntity.Notes}" TextWrapping="Wrap"/>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

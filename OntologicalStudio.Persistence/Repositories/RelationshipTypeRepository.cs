@@ -30,15 +30,18 @@ public class RelationshipTypeRepository : IRelationshipTypeRepository
 
     public async Task AddAsync(RelationshipType relationshipType)
     {
-        relationshipType.Id = Guid.NewGuid();
+        if (relationshipType.Id == Guid.Empty)
+            relationshipType.Id = Guid.NewGuid();
         relationshipType.CreatedAt = DateTime.UtcNow;
         await _relationshipTypes.AddAsync(relationshipType);
+        await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(RelationshipType relationshipType)
     {
         relationshipType.UpdatedAt = DateTime.UtcNow;
         _relationshipTypes.Update(relationshipType);
+        await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(RelationshipType relationshipType)
@@ -46,5 +49,6 @@ public class RelationshipTypeRepository : IRelationshipTypeRepository
         relationshipType.IsDeleted = true;
         relationshipType.UpdatedAt = DateTime.UtcNow;
         _relationshipTypes.Update(relationshipType);
+        await _context.SaveChangesAsync();
     }
 }

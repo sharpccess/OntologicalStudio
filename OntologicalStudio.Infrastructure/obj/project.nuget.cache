@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "4ZY0FSFY9uU=",
+  "dgSpecHash": "7ALEKw3+4Z4=",
   "success": true,
-  "projectFilePath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Infrastructure\\OntologicalStudio.Infrastructure.csproj",
+  "projectFilePath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Infrastructure\\OntologicalStudio.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\emoti\\.nuget\\packages\\microsoft.data.sqlite.core\\8.0.0\\microsoft.data.sqlite.core.8.0.0.nupkg.sha512",
     "C:\\Users\\emoti\\.nuget\\packages\\microsoft.entityframeworkcore\\8.0.0\\microsoft.entityframeworkcore.8.0.0.nupkg.sha512",

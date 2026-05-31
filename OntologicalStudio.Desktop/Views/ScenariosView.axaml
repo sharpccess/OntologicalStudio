@@ -1,0 +1,123 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OntologicalStudio.Desktop.ViewModels"
+             xmlns:m="using:OntologicalStudio.Core.Models"
+             x:Class="OntologicalStudio.Desktop.Views.ScenariosView"
+             x:DataType="vm:ScenariosViewModel">
+    <Grid ColumnDefinitions="2*,2*,3*" Margin="8">
+
+        <!-- Column 1: Scenarios list & create -->
+        <Border Grid.Column="0" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,8,0">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="Scenarios" FontWeight="Bold" Margin="0,0,0,6"/>
+                <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0,8,0,0">
+                    <TextBox Watermark="Title" Text="{Binding NewTitle, Mode=TwoWay}"/>
+                    <TextBox Watermark="Description" Text="{Binding NewDescription, Mode=TwoWay}" AcceptsReturn="True" Height="80"/>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Button Content="Create" Command="{Binding CreateCommand}"/>
+                        <Button Content="Delete" Command="{Binding DeleteCommand}"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding StatusMessage}" Opacity="0.7" FontSize="11"/>
+                </StackPanel>
+                <ListBox ItemsSource="{Binding Items}"
+                         SelectedItem="{Binding SelectedScenario, Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="m:Scenario">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding Description}" Opacity="0.6" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <!-- Column 2: Solutions list & run -->
+        <Border Grid.Column="1" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,8,0"
+                DataContext="{Binding Solutions}"
+                x:DataType="vm:SolutionsViewModel">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="Solutions" FontWeight="Bold" Margin="0,0,0,6"/>
+                <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0,8,0,0">
+                    <TextBox Watermark="Extra instructions (optional)"
+                             Text="{Binding ExtraInstructions, Mode=TwoWay}"
+                             AcceptsReturn="True" Height="60"/>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Button Content="Run" Command="{Binding RunCommand}" IsEnabled="{Binding !IsRunning}"/>
+                        <Button Content="Mark final" Command="{Binding MarkFinalCommand}"/>
+                        <Button Content="Delete" Command="{Binding DeleteCommand}"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding StatusMessage}" Opacity="0.7" FontSize="11"/>
+                </StackPanel>
+                <ListBox ItemsSource="{Binding Items}"
+                         SelectedItem="{Binding SelectedSolution, Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="m:Solution">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold"/>
+                                    <Border Background="#2a4f6e" CornerRadius="3" Padding="4,1">
+                                        <TextBlock Text="{Binding Status}" FontSize="10"/>
+                                    </Border>
+                                </StackPanel>
+                                <TextBlock Text="{Binding ProviderUsed}" Opacity="0.6" FontSize="11"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <!-- Column 3: Selected solution detail -->
+        <Border Grid.Column="2" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="8"
+                DataContext="{Binding Solutions}"
+                x:DataType="vm:SolutionsViewModel">
+            <Grid RowDefinitions="Auto,*">
+                <StackPanel Grid.Row="0" Spacing="4">
+                    <TextBlock Text="{Binding SelectedSolution.Title}" FontWeight="Bold" FontSize="14"/>
+                    <TextBlock Text="{Binding SelectedSolution.ProviderUsed}" Opacity="0.7" FontSize="11"/>
+                    <Separator Margin="0,4"/>
+                </StackPanel>
+                <TabControl Grid.Row="1">
+                    <TabItem Header="Artifacts">
+                        <ItemsControl ItemsSource="{Binding SelectedSolution.Artifacts}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="m:SolutionArtifact">
+                                    <Border BorderBrush="#333" BorderThickness="0,0,0,1" Padding="0,6">
+                                        <StackPanel Spacing="4">
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Kind}" Opacity="0.6" FontSize="11"/>
+                                                <TextBlock Text="{Binding MimeType}" Opacity="0.4" FontSize="11"/>
+                                            </StackPanel>
+                                            <TextBox Text="{Binding InlineContent, Mode=OneWay}"
+                                                     IsReadOnly="True"
+                                                     AcceptsReturn="True"
+                                                     TextWrapping="Wrap"
+                                                     FontFamily="Consolas, Menlo, monospace"
+                                                     FontSize="12"
+                                                     Background="Transparent"
+                                                     BorderThickness="0"
+                                                     MaxHeight="500"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </TabItem>
+                    <TabItem Header="Prompt sent">
+                        <TextBox Text="{Binding SelectedSolution.PromptSnapshot, Mode=OneWay}"
+                                 IsReadOnly="True"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 FontFamily="Consolas, Menlo, monospace"
+                                 FontSize="12"
+                                 Background="Transparent"
+                                 BorderThickness="0"/>
+                    </TabItem>
+                </TabControl>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "OntologicalStudio.Core/1.0.0": {
+        "runtime": {
+          "OntologicalStudio.Core.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "OntologicalStudio.Core/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

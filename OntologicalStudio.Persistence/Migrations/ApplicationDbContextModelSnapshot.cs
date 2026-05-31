@@ -15,7 +15,7 @@ namespace OntologicalStudio.Persistence.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
 
             modelBuilder.Entity("EntityScenario", b =>
                 {
@@ -200,6 +200,54 @@ namespace OntologicalStudio.Persistence.Migrations
                     b.ToTable("EntityType", (string)null);
                 });
 
+            modelBuilder.Entity("OntologicalStudio.Core.Models.HydrationLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AppliedFields")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("[]");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("datetime('now')");
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("PromptUsed")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProviderUsed")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RawResponse")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EntityId");
+
+                    b.ToTable("HydrationLog", (string)null);
+                });
+
             modelBuilder.Entity("OntologicalStudio.Core.Models.Relationship", b =>
                 {
                     b.Property<Guid>("Id")
@@ -361,6 +409,131 @@ namespace OntologicalStudio.Persistence.Migrations
                     b.ToTable("Scenario", (string)null);
                 });
 
+            modelBuilder.Entity("OntologicalStudio.Core.Models.Solution", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("datetime('now')");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("ModelUsed")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PromptSnapshot")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProviderUsed")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Rating")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
+
+                    b.Property<Guid>("ScenarioId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ScenarioId");
+
+                    b.ToTable("Solution", (string)null);
+                });
+
+            modelBuilder.Entity("OntologicalStudio.Core.Models.SolutionArtifact", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BlobPath")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("datetime('now')");
+
+                    b.Property<string>("InlineContent")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false);
+
+                    b.Property<int>("Kind")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MimeType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("text/plain");
+
+                    b.Property<int>("Order")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
+
+                    b.Property<long>("SizeBytes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0L);
+
+                    b.Property<Guid>("SolutionId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SolutionId");
+
+                    b.ToTable("SolutionArtifact", (string)null);
+                });
+
             modelBuilder.Entity("OntologicalStudio.Core.Models.Tag", b =>
                 {
                     b.Property<Guid>("Id")
@@ -489,6 +662,17 @@ namespace OntologicalStudio.Persistence.Migrations
                     b.Navigation("Universe");
                 });
 
+            modelBuilder.Entity("OntologicalStudio.Core.Models.HydrationLog", b =>
+                {
+                    b.HasOne("OntologicalStudio.Core.Models.Entity", "Entity")
+                        .WithMany()
+                        .HasForeignKey("EntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Entity");
+                });
+
             modelBuilder.Entity("OntologicalStudio.Core.Models.Relationship", b =>
                 {
                     b.HasOne("OntologicalStudio.Core.Models.RelationshipType", "RelationshipType")
@@ -527,6 +711,28 @@ namespace OntologicalStudio.Persistence.Migrations
                     b.Navigation("Universe");
                 });
 
+            modelBuilder.Entity("OntologicalStudio.Core.Models.Solution", b =>
+                {
+                    b.HasOne("OntologicalStudio.Core.Models.Scenario", "Scenario")
+                        .WithMany()
+                        .HasForeignKey("ScenarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Scenario");
+                });
+
+            modelBuilder.Entity("OntologicalStudio.Core.Models.SolutionArtifact", b =>
+                {
+                    b.HasOne("OntologicalStudio.Core.Models.Solution", "Solution")
+                        .WithMany("Artifacts")
+                        .HasForeignKey("SolutionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Solution");
+                });
+
             modelBuilder.Entity("OntologicalStudio.Core.Models.Entity", b =>
                 {
                     b.Navigation("SourceRelationships");
@@ -542,6 +748,11 @@ namespace OntologicalStudio.Persistence.Migrations
             modelBuilder.Entity("OntologicalStudio.Core.Models.RelationshipType", b =>
                 {
                     b.Navigation("Relationships");
+                });
+
+            modelBuilder.Entity("OntologicalStudio.Core.Models.Solution", b =>
+                {
+                    b.Navigation("Artifacts");
                 });
 
             modelBuilder.Entity("OntologicalStudio.Core.Models.Universe", b =>

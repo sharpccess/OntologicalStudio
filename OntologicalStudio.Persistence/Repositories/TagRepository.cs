@@ -30,15 +30,18 @@ public class TagRepository : ITagRepository
 
     public async Task AddAsync(Tag tag)
     {
-        tag.Id = Guid.NewGuid();
+        if (tag.Id == Guid.Empty)
+            tag.Id = Guid.NewGuid();
         tag.CreatedAt = DateTime.UtcNow;
         await _tags.AddAsync(tag);
+        await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Tag tag)
     {
         tag.UpdatedAt = DateTime.UtcNow;
         _tags.Update(tag);
+        await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Tag tag)
@@ -46,5 +49,6 @@ public class TagRepository : ITagRepository
         tag.IsDeleted = true;
         tag.UpdatedAt = DateTime.UtcNow;
         _tags.Update(tag);
+        await _context.SaveChangesAsync();
     }
 }

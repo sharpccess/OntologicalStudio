@@ -30,15 +30,18 @@ public class EntityTypeRepository : IEntityTypeRepository
 
     public async Task AddAsync(EntityType entityType)
     {
-        entityType.Id = Guid.NewGuid();
+        if (entityType.Id == Guid.Empty)
+            entityType.Id = Guid.NewGuid();
         entityType.CreatedAt = DateTime.UtcNow;
         await _entityTypes.AddAsync(entityType);
+        await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(EntityType entityType)
     {
         entityType.UpdatedAt = DateTime.UtcNow;
         _entityTypes.Update(entityType);
+        await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(EntityType entityType)
@@ -46,5 +49,6 @@ public class EntityTypeRepository : IEntityTypeRepository
         entityType.IsDeleted = true;
         entityType.UpdatedAt = DateTime.UtcNow;
         _entityTypes.Update(entityType);
+        await _context.SaveChangesAsync();
     }
 }

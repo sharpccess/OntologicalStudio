@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Infrastructure\\OntologicalStudio.Infrastructure.csproj": {}
+    "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Infrastructure\\OntologicalStudio.Infrastructure.csproj": {}
   },
   "projects": {
-    "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.AIProviders\\OntologicalStudio.AIProviders.csproj": {
+    "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.AIProviders\\OntologicalStudio.AIProviders.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.AIProviders\\OntologicalStudio.AIProviders.csproj",
+        "projectUniqueName": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.AIProviders\\OntologicalStudio.AIProviders.csproj",
         "projectName": "OntologicalStudio.AIProviders",
-        "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.AIProviders\\OntologicalStudio.AIProviders.csproj",
+        "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.AIProviders\\OntologicalStudio.AIProviders.csproj",
         "packagesPath": "C:\\Users\\emoti\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.AIProviders\\obj\\",
+        "outputPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.AIProviders\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\DevExpress 25.2\\Components\\Offline Packages",
@@ -36,8 +36,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj": {
-                "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj"
+              "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj": {
+                "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj"
               }
             }
           }
@@ -91,14 +91,14 @@
         }
       }
     },
-    "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Application\\OntologicalStudio.Application.csproj": {
+    "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Application\\OntologicalStudio.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Application\\OntologicalStudio.Application.csproj",
+        "projectUniqueName": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Application\\OntologicalStudio.Application.csproj",
         "projectName": "OntologicalStudio.Application",
-        "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Application\\OntologicalStudio.Application.csproj",
+        "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Application\\OntologicalStudio.Application.csproj",
         "packagesPath": "C:\\Users\\emoti\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Application\\obj\\",
+        "outputPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Application\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\DevExpress 25.2\\Components\\Offline Packages",
@@ -123,8 +123,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj": {
-                "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj"
+              "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj": {
+                "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj"
               }
             }
           }
@@ -184,14 +184,14 @@
         }
       }
     },
-    "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj": {
+    "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj",
+        "projectUniqueName": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj",
         "projectName": "OntologicalStudio.Core",
-        "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj",
+        "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj",
         "packagesPath": "C:\\Users\\emoti\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Core\\obj\\",
+        "outputPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\DevExpress 25.2\\Components\\Offline Packages",
@@ -267,14 +267,14 @@
         }
       }
     },
-    "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Infrastructure\\OntologicalStudio.Infrastructure.csproj": {
+    "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Infrastructure\\OntologicalStudio.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Infrastructure\\OntologicalStudio.Infrastructure.csproj",
+        "projectUniqueName": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Infrastructure\\OntologicalStudio.Infrastructure.csproj",
         "projectName": "OntologicalStudio.Infrastructure",
-        "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Infrastructure\\OntologicalStudio.Infrastructure.csproj",
+        "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Infrastructure\\OntologicalStudio.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\emoti\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Infrastructure\\obj\\",
+        "outputPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\DevExpress 25.2\\Components\\Offline Packages",
@@ -299,17 +299,17 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.AIProviders\\OntologicalStudio.AIProviders.csproj": {
-                "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.AIProviders\\OntologicalStudio.AIProviders.csproj"
+              "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.AIProviders\\OntologicalStudio.AIProviders.csproj": {
+                "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.AIProviders\\OntologicalStudio.AIProviders.csproj"
               },
-              "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Application\\OntologicalStudio.Application.csproj": {
-                "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Application\\OntologicalStudio.Application.csproj"
+              "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Application\\OntologicalStudio.Application.csproj": {
+                "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Application\\OntologicalStudio.Application.csproj"
               },
-              "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj": {
-                "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj"
+              "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj": {
+                "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj"
               },
-              "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Persistence\\OntologicalStudio.Persistence.csproj": {
-                "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Persistence\\OntologicalStudio.Persistence.csproj"
+              "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Persistence\\OntologicalStudio.Persistence.csproj": {
+                "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Persistence\\OntologicalStudio.Persistence.csproj"
               }
             }
           }
@@ -377,14 +377,14 @@
         }
       }
     },
-    "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Persistence\\OntologicalStudio.Persistence.csproj": {
+    "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Persistence\\OntologicalStudio.Persistence.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Persistence\\OntologicalStudio.Persistence.csproj",
+        "projectUniqueName": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Persistence\\OntologicalStudio.Persistence.csproj",
         "projectName": "OntologicalStudio.Persistence",
-        "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Persistence\\OntologicalStudio.Persistence.csproj",
+        "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Persistence\\OntologicalStudio.Persistence.csproj",
         "packagesPath": "C:\\Users\\emoti\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Persistence\\obj\\",
+        "outputPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Persistence\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\DevExpress 25.2\\Components\\Offline Packages",
@@ -409,8 +409,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj": {
-                "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj"
+              "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj": {
+                "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj"
               }
             }
           }

@@ -15,11 +15,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj",
+      "projectUniqueName": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj",
       "projectName": "OntologicalStudio.Core",
-      "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj",
+      "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj",
       "packagesPath": "C:\\Users\\emoti\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Core\\obj\\",
+      "outputPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\DevExpress 25.2\\Components\\Offline Packages",

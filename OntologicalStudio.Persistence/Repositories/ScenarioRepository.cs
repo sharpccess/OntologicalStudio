@@ -35,15 +35,19 @@ public class ScenarioRepository : IScenarioRepository
 
     public async Task AddAsync(Scenario scenario)
     {
-        scenario.Id = Guid.NewGuid();
+        if (scenario.Id == Guid.Empty)
+            scenario.Id = Guid.NewGuid();
         scenario.CreatedAt = DateTime.UtcNow;
+        scenario.Universe = null!;
         await _scenarios.AddAsync(scenario);
+        await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Scenario scenario)
     {
         scenario.UpdatedAt = DateTime.UtcNow;
         _scenarios.Update(scenario);
+        await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Scenario scenario)
@@ -51,5 +55,6 @@ public class ScenarioRepository : IScenarioRepository
         scenario.IsDeleted = true;
         scenario.UpdatedAt = DateTime.UtcNow;
         _scenarios.Update(scenario);
+        await _context.SaveChangesAsync();
     }
 }

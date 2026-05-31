@@ -1737,11 +1737,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Infrastructure\\OntologicalStudio.Infrastructure.csproj",
+      "projectUniqueName": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Infrastructure\\OntologicalStudio.Infrastructure.csproj",
       "projectName": "OntologicalStudio.Infrastructure",
-      "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Infrastructure\\OntologicalStudio.Infrastructure.csproj",
+      "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Infrastructure\\OntologicalStudio.Infrastructure.csproj",
       "packagesPath": "C:\\Users\\emoti\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Infrastructure\\obj\\",
+      "outputPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\DevExpress 25.2\\Components\\Offline Packages",
@@ -1764,20 +1764,19 @@
       },
       "frameworks": {
         "net8.0": {
-          "framework": "net8.0",
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.AIProviders\\OntologicalStudio.AIProviders.csproj": {
-              "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.AIProviders\\OntologicalStudio.AIProviders.csproj"
+            "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.AIProviders\\OntologicalStudio.AIProviders.csproj": {
+              "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.AIProviders\\OntologicalStudio.AIProviders.csproj"
             },
-            "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Application\\OntologicalStudio.Application.csproj": {
-              "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Application\\OntologicalStudio.Application.csproj"
+            "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Application\\OntologicalStudio.Application.csproj": {
+              "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Application\\OntologicalStudio.Application.csproj"
             },
-            "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj": {
-              "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj"
+            "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj": {
+              "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj"
             },
-            "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Persistence\\OntologicalStudio.Persistence.csproj": {
-              "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.Persistence\\OntologicalStudio.Persistence.csproj"
+            "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Persistence\\OntologicalStudio.Persistence.csproj": {
+              "projectPath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Persistence\\OntologicalStudio.Persistence.csproj"
             }
           }
         }
@@ -1796,7 +1795,6 @@
     },
     "frameworks": {
       "net8.0": {
-        "framework": "net8.0",
         "targetAlias": "net8.0",
         "dependencies": {
           "Microsoft.Extensions.Configuration": {

@@ -19,6 +19,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<Tag> Tags { get; set; }
     public DbSet<EntityScenario> EntityScenarios { get; set; }
     public DbSet<EntityTag> EntityTags { get; set; }
+    public DbSet<Solution> Solutions { get; set; }
+    public DbSet<SolutionArtifact> SolutionArtifacts { get; set; }
+    public DbSet<HydrationLog> HydrationLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -33,6 +36,9 @@ public class ApplicationDbContext : DbContext
         ConfigureTag(modelBuilder);
         ConfigureEntityScenario(modelBuilder);
         ConfigureEntityTag(modelBuilder);
+        ConfigureSolution(modelBuilder);
+        ConfigureSolutionArtifact(modelBuilder);
+        ConfigureHydrationLog(modelBuilder);
     }
 
     private void ConfigureEntityType(ModelBuilder modelBuilder)
@@ -213,6 +219,78 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(et => new { et.EntityId, et.TagId });
             entity.Property(et => et.EntityId).HasColumnType("TEXT");
             entity.Property(et => et.TagId).HasColumnType("TEXT");
+        });
+    }
+
+    private void ConfigureSolution(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Solution>(entity =>
+        {
+            entity.ToTable("Solution");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnType("TEXT");
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(300);
+            entity.Property(e => e.PromptSnapshot).HasColumnType("TEXT");
+            entity.Property(e => e.ProviderUsed).HasMaxLength(100);
+            entity.Property(e => e.ModelUsed).HasMaxLength(100);
+            entity.Property(e => e.Status).HasDefaultValue(SolutionStatus.Draft);
+            entity.Property(e => e.Rating).HasDefaultValue(0);
+            entity.Property(e => e.Notes).HasColumnType("TEXT");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.UpdatedAt).HasColumnType("TEXT");
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
+
+            entity.HasOne(s => s.Scenario)
+                .WithMany()
+                .HasForeignKey(s => s.ScenarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private void ConfigureSolutionArtifact(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<SolutionArtifact>(entity =>
+        {
+            entity.ToTable("SolutionArtifact");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnType("TEXT");
+            entity.Property(e => e.Kind).HasDefaultValue(ArtifactKind.Text);
+            entity.Property(e => e.MimeType).HasMaxLength(100).HasDefaultValue("text/plain");
+            entity.Property(e => e.InlineContent).HasColumnType("TEXT");
+            entity.Property(e => e.BlobPath).HasColumnType("TEXT");
+            entity.Property(e => e.SizeBytes).HasDefaultValue(0L);
+            entity.Property(e => e.Order).HasDefaultValue(0);
+            entity.Property(e => e.Label).HasMaxLength(300);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.UpdatedAt).HasColumnType("TEXT");
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
+
+            entity.HasOne(a => a.Solution)
+                .WithMany(s => s.Artifacts)
+                .HasForeignKey(a => a.SolutionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private void ConfigureHydrationLog(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<HydrationLog>(entity =>
+        {
+            entity.ToTable("HydrationLog");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnType("TEXT");
+            entity.Property(e => e.PromptUsed).HasColumnType("TEXT");
+            entity.Property(e => e.ProviderUsed).HasMaxLength(200);
+            entity.Property(e => e.RawResponse).HasColumnType("TEXT");
+            entity.Property(e => e.AppliedFields).HasColumnType("TEXT").HasDefaultValue("[]");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.UpdatedAt).HasColumnType("TEXT");
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
+
+            entity.HasOne(x => x.Entity)
+                .WithMany()
+                .HasForeignKey(x => x.EntityId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

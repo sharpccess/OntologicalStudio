@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OntologicalStudio.Desktop.ViewModels;
 using OntologicalStudio.Desktop.Views;
@@ -11,9 +12,9 @@ using System.IO;
 
 namespace OntologicalStudio.Desktop;
 
-public class AppMainClass : Avalonia.Application
+public partial class App : Avalonia.Application
 {
-    public static IServiceProvider ServiceProvider { get; private set; } = null!;
+    public static IServiceProvider Services { get; private set; } = null!;
 
     public override void Initialize()
     {
@@ -22,39 +23,43 @@ public class AppMainClass : Avalonia.Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        var services = new ServiceCollection();
+        Services = ConfigureServices();
 
-        // Database connection string setup in LocalApplicationData
-        string appDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OntologicalStudio");
-        if (!Directory.Exists(appDataDir))
+        // Apply migrations + seed once at startup
+        try
         {
-            Directory.CreateDirectory(appDataDir);
+            using var scope = Services.CreateScope();
+            var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            ctx.Database.Migrate();
+            DatabaseSeeder.SeedAsync(ctx).GetAwaiter().GetResult();
         }
-        string dbPath = Path.Combine(appDataDir, "ontological_studio.db");
-        string connectionString = $"Data Source={dbPath}";
-
-        services.AddInfrastructure(connectionString);
-
-        // Register ViewModels
-        services.AddTransient<MainWindowViewModel>();
-
-        ServiceProvider = services.BuildServiceProvider();
-
-        // Migrate and seed database
-        using (var scope = ServiceProvider.CreateScope())
+        catch (Exception ex)
         {
-            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            DatabaseSeeder.SeedAsync(context).GetAwaiter().GetResult();
+            Console.Error.WriteLine($"[Startup] DB init failed: {ex.Message}");
         }
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow
             {
-                DataContext = ServiceProvider.GetRequiredService<MainWindowViewModel>()
+                DataContext = new MainWindowViewModel(Services)
             };
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static IServiceProvider ConfigureServices()
+    {
+        var dataDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "OntologicalStudio");
+        Directory.CreateDirectory(dataDir);
+        var dbPath = Path.Combine(dataDir, "ontology.db");
+        var connectionString = $"Data Source={dbPath}";
+
+        var services = new ServiceCollection();
+        services.AddInfrastructure(connectionString);
+        return services.BuildServiceProvider();
     }
 }

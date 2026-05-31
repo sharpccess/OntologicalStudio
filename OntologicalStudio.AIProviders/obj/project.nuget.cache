@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "HJLNLKmjb7A=",
+  "dgSpecHash": "gQib7rWmwPQ=",
   "success": true,
-  "projectFilePath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio.AIProviders\\OntologicalStudio.AIProviders.csproj",
+  "projectFilePath": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.AIProviders\\OntologicalStudio.AIProviders.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\emoti\\.nuget\\packages\\microsoft.netcore.app.ref\\8.0.27\\microsoft.netcore.app.ref.8.0.27.nupkg.sha512",
     "C:\\Users\\emoti\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\8.0.27\\microsoft.windowsdesktop.app.ref.8.0.27.nupkg.sha512",
