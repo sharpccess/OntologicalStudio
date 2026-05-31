@@ -9,6 +9,7 @@ using Avalonia.Media;
 using OntologicalStudio.Core.Models;
 using OntologicalStudio.Desktop.ViewModels;
 using System.Collections.Specialized;
+using System.Reactive.Linq;
 using ShapePath = Avalonia.Controls.Shapes.Path;
 using MenuItem = Avalonia.Controls.MenuItem;
 
