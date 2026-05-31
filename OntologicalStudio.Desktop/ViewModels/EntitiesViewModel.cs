@@ -38,6 +38,8 @@ public partial class EntitiesViewModel : ObservableObject
     [ObservableProperty]
     private string statusMessage = string.Empty;
 
+    public bool HasSelectedUniverse => _universes.SelectedUniverse is not null;
+
     public event Action? EntitiesChanged;
 
     public EntitiesViewModel(IServiceProvider provider, UniversesViewModel universes)
@@ -45,8 +47,16 @@ public partial class EntitiesViewModel : ObservableObject
         _provider = provider;
         _universes = universes;
         _localization = provider.GetRequiredService<ILocalizationService>();
-        _universes.SelectionChanged += async () => await LoadAsync();
-        _universes.UniversesChanged += async () => await LoadAsync();
+        _universes.SelectionChanged += async () =>
+        {
+            OnPropertyChanged(nameof(HasSelectedUniverse));
+            await LoadAsync();
+        };
+        _universes.UniversesChanged += async () =>
+        {
+            OnPropertyChanged(nameof(HasSelectedUniverse));
+            await LoadAsync();
+        };
         _ = InitAsync();
     }
 
@@ -81,6 +91,7 @@ public partial class EntitiesViewModel : ObservableObject
         Items.Clear();
         if (universe is null)
         {
+            SelectedEntity = null;
             StatusMessage = _localization.CurrentLanguageCode == "es" ? "Selecciona primero un universo." : "Select a universe first.";
             EntitiesChanged?.Invoke();
             return;

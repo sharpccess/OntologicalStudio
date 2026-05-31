@@ -31,6 +31,8 @@ public partial class UniversesViewModel : ObservableObject
     [ObservableProperty]
     private string statusMessage = string.Empty;
 
+    public bool HasSelectedUniverse => SelectedUniverse is not null;
+
     public event Action? UniversesChanged;
     public event Action? SelectionChanged;
 
@@ -40,7 +42,11 @@ public partial class UniversesViewModel : ObservableObject
         _localization = provider.GetRequiredService<ILocalizationService>();
     }
 
-    partial void OnSelectedUniverseChanged(Universe? value) => SelectionChanged?.Invoke();
+    partial void OnSelectedUniverseChanged(Universe? value)
+    {
+        OnPropertyChanged(nameof(HasSelectedUniverse));
+        SelectionChanged?.Invoke();
+    }
 
     public void NotifyDataChanged() => UniversesChanged?.Invoke();
 
@@ -55,7 +61,9 @@ public partial class UniversesViewModel : ObservableObject
             foreach (var u in data.OrderBy(u => u.Name))
                 Items.Add(u);
             SelectedUniverse = prevId.HasValue ? Items.FirstOrDefault(x => x.Id == prevId) ?? Items.FirstOrDefault() : Items.FirstOrDefault();
-            StatusMessage = $"{Items.Count} universe(s) loaded.";
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? $"{Items.Count} universo(s) cargado(s)."
+                : $"{Items.Count} universe(s) loaded.";
             UniversesChanged?.Invoke();
         }
         catch (Exception ex)
@@ -67,18 +75,25 @@ public partial class UniversesViewModel : ObservableObject
     [RelayCommand]
     private async Task CreateAsync()
     {
-        if (string.IsNullOrWhiteSpace(NewName))
+        var name = NewName?.Trim() ?? string.Empty;
+        var description = NewDescription?.Trim() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(name))
         {
             StatusMessage = _localization.CurrentLanguageCode == "es" ? "El nombre es obligatorio." : "Name is required.";
             return;
         }
         try
         {
-            await ScopedRunner.RunAsync<IUniverseService>(_provider,
-                s => s.CreateAsync(NewName.Trim(), NewDescription?.Trim() ?? string.Empty));
+            var created = await ScopedRunner.RunAsync<IUniverseService, Universe>(_provider,
+                s => s.CreateAsync(name, description));
             NewName = string.Empty;
             NewDescription = string.Empty;
             await LoadAsync();
+            SelectedUniverse = Items.FirstOrDefault(x => x.Id == created.Id) ?? Items.FirstOrDefault(x => x.Name == created.Name) ?? Items.FirstOrDefault();
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? $"Universo '{created.Name}' creado."
+                : $"Universe '{created.Name}' created.";
         }
         catch (Exception ex)
         {

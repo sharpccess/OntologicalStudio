@@ -1,0 +1,21 @@
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
+using OntologicalStudio.Infrastructure;
+using OntologicalStudio.Application.Services;
+using OntologicalStudio.Persistence.Context;
+using Microsoft.EntityFrameworkCore;
+
+var services = new ServiceCollection();
+var dbPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OntologicalStudio", "ontology.db");
+services.AddInfrastructure($"Data Source={dbPath}");
+var provider = services.BuildServiceProvider();
+using var scope = provider.CreateScope();
+var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+ctx.Database.Migrate();
+var svc = scope.ServiceProvider.GetRequiredService<IUniverseService>();
+var before = await svc.GetAllAsync();
+Console.WriteLine($"BEFORE={before.Count()}");
+var created = await svc.CreateAsync("Probe Universe", "probe");
+Console.WriteLine($"CREATED={created.Id}|{created.Name}");
+var after = await svc.GetAllAsync();
+Console.WriteLine($"AFTER={after.Count()}");
