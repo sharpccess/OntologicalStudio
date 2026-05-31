@@ -23,6 +23,7 @@ public partial class UniverseCanvasView : UserControl
     private bool _isPanning;
     private Point _panStart;
     private Vector _panOffset;
+    private Point _lastCanvasPoint;
 
     public UniverseCanvasView()
     {
@@ -89,6 +90,15 @@ public partial class UniverseCanvasView : UserControl
             return;
 
         var point = e.GetCurrentPoint(_canvas);
+        _lastCanvasPoint = e.GetPosition(_canvas);
+
+        if (point.Properties.IsRightButtonPressed)
+        {
+            ShowCanvasContextMenu();
+            Focus();
+            return;
+        }
+
         if (point.Properties.IsMiddleButtonPressed)
         {
             _isPanning = true;
@@ -210,45 +220,19 @@ public partial class UniverseCanvasView : UserControl
         foreach (var node in _viewModel.Nodes)
         {
             var selected = _viewModel.SelectedNode?.Id == node.Id;
+            var linking = _viewModel.LinkSource?.Id == node.Id;
 
             var border = new Border
             {
                 Width = node.Width,
                 Height = node.Height,
                 CornerRadius = new CornerRadius(8),
-                Background = new SolidColorBrush(Color.Parse(selected ? "#24445b" : "#1f252d")),
-                BorderBrush = new SolidColorBrush(Color.Parse(selected ? "#6ec1ff" : "#465463")),
+                Background = new SolidColorBrush(Color.Parse(linking ? "#3f2d61" : selected ? "#24445b" : "#1f252d")),
+                BorderBrush = new SolidColorBrush(Color.Parse(linking ? "#c596ff" : selected ? "#6ec1ff" : "#465463")),
                 BorderThickness = new Thickness(selected ? 2 : 1),
                 Padding = new Thickness(10),
                 Tag = node,
-                Child = new StackPanel
-                {
-                    Spacing = 4,
-                    Children =
-                    {
-                        new TextBlock
-                        {
-                            Text = node.Name,
-                            FontWeight = FontWeight.SemiBold,
-                            Foreground = Brushes.White,
-                            TextTrimming = TextTrimming.CharacterEllipsis
-                        },
-                        new TextBlock
-                        {
-                            Text = node.TypeName,
-                            FontSize = 11,
-                            Opacity = 0.65
-                        },
-                        new TextBlock
-                        {
-                            Text = node.Description,
-                            FontSize = 11,
-                            TextWrapping = TextWrapping.Wrap,
-                            MaxHeight = 32,
-                            Opacity = 0.8
-                        }
-                    }
-                }
+                Child = BuildNodeContent(node)
             };
 
             border.PointerPressed += OnNodePointerPressed;
@@ -264,6 +248,15 @@ public partial class UniverseCanvasView : UserControl
         if (_viewModel is null || _canvas is null || sender is not Border border || border.Tag is not CanvasEntityNodeViewModel node)
             return;
 
+        var point = e.GetCurrentPoint(border);
+        if (point.Properties.IsRightButtonPressed)
+        {
+            _viewModel.SelectNode(node);
+            ShowNodeContextMenu(border, node);
+            RenderScene();
+            return;
+        }
+
         if (_viewModel.IsLinkMode)
         {
             await _viewModel.HandleNodeClickedAsync(node);
@@ -278,5 +271,134 @@ public partial class UniverseCanvasView : UserControl
         _originY = node.Y;
         e.Pointer.Capture(_canvas);
         RenderScene();
+    }
+
+    private Control BuildNodeContent(CanvasEntityNodeViewModel node)
+    {
+        var layout = new Grid();
+        layout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+        layout.RowDefinitions.Add(new RowDefinition(GridLength.Star));
+        layout.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+        layout.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+
+        var title = new TextBlock
+        {
+            Text = node.Name,
+            FontWeight = FontWeight.SemiBold,
+            Foreground = Brushes.White,
+            TextTrimming = TextTrimming.CharacterEllipsis
+        };
+        Grid.SetRow(title, 0);
+        Grid.SetColumn(title, 0);
+        layout.Children.Add(title);
+
+        var deleteButton = new Button
+        {
+            Content = "×",
+            Width = 20,
+            Height = 20,
+            Padding = new Thickness(0),
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Top
+        };
+        deleteButton.PointerPressed += (_, args) => args.Handled = true;
+        deleteButton.Click += async (_, _) =>
+        {
+            if (_viewModel is not null)
+            {
+                await _viewModel.DeleteNodeAsync(node);
+                RenderScene();
+            }
+        };
+        Grid.SetRow(deleteButton, 0);
+        Grid.SetColumn(deleteButton, 1);
+        layout.Children.Add(deleteButton);
+
+        var body = new StackPanel
+        {
+            Spacing = 4,
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = node.TypeName,
+                    FontSize = 11,
+                    Opacity = 0.65
+                },
+                new TextBlock
+                {
+                    Text = node.Description,
+                    FontSize = 11,
+                    TextWrapping = TextWrapping.Wrap,
+                    MaxHeight = 32,
+                    Opacity = 0.8
+                }
+            }
+        };
+        Grid.SetRow(body, 1);
+        Grid.SetColumn(body, 0);
+        Grid.SetColumnSpan(body, 2);
+        layout.Children.Add(body);
+
+        return layout;
+    }
+
+    private void ShowCanvasContextMenu()
+    {
+        if (_canvas is null || _viewModel is null)
+            return;
+
+        var menu = new ContextMenu();
+        var items = new List<object>();
+
+        foreach (var entityType in _viewModel.EntityTypes.OrderBy(x => x.Name))
+        {
+            var item = new MenuItem
+            {
+                Header = $"Create {entityType.Name}"
+            };
+            item.Click += async (_, _) =>
+            {
+                await _viewModel.CreateNodeAtAsync(_lastCanvasPoint.X, _lastCanvasPoint.Y, entityType);
+                RenderScene();
+            };
+            items.Add(item);
+        }
+
+        menu.ItemsSource = items;
+        menu.Open(_canvas);
+    }
+
+    private void ShowNodeContextMenu(Control target, CanvasEntityNodeViewModel node)
+    {
+        if (_viewModel is null)
+            return;
+
+        var deleteItem = new MenuItem { Header = "Delete node" };
+        deleteItem.Click += async (_, _) =>
+        {
+            await _viewModel.DeleteNodeAsync(node);
+            RenderScene();
+        };
+
+        var connectItem = new MenuItem { Header = "Start connection from this node" };
+        connectItem.Click += (_, _) =>
+        {
+            _viewModel.StartConnection(node);
+            RenderScene();
+        };
+
+        var cancelConnectionItem = new MenuItem { Header = "Cancel connection mode" };
+        cancelConnectionItem.Click += (_, _) =>
+        {
+            _viewModel.CancelConnection();
+            RenderScene();
+        };
+
+        var menu = new ContextMenu
+        {
+            ItemsSource = new object[] { connectItem, cancelConnectionItem, deleteItem }
+        };
+        menu.Open(target);
     }
 }

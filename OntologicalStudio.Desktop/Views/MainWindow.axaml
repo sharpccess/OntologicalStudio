@@ -19,7 +19,7 @@
             </StackPanel>
         </Border>
 
-        <TabControl Grid.Row="1" Margin="8">
+        <TabControl Grid.Row="1" Margin="8" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
             <TabItem Header="Universes">
                 <views:UniversesView DataContext="{Binding Universes}"/>
             </TabItem>

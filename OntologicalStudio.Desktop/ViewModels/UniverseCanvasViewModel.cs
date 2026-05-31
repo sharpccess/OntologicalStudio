@@ -179,7 +179,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
         }
     }
 
-    public async Task CreateNodeAtAsync(double x, double y)
+    public async Task CreateNodeAtAsync(double x, double y, EntityType? entityTypeOverride = null)
     {
         var universe = _universes.SelectedUniverse;
         if (universe is null)
@@ -188,21 +188,23 @@ public partial class UniverseCanvasViewModel : ObservableObject
             return;
         }
 
-        if (SelectedEntityType is null)
+        var entityType = entityTypeOverride ?? SelectedEntityType;
+
+        if (entityType is null)
         {
             StatusMessage = "Select an entity type first.";
             return;
         }
 
         var name = string.IsNullOrWhiteSpace(NewEntityName)
-            ? $"{SelectedEntityType.Name} {Nodes.Count + 1}"
+            ? $"{entityType.Name} {Nodes.Count + 1}"
             : NewEntityName.Trim();
 
         try
         {
             var entity = await ScopedRunner.RunAsync<IEntityService, Entity>(
                 _provider,
-                service => service.CreateAsync(name, NewEntityDescription.Trim(), SelectedEntityType.Id, universe.Id));
+                service => service.CreateAsync(name, NewEntityDescription.Trim(), entityType.Id, universe.Id));
 
             entity.PositionX = Math.Max(24, x);
             entity.PositionY = Math.Max(24, y);
@@ -274,6 +276,29 @@ public partial class UniverseCanvasViewModel : ObservableObject
             LinkSource ??= node;
             LinkTarget ??= Nodes.FirstOrDefault(x => x.Id != node.Id) ?? node;
         }
+    }
+
+    public void StartConnection(CanvasEntityNodeViewModel node)
+    {
+        SelectedNode = node;
+        IsLinkMode = true;
+        LinkSource = node;
+        LinkTarget = null;
+        StatusMessage = $"Connection mode: source is '{node.Name}'. Click another node to create the relationship.";
+    }
+
+    public void CancelConnection()
+    {
+        IsLinkMode = false;
+        LinkSource = null;
+        LinkTarget = null;
+        StatusMessage = "Connection mode cancelled.";
+    }
+
+    public async Task DeleteNodeAsync(CanvasEntityNodeViewModel node)
+    {
+        SelectedNode = node;
+        await DeleteSelectedNodeAsync();
     }
 
     public async Task HandleNodeClickedAsync(CanvasEntityNodeViewModel node)

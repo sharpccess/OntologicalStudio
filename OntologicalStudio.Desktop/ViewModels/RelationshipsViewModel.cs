@@ -137,6 +137,7 @@ public partial class RelationshipsViewModel : ObservableObject
             });
             Description = string.Empty;
             await ReloadForUniverseAsync();
+            _universes.NotifyDataChanged();
         }
         catch (Exception ex)
         {
@@ -153,6 +154,7 @@ public partial class RelationshipsViewModel : ObservableObject
         {
             await ScopedRunner.RunAsync<IRelationshipService>(_provider, s => s.DeleteAsync(id));
             await ReloadForUniverseAsync();
+            _universes.NotifyDataChanged();
         }
         catch (Exception ex)
         {

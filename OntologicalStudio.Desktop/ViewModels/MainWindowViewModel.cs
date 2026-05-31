@@ -1,9 +1,13 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 
 namespace OntologicalStudio.Desktop.ViewModels;
 
-public class MainWindowViewModel
+public partial class MainWindowViewModel : ObservableObject
 {
+    [ObservableProperty]
+    private int selectedTabIndex;
+
     public UniversesViewModel Universes { get; }
     public UniverseCanvasViewModel UniverseCanvas { get; }
     public EntitiesViewModel Entities { get; }
@@ -22,5 +26,18 @@ public class MainWindowViewModel
 
         // Initial load
         _ = Universes.LoadAsync();
+    }
+
+    partial void OnSelectedTabIndexChanged(int value)
+    {
+        _ = value switch
+        {
+            1 => UniverseCanvas.LoadAsync(),
+            2 => Entities.LoadAsync(),
+            3 => Relationships.ReloadForUniverseAsync(),
+            4 => Scenarios.LoadAsync(),
+            5 => Prompt.ReloadScenariosAsync(),
+            _ => Task.CompletedTask
+        };
     }
 }

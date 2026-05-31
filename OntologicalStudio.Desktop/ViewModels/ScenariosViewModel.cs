@@ -78,6 +78,7 @@ public partial class ScenariosViewModel : ObservableObject
             NewTitle = string.Empty;
             NewDescription = string.Empty;
             await LoadAsync();
+            _universes.NotifyDataChanged();
         }
         catch (Exception ex)
         {
@@ -94,6 +95,7 @@ public partial class ScenariosViewModel : ObservableObject
         {
             await ScopedRunner.RunAsync<IScenarioService>(_provider, s => s.DeleteAsync(id));
             await LoadAsync();
+            _universes.NotifyDataChanged();
         }
         catch (Exception ex)
         {

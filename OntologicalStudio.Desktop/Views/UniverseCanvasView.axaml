@@ -32,7 +32,7 @@
                              Text="{Binding NewEntityDescription, Mode=TwoWay}"
                              AcceptsReturn="True"
                              Height="72"/>
-                    <TextBlock Text="Double-click on the canvas to place the entity."
+                    <TextBlock Text="Double-click or right-click on the canvas to place the entity."
                                Opacity="0.6"
                                FontSize="11"
                                TextWrapping="Wrap"/>
