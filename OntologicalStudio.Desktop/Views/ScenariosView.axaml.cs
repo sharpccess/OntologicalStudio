@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using OntologicalStudio.Core.Models;
@@ -112,7 +113,11 @@ public partial class ScenariosView : UserControl
             return;
         }
 
-        await topLevel.Clipboard.SetTextAsync(WebUtility.HtmlDecode(StripHtml(html)));
+        var plainText = WebUtility.HtmlDecode(StripHtml(html));
+        var dataObject = new DataObject();
+        dataObject.Set(DataFormats.Text, plainText);
+        dataObject.Set("text/html", html);
+        await topLevel.Clipboard.SetDataObjectAsync(dataObject);
         viewModel.StatusMessage = "Formatted artifact copied to clipboard.";
     }
 

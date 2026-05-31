@@ -171,7 +171,8 @@
                             </StackPanel>
                             <TabControl>
                                 <TabItem Header="Preview">
-                                    <ScrollViewer>
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled">
                                         <ItemsControl ItemsSource="{Binding SelectedArtifactMarkdownBlocks}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate x:DataType="vm:MarkdownPreviewViewModel">
@@ -194,30 +195,33 @@
                                     </ScrollViewer>
                                 </TabItem>
                                 <TabItem Header="Raw">
-                                    <ItemsControl ItemsSource="{Binding SelectedSolutionArtifacts}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate x:DataType="vm:SolutionArtifactViewModel">
-                                                <Border BorderBrush="#333" BorderThickness="0,0,0,1" Padding="0,6">
-                                                    <StackPanel Spacing="4">
-                                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                                            <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>
-                                                            <TextBlock Text="{Binding KindDisplay}" Opacity="0.6" FontSize="11"/>
-                                                            <TextBlock Text="{Binding MimeType}" Opacity="0.4" FontSize="11"/>
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled">
+                                        <ItemsControl ItemsSource="{Binding SelectedSolutionArtifacts}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:SolutionArtifactViewModel">
+                                                    <Border BorderBrush="#333" BorderThickness="0,0,0,1" Padding="0,6">
+                                                        <StackPanel Spacing="4">
+                                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                                <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>
+                                                                <TextBlock Text="{Binding KindDisplay}" Opacity="0.6" FontSize="11"/>
+                                                                <TextBlock Text="{Binding MimeType}" Opacity="0.4" FontSize="11"/>
+                                                            </StackPanel>
+                                                            <TextBox Text="{Binding InlineContent, Mode=OneWay}"
+                                                                     IsReadOnly="True"
+                                                                     AcceptsReturn="True"
+                                                                     TextWrapping="Wrap"
+                                                                     FontFamily="Consolas, Menlo, monospace"
+                                                                     FontSize="12"
+                                                                     Background="Transparent"
+                                                                     BorderThickness="0"
+                                                                     MaxHeight="500"/>
                                                         </StackPanel>
-                                                        <TextBox Text="{Binding InlineContent, Mode=OneWay}"
-                                                                 IsReadOnly="True"
-                                                                 AcceptsReturn="True"
-                                                                 TextWrapping="Wrap"
-                                                                 FontFamily="Consolas, Menlo, monospace"
-                                                                 FontSize="12"
-                                                                 Background="Transparent"
-                                                                 BorderThickness="0"
-                                                                 MaxHeight="500"/>
-                                                    </StackPanel>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
                                 </TabItem>
                             </TabControl>
                         </StackPanel>

@@ -356,6 +356,11 @@ public partial class SolutionsViewModel : ObservableObject
                         FontWeight = FontWeight.Normal,
                         IsCode = true,
                         Foreground = new SolidColorBrush(Color.Parse("#E5E7EB")),
+                        Background = new SolidColorBrush(Color.Parse("#111827")),
+                        BorderBrush = new SolidColorBrush(Color.Parse("#374151")),
+                        BorderThickness = new Thickness(1),
+                        Padding = new Thickness(8),
+                        FontFamily = new FontFamily("Consolas"),
                         Margin = new Thickness(0, 0, 0, 10)
                     });
                     codeLines.Clear();
