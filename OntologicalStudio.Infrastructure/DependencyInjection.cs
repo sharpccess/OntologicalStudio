@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OntologicalStudio.Application.Prompting;
 using OntologicalStudio.Core.Interfaces;
 using OntologicalStudio.Infrastructure.Storage;
+using OntologicalStudio.Infrastructure.Services;
 using OntologicalStudio.Persistence.Context;
 using OntologicalStudio.Persistence.Repositories;
 using OntologicalStudio.Application.Services;
@@ -36,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<IScenarioService, ScenarioService>();
         services.AddScoped<IAIHydrationService, AIHydrationService>();
         services.AddScoped<IEntityHydrationWorkflowService, EntityHydrationWorkflowService>();
+        services.AddSingleton<IWebResearchService, WebResearchService>();
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<IPromptBuilder, PromptBuilder>();
         services.AddScoped<ISolutionService, SolutionService>();

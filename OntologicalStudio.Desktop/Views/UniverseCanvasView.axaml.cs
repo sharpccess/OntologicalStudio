@@ -11,6 +11,7 @@ using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using OntologicalStudio.Application.Services;
 using OntologicalStudio.Core.Models;
+using OntologicalStudio.Desktop.Services;
 using OntologicalStudio.Desktop.ViewModels;
 using System.Collections.Specialized;
 using System.Reactive.Linq;
@@ -631,7 +632,7 @@ public partial class UniverseCanvasView : UserControl
         };
         typeBox.PointerPressed += (_, args) => args.Handled = true;
         typeBox.ItemTemplate = new FuncDataTemplate<EntityType>((entityType, _) =>
-            new TextBlock { Text = entityType?.Name ?? string.Empty });
+            new TextBlock { Text = entityType?.DisplayName ?? entityType?.Name ?? string.Empty });
         typeBox.SelectionChanged += async (_, _) =>
         {
             if (suppressInitialAutosave || isSavingInlineNode)
@@ -764,8 +765,9 @@ public partial class UniverseCanvasView : UserControl
             if (!hydrated)
                 return;
 
-            var entityService = _viewModel.ServiceProvider.GetRequiredService<IEntityService>();
-            var refreshedEntity = await entityService.GetByIdAsync(node.Id);
+            var refreshedEntity = await ScopedRunner.RunAsync<IEntityService, Entity>(
+                _viewModel.ServiceProvider,
+                service => service.GetByIdAsync(node.Id));
             if (refreshedEntity is null)
                 return;
 
@@ -915,7 +917,7 @@ public partial class UniverseCanvasView : UserControl
         {
             var item = new MenuItem
             {
-                Header = $"Create {entityType.Name}"
+                Header = $"Create {entityType.DisplayName}"
             };
             item.Click += async (_, _) =>
             {

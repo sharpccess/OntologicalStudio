@@ -14,26 +14,33 @@ public class AIHydrationService : IAIHydrationService
     private readonly IEntityRepository _entityRepository;
     private readonly IScenarioRepository _scenarioRepository;
     private readonly IRelationshipRepository _relationshipRepository;
+    private readonly IWebResearchService _webResearchService;
 
     public AIHydrationService(
         IAIProvider aiProvider,
         IEntityRepository entityRepository,
         IScenarioRepository scenarioRepository,
-        IRelationshipRepository relationshipRepository)
+        IRelationshipRepository relationshipRepository,
+        IWebResearchService webResearchService)
     {
         _aiProvider = aiProvider;
         _entityRepository = entityRepository;
         _scenarioRepository = scenarioRepository;
         _relationshipRepository = relationshipRepository;
+        _webResearchService = webResearchService;
     }
 
-    public async Task<HydrationResult> HydrateEntityAsync(Guid entityId, HydrationOptions options)
+    public async Task<HydrationResult> HydrateEntityAsync(Guid entityId, HydrationOptions options, string? customPrompt = null, string languageCode = "en")
     {
         var entity = await _entityRepository.GetByIdAsync(entityId);
         if (entity == null)
             throw new InvalidOperationException("Entity not found");
 
-        return await _aiProvider.HydrateEntityAsync(entity, options);
+        var webResearch = await _webResearchService.ResearchAsync(
+            BuildResearchQuery(entity, customPrompt, languageCode),
+            languageCode);
+
+        return await _aiProvider.HydrateEntityAsync(entity, options, customPrompt, languageCode, webResearch);
     }
 
     public async Task<IEnumerable<RelationshipSuggestion>> SuggestRelationshipsAsync(Guid entityId)
@@ -139,5 +146,15 @@ public class AIHydrationService : IAIHydrationService
         };
 
         return await _aiProvider.GeneratePromptAsync(contextObj);
+    }
+
+    private static string BuildResearchQuery(Entity entity, string? customPrompt, string languageCode)
+    {
+        if (!string.IsNullOrWhiteSpace(customPrompt))
+            return $"{entity.Name} {entity.EntityType?.Name} {customPrompt}";
+
+        return languageCode == "es"
+            ? $"{entity.Name} {entity.EntityType?.Name} noticias actuales contexto"
+            : $"{entity.Name} {entity.EntityType?.Name} current news context";
     }
 }

@@ -1,8 +1,10 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using OntologicalStudio.Application.Services;
 using OntologicalStudio.Core.Models;
 using OntologicalStudio.Desktop.Services;
+using OntologicalStudio.Localization.Services;
 using System.Collections.ObjectModel;
 
 namespace OntologicalStudio.Desktop.ViewModels;
@@ -10,6 +12,7 @@ namespace OntologicalStudio.Desktop.ViewModels;
 public partial class EntityHydrationViewModel : ObservableObject
 {
     private readonly IServiceProvider _provider;
+    private readonly ILocalizationService _localization;
 
     public ObservableCollection<HydrationLog> History { get; } = new();
 
@@ -74,6 +77,7 @@ public partial class EntityHydrationViewModel : ObservableObject
     public EntityHydrationViewModel(IServiceProvider provider)
     {
         _provider = provider;
+        _localization = provider.GetRequiredService<ILocalizationService>();
     }
 
     public async Task PreviewCurrentNodeAsync()
@@ -122,7 +126,9 @@ public partial class EntityHydrationViewModel : ObservableObject
             return;
 
         IsBusy = true;
-        StatusMessage = "Generating hydration preview...";
+        StatusMessage = _localization.CurrentLanguageCode == "es"
+            ? "Generando hidratación con investigación web..."
+            : "Generating hydration with web research...";
         try
         {
             Preview = await ScopedRunner.RunAsync<IEntityHydrationWorkflowService, HydrationPreview>(
@@ -139,13 +145,18 @@ public partial class EntityHydrationViewModel : ObservableObject
                         DetailLevel = 2,
                         MaxSuggestions = 8
                     },
-                    CustomPrompt));
+                    CustomPrompt,
+                    _localization.CurrentLanguageCode));
             BuildDiff();
-            StatusMessage = "Preview ready. Review and apply if useful.";
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? "Hidratación lista. Se aplicará sobre la entidad."
+                : "Hydration ready. It will be applied to the entity.";
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Hydration preview failed: {ex.Message}";
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? $"Falló la hidratación: {ex.Message}"
+                : $"Hydration failed: {ex.Message}";
         }
         finally
         {
@@ -175,12 +186,16 @@ public partial class EntityHydrationViewModel : ObservableObject
                     ApplyConfidence = ApplyConfidence,
                     ApplyCompleteness = ApplyCompleteness
                 }));
-            StatusMessage = "Hydration applied to entity.";
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? "Hidratación aplicada a la entidad."
+                : "Hydration applied to entity.";
             await LoadHistoryAsync();
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Apply failed: {ex.Message}";
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? $"Falló la aplicación: {ex.Message}"
+                : $"Apply failed: {ex.Message}";
         }
         finally
         {

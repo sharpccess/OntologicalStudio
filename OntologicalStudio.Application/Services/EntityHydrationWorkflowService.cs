@@ -19,18 +19,18 @@ public class EntityHydrationWorkflowService : IEntityHydrationWorkflowService
         _logs = logs;
     }
 
-    public async Task<HydrationPreview> PreviewHydrationAsync(Guid entityId, HydrationOptions options, string? customPrompt = null)
+    public async Task<HydrationPreview> PreviewHydrationAsync(Guid entityId, HydrationOptions options, string? customPrompt = null, string languageCode = "en")
     {
         var entity = await _entities.GetByIdAsync(entityId)
             ?? throw new InvalidOperationException("Entity not found.");
 
-        var result = await _hydrationService.HydrateEntityAsync(entityId, options);
+        var result = await _hydrationService.HydrateEntityAsync(entityId, options, customPrompt, languageCode);
         result.EntityId = entityId;
 
         return new HydrationPreview
         {
             EntityId = entityId,
-            PromptUsed = BuildPrompt(entity, options, customPrompt),
+            PromptUsed = BuildPrompt(entity, options, customPrompt, languageCode),
             ProviderUsed = "ConfigurableAIProvider",
             CurrentHydrationData = entity.HydrationData,
             CurrentNotes = entity.Notes,
@@ -55,6 +55,10 @@ public class EntityHydrationWorkflowService : IEntityHydrationWorkflowService
 
         if (request.ApplyNotes && !string.IsNullOrWhiteSpace(request.Preview.SuggestedNotes))
         {
+            entity.Description = string.Join(Environment.NewLine + Environment.NewLine,
+                new[] { entity.Description, request.Preview.SuggestedNotes }.Where(x => !string.IsNullOrWhiteSpace(x)));
+            appliedFields.Add(nameof(Entity.Description));
+
             entity.Notes = string.Join(Environment.NewLine + Environment.NewLine,
                 new[] { entity.Notes, request.Preview.SuggestedNotes }.Where(x => !string.IsNullOrWhiteSpace(x)));
             appliedFields.Add(nameof(Entity.Notes));
@@ -91,7 +95,7 @@ public class EntityHydrationWorkflowService : IEntityHydrationWorkflowService
 
     public Task<IEnumerable<HydrationLog>> GetHistoryAsync(Guid entityId) => _logs.GetByEntityAsync(entityId);
 
-    private static string BuildPrompt(Entity entity, HydrationOptions options, string? customPrompt)
+    private static string BuildPrompt(Entity entity, HydrationOptions options, string? customPrompt, string languageCode)
     {
         if (!string.IsNullOrWhiteSpace(customPrompt))
             return customPrompt;
@@ -103,6 +107,8 @@ public class EntityHydrationWorkflowService : IEntityHydrationWorkflowService
         if (options.IncludeIncentives) requested.Add("incentives");
         if (options.IncludeBehavioralPatterns) requested.Add("behavioral patterns");
 
-        return $"Hydrate entity '{entity.Name}' of type '{entity.EntityType?.Name ?? "Entity"}' using: {string.Join(", ", requested)}. Description: {entity.Description}. Existing notes: {entity.Notes}";
+        return languageCode == "es"
+            ? $"Hidrata la entidad '{entity.Name}' de tipo '{entity.EntityType?.Name ?? "Entidad"}' usando: {string.Join(", ", requested)}. Descripción: {entity.Description}. Notas existentes: {entity.Notes}"
+            : $"Hydrate entity '{entity.Name}' of type '{entity.EntityType?.Name ?? "Entity"}' using: {string.Join(", ", requested)}. Description: {entity.Description}. Existing notes: {entity.Notes}";
     }
 }

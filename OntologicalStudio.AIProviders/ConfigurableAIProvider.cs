@@ -57,11 +57,21 @@ public class ConfigurableAIProvider : IAIProvider
         return builder.ToString();
     }
 
-    public async Task<HydrationResult> HydrateEntityAsync(Entity entity, HydrationOptions options)
+    public async Task<HydrationResult> HydrateEntityAsync(Entity entity, HydrationOptions options, string? customPrompt = null, string languageCode = "en", WebResearchResult? webResearch = null)
     {
-        string prompt = $"Complete the attributes, notes, and dynamics for the entity '{entity.Name}' of type '{entity.EntityType?.Name ?? "General"}'. Description: {entity.Description}.";
-        
-        string system = "You are an expert system mapping consultant. Return a JSON object with: confidenceScore (int 0-100), completenessScore (int 0-100), suggestedProperties (JSON object of key-value attributes), and analysisNotes (string).";
+        var isSpanish = string.Equals(languageCode, "es", StringComparison.OrdinalIgnoreCase);
+        var researchBlock = BuildResearchBlock(webResearch, isSpanish);
+        string prompt = string.IsNullOrWhiteSpace(customPrompt)
+            ? isSpanish
+                ? $"Completa atributos, notas y dinámicas para la entidad '{entity.Name}' de tipo '{entity.EntityType?.Name ?? "General"}'. Descripción actual: {entity.Description}. Notas actuales: {entity.Notes}.{Environment.NewLine}{researchBlock}"
+                : $"Complete attributes, notes, and dynamics for the entity '{entity.Name}' of type '{entity.EntityType?.Name ?? "General"}'. Current description: {entity.Description}. Current notes: {entity.Notes}.{Environment.NewLine}{researchBlock}"
+            : isSpanish
+                ? $"Hidrata la entidad '{entity.Name}' de tipo '{entity.EntityType?.Name ?? "General"}' siguiendo esta instrucción: {customPrompt}{Environment.NewLine}{Environment.NewLine}Descripción actual: {entity.Description}{Environment.NewLine}Notas actuales: {entity.Notes}{Environment.NewLine}{researchBlock}"
+                : $"Hydrate the entity '{entity.Name}' of type '{entity.EntityType?.Name ?? "General"}' following this instruction: {customPrompt}{Environment.NewLine}{Environment.NewLine}Current description: {entity.Description}{Environment.NewLine}Current notes: {entity.Notes}{Environment.NewLine}{researchBlock}";
+
+        string system = isSpanish
+            ? "Eres un consultor experto en ontologías, mapeo sistémico e investigación web. Usa el contexto de investigación web si está disponible. Responde SIEMPRE en español. Devuelve SOLO un JSON con: confidenceScore (int 0-100), completenessScore (int 0-100), suggestedProperties (objeto JSON de atributos), y analysisNotes (string). analysisNotes debe ser un enriquecimiento breve pero útil para la descripción de la entidad."
+            : "You are an expert ontology, systems-mapping, and web-research consultant. Use the web research context when available. Respond ONLY in English. Return ONLY a JSON object with: confidenceScore (int 0-100), completenessScore (int 0-100), suggestedProperties (JSON object of attributes), and analysisNotes (string). analysisNotes must be a concise but useful enrichment for the entity description.";
         
         string rawResponse = string.Empty;
         string? openAiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
@@ -96,8 +106,11 @@ public class ConfigurableAIProvider : IAIProvider
                     return new HydrationResult
                     {
                         ConfidenceScore = node["confidenceScore"]?.GetValue<int>() ?? 70,
+                        CompletenessScore = node["completenessScore"]?.GetValue<int>() ?? 75,
                         SuggestedProperties = node["suggestedProperties"]?.ToString() ?? "{}",
-                        SuggestedNotes = node["analysisNotes"]?.GetValue<string>() ?? "Completed via AI."
+                        SuggestedPropertiesJson = node["suggestedProperties"]?.ToString() ?? "{}",
+                        SuggestedNotes = node["analysisNotes"]?.GetValue<string>() ?? "Completed via AI.",
+                        AnalysisNotes = node["analysisNotes"]?.GetValue<string>() ?? "Completed via AI."
                     };
                 }
             }
@@ -256,9 +269,30 @@ public class ConfigurableAIProvider : IAIProvider
         return new HydrationResult
         {
             ConfidenceScore = conf,
+            CompletenessScore = comp,
             SuggestedProperties = JsonSerializer.Serialize(properties),
-            SuggestedNotes = notes
+            SuggestedPropertiesJson = JsonSerializer.Serialize(properties),
+            SuggestedNotes = notes,
+            AnalysisNotes = notes
         };
+    }
+
+    private static string BuildResearchBlock(WebResearchResult? webResearch, bool isSpanish)
+    {
+        if (webResearch is null || string.IsNullOrWhiteSpace(webResearch.Summary))
+            return string.Empty;
+
+        var builder = new StringBuilder();
+        builder.AppendLine(isSpanish ? "Contexto de investigación web reciente:" : "Recent web research context:");
+        builder.AppendLine(webResearch.Summary);
+        if (webResearch.Sources.Count > 0)
+        {
+            builder.AppendLine(isSpanish ? "Fuentes:" : "Sources:");
+            foreach (var source in webResearch.Sources.Take(5))
+                builder.AppendLine($"- {source.Title}: {source.Url}");
+        }
+
+        return builder.ToString().Trim();
     }
 
     private string GenerateHeuristicAnalysis(string promptTemplate)

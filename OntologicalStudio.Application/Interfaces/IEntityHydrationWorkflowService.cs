@@ -4,7 +4,7 @@ namespace OntologicalStudio.Application.Services;
 
 public interface IEntityHydrationWorkflowService
 {
-    Task<HydrationPreview> PreviewHydrationAsync(Guid entityId, HydrationOptions options, string? customPrompt = null);
+    Task<HydrationPreview> PreviewHydrationAsync(Guid entityId, HydrationOptions options, string? customPrompt = null, string languageCode = "en");
     Task<HydrationLog> ApplyHydrationAsync(Guid entityId, HydrationApplyRequest request);
     Task<IEnumerable<HydrationLog>> GetHistoryAsync(Guid entityId);
 }
