@@ -74,6 +74,8 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private PromptPreviewViewModel? prompt;
 
+    public bool HasActiveUniverse => Universes?.HasSelectedUniverse == true;
+
     public MainWindowViewModel(IServiceProvider provider)
     {
         _provider = provider;
@@ -109,6 +111,12 @@ public partial class MainWindowViewModel : ObservableObject
 
     partial void OnSelectedTabIndexChanged(int value)
     {
+        if (value > 0 && !HasActiveUniverse)
+        {
+            SelectedTabIndex = 0;
+            return;
+        }
+
         _ = value switch
         {
             1 => UniverseCanvas?.LoadAsync() ?? Task.CompletedTask,
@@ -174,6 +182,9 @@ public partial class MainWindowViewModel : ObservableObject
             Scenarios = scenarios;
             Prompt = prompt;
 
+            universes.SelectionChanged += HandleUniverseStateChanged;
+            universes.UniversesChanged += HandleUniverseStateChanged;
+
             await Universes.LoadAsync();
             WriteStartupLog("MainWindowViewModel Universes loaded");
 
@@ -201,6 +212,13 @@ public partial class MainWindowViewModel : ObservableObject
         {
             WriteStartupLog($"MainWindowViewModel InitializeShellAsync exception: {ex}");
         }
+    }
+
+    private void HandleUniverseStateChanged()
+    {
+        OnPropertyChanged(nameof(HasActiveUniverse));
+        if (!HasActiveUniverse && SelectedTabIndex > 0)
+            SelectedTabIndex = 0;
     }
 
     private static void WriteStartupLog(string message)

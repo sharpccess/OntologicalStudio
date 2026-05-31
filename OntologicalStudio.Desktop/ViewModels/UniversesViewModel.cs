@@ -5,9 +5,12 @@ using OntologicalStudio.Core.Models;
 using OntologicalStudio.Desktop.Services;
 using OntologicalStudio.Localization.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Avalonia.Threading;
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace OntologicalStudio.Desktop.ViewModels;
@@ -16,6 +19,10 @@ public partial class UniversesViewModel : ObservableObject
 {
     private readonly IServiceProvider _provider;
     private readonly ILocalizationService _localization;
+    private static readonly string StartupLogPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "OntologicalStudio",
+        "startup.log");
 
     public ObservableCollection<Universe> Items { get; } = new();
 
@@ -55,15 +62,28 @@ public partial class UniversesViewModel : ObservableObject
         try
         {
             var data = await ScopedRunner.RunAsync<IUniverseService, System.Collections.Generic.IEnumerable<Universe>>(
-                _provider, s => Task.Run(async () => await s.GetAllAsync()));
+                _provider, s => s.GetAllAsync());
+            var ordered = data.OrderBy(u => u.Name).ToList();
             var prevId = SelectedUniverse?.Id;
-            Items.Clear();
-            foreach (var u in data.OrderBy(u => u.Name))
-                Items.Add(u);
-            SelectedUniverse = prevId.HasValue ? Items.FirstOrDefault(x => x.Id == prevId) ?? Items.FirstOrDefault() : Items.FirstOrDefault();
-            StatusMessage = _localization.CurrentLanguageCode == "es"
-                ? $"{Items.Count} universo(s) cargado(s)."
-                : $"{Items.Count} universe(s) loaded.";
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                Items.Clear();
+                foreach (var u in ordered)
+                    Items.Add(u);
+
+                SelectedUniverse = prevId.HasValue
+                    ? Items.FirstOrDefault(x => x.Id == prevId)
+                    : null;
+
+                StatusMessage = _localization.CurrentLanguageCode == "es"
+                    ? SelectedUniverse is null
+                        ? $"{Items.Count} universo(s) cargado(s). Selecciona uno en la lista para activarlo."
+                        : $"{Items.Count} universo(s) cargado(s)."
+                    : SelectedUniverse is null
+                        ? $"{Items.Count} universe(s) loaded. Select one in the list to activate it."
+                        : $"{Items.Count} universe(s) loaded.";
+            });
+            WriteStartupLog($"UniversesViewModel LoadAsync loaded | count={Items.Count} | names={string.Join(", ", ordered.Select(x => x.Name))}");
             UniversesChanged?.Invoke();
         }
         catch (Exception ex)
@@ -72,51 +92,90 @@ public partial class UniversesViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
-    private async Task CreateAsync()
+    public async Task CreateUniverseAsync()
     {
         var name = NewName?.Trim() ?? string.Empty;
         var description = NewDescription?.Trim() ?? string.Empty;
 
+        WriteStartupLog($"UniversesViewModel CreateUniverseAsync start | name='{name}'");
+
         if (string.IsNullOrWhiteSpace(name))
         {
             StatusMessage = _localization.CurrentLanguageCode == "es" ? "El nombre es obligatorio." : "Name is required.";
+            WriteStartupLog("UniversesViewModel CreateUniverseAsync aborted | empty name");
             return;
         }
+
         try
         {
-            var created = await ScopedRunner.RunAsync<IUniverseService, Universe>(_provider,
+            var created = await ScopedRunner.RunAsync<IUniverseService, Universe>(
+                _provider,
                 s => s.CreateAsync(name, description));
-            NewName = string.Empty;
-            NewDescription = string.Empty;
+
+            WriteStartupLog($"UniversesViewModel CreateUniverseAsync created | id={created.Id}");
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                NewName = string.Empty;
+                NewDescription = string.Empty;
+            });
             await LoadAsync();
-            SelectedUniverse = Items.FirstOrDefault(x => x.Id == created.Id) ?? Items.FirstOrDefault(x => x.Name == created.Name) ?? Items.FirstOrDefault();
-            StatusMessage = _localization.CurrentLanguageCode == "es"
-                ? $"Universo '{created.Name}' creado."
-                : $"Universe '{created.Name}' created.";
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                StatusMessage = _localization.CurrentLanguageCode == "es"
+                    ? $"Universo '{created.Name}' creado. Selecciónalo en la lista para activarlo."
+                    : $"Universe '{created.Name}' created. Select it in the list to activate it.";
+            });
+            WriteStartupLog($"UniversesViewModel CreateUniverseAsync completed | selected={(SelectedUniverse?.Id.ToString() ?? "null")}");
         }
         catch (Exception ex)
         {
             StatusMessage = $"Create failed: {ex.Message}";
+            WriteStartupLog($"UniversesViewModel CreateUniverseAsync error: {ex}");
         }
     }
 
-    [RelayCommand]
-    private async Task DeleteAsync()
+    public async Task DeleteSelectedUniverseAsync()
     {
-        if (SelectedUniverse is null) return;
+        if (SelectedUniverse is null)
+            return;
+
         var id = SelectedUniverse.Id;
         try
         {
             await ScopedRunner.RunAsync<IUniverseService>(_provider, s => s.DeleteAsync(id));
+            SelectedUniverse = null;
             await LoadAsync();
         }
         catch (Exception ex)
         {
             StatusMessage = $"Delete failed: {ex.Message}";
+            WriteStartupLog($"UniversesViewModel DeleteSelectedUniverseAsync error: {ex}");
         }
     }
 
+    public async Task RefreshUniversesAsync() => await LoadAsync();
+
     [RelayCommand]
-    private async Task RefreshAsync() => await LoadAsync();
+    private async Task CreateAsync() => await CreateUniverseAsync();
+
+    [RelayCommand]
+    private async Task DeleteAsync() => await DeleteSelectedUniverseAsync();
+
+    [RelayCommand]
+    private async Task RefreshAsync() => await RefreshUniversesAsync();
+
+    private static void WriteStartupLog(string message)
+    {
+        try
+        {
+            var dir = Path.GetDirectoryName(StartupLogPath);
+            if (!string.IsNullOrWhiteSpace(dir))
+                Directory.CreateDirectory(dir);
+            File.AppendAllText(StartupLogPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {message}{Environment.NewLine}", Encoding.UTF8);
+        }
+        catch
+        {
+        }
+    }
 }

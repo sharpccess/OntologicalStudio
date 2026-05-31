@@ -1,49 +1,57 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:OntologicalStudio.Desktop.ViewModels"
-             xmlns:m="using:OntologicalStudio.Core.Models"
              x:Class="OntologicalStudio.Desktop.Views.UniversesView"
              x:DataType="vm:UniversesViewModel">
     <Grid ColumnDefinitions="2*,3*" RowDefinitions="*,Auto" Margin="8">
         <Border Grid.Column="0" Grid.RowSpan="2" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,8,0">
             <DockPanel>
                 <TextBlock DockPanel.Dock="Top" Text="{DynamicResource universes.title}" FontWeight="Bold" Margin="0,0,0,6"/>
+                <TextBlock DockPanel.Dock="Top"
+                           x:Name="UniverseListStatusText"
+                           Text="{Binding StatusMessage}"
+                           FontSize="11"
+                           Opacity="0.75"
+                           Margin="0,0,0,6"
+                           TextWrapping="Wrap"/>
                 <Button DockPanel.Dock="Bottom" Content="{DynamicResource common.refresh}" Click="OnRefreshClick" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
-                <ListBox ItemsSource="{Binding Items}"
-                         SelectedItem="{Binding SelectedUniverse, Mode=TwoWay}"
-                         x:DataType="vm:UniversesViewModel">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate x:DataType="m:Universe">
-                            <StackPanel>
-                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
-                                <TextBlock Text="{Binding Description}" Opacity="0.6" FontSize="11" TextTrimming="CharacterEllipsis"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                <Border Background="#161a20"
+                        BorderBrush="#3e4a56"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                    <ScrollViewer>
+                        <StackPanel x:Name="UniverseItemsPanel" Margin="6"/>
+                    </ScrollViewer>
+                </Border>
             </DockPanel>
         </Border>
 
         <Border Grid.Column="1" Grid.Row="0" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="12">
             <StackPanel Spacing="8">
                 <TextBlock Text="{DynamicResource universes.create}" FontWeight="Bold"/>
-                <TextBox Watermark="{DynamicResource common.name}" Text="{Binding NewName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                <TextBox Watermark="{DynamicResource common.description}" Text="{Binding NewDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="80"/>
+                <TextBox x:Name="UniverseNameTextBox"
+                         Watermark="{DynamicResource common.name}"
+                         Text="{Binding NewName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox x:Name="UniverseDescriptionTextBox"
+                         Watermark="{DynamicResource common.description}"
+                         Text="{Binding NewDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         AcceptsReturn="True"
+                         Height="80"/>
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <Button Content="{DynamicResource common.create}" Click="OnCreateClick"/>
                     <Button Content="{DynamicResource common.deleteSelected}" Click="OnDeleteClick" IsEnabled="{Binding HasSelectedUniverse}"/>
                 </StackPanel>
-                <TextBlock Text="{Binding StatusMessage}" Opacity="0.7" FontSize="11"/>
+                <TextBlock x:Name="UniverseEditorStatusText" Text="{Binding StatusMessage}" Opacity="0.7" FontSize="11"/>
 
                 <Separator Margin="0,8"/>
                 <TextBlock Text="{DynamicResource universes.selectedDetails}" FontWeight="Bold"/>
                 <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" IsEnabled="{Binding HasSelectedUniverse}">
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Id:" Opacity="0.7"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedUniverse.Id}"/>
+                    <TextBlock x:Name="SelectedUniverseIdText" Grid.Row="0" Grid.Column="1" Text="{Binding SelectedUniverse.Id}"/>
                     <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource universes.created}" Opacity="0.7"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedUniverse.CreatedAt}"/>
+                    <TextBlock x:Name="SelectedUniverseCreatedText" Grid.Row="1" Grid.Column="1" Text="{Binding SelectedUniverse.CreatedAt}"/>
                     <TextBlock Grid.Row="2" Grid.Column="0" Text="{DynamicResource common.name}" Opacity="0.7"/>
-                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedUniverse.Name}"/>
+                    <TextBlock x:Name="SelectedUniverseNameText" Grid.Row="2" Grid.Column="1" Text="{Binding SelectedUniverse.Name}"/>
                 </Grid>
             </StackPanel>
         </Border>

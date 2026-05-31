@@ -14,6 +14,14 @@
 - [x] Desktop Avalonia MVVM con tabs: Universes / Entities / Relationships / Scenarios / Prompt Preview.
 - [x] `IAIProvider` con `ConfigurableAIProvider` (OpenAI / Anthropic / Ollama / fallback heurístico).
 
+### Estado operativo real al cierre de esta sesión
+
+- [x] La creación de universos **sí persiste** en SQLite.
+- [x] Se confirmó por log que `UniverseService.CreateAsync(...)` inserta correctamente.
+- [~] La vista `Universes` tenía un problema de binding/visualización: el universo se creaba pero no siempre se veía de forma clara en la lista.
+- [~] Se parcheó `UniversesView` para leer el texto directamente desde los `TextBox` y mejorar la visibilidad de la lista; **pendiente validación manual** en la siguiente sesión.
+- [~] Se implementó bloqueo de pestañas dependientes sin universo activo, pero **requiere revalidación manual** porque el usuario aún reportó estado inconsistente antes del último parche.
+
 ---
 
 ## Fase A — Solutions multimodal *(MVP completado)*
@@ -126,11 +134,36 @@
 - [x] Canvas con edición inline de nodos.
 - [x] Canvas con resize persistente por nodo.
 - [x] Menús contextuales separados para fondo / nodo / relación.
+- [x] Edición y borrado de relaciones desde el panel lateral del canvas.
+- [x] Actualización de relación existente sin duplicar en el flujo principal del canvas.
 - [x] Selector de idioma EN/ES en la shell principal.
+- [~] Deshabilitación de tabs dependientes cuando no hay universo seleccionado.
 - [~] Estabilización de arranque del Desktop:
   - [x] logging de startup
   - [x] fallback window de error
   - [ ] terminar de eliminar bloqueos de inicialización diferida
+- [~] Estabilización de `UniversesView`:
+  - [x] click directo sin depender de `RelayCommand`
+  - [x] captura directa del texto del formulario al crear
+  - [x] trazas detalladas en `startup.log`
+  - [ ] confirmar visualmente que la lista refleja los universos recién creados
+
+---
+
+## Pendientes prioritarios para el siguiente chat
+
+1. **Cerrar definitivamente `UniversesView`**
+   - verificar en ejecución si los universos creados aparecen en la lista tras el último parche visual
+   - si no aparecen, inspeccionar `ListBox`/template/refresh de `Items`
+   - comprobar por qué las tabs siguen activándose aunque la lista no refleje el estado esperado
+
+2. **Validar bloqueo de navegación**
+   - sin universo creado/seleccionado, solo `Universes` debe quedar habilitada
+   - al crear y seleccionar uno, deben habilitarse Canvas / Entities / Relationships / Scenarios / Prompt Preview
+
+3. **Seguir estabilización del canvas**
+   - revisar consistencia general tras los últimos cambios de relaciones
+   - mantener `Relationships` como vista readonly sincronizada con lo diseñado en canvas
 
 ---
 
