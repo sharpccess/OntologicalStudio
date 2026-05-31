@@ -175,18 +175,18 @@
                                         <ItemsControl ItemsSource="{Binding SelectedArtifactMarkdownBlocks}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate x:DataType="vm:MarkdownPreviewViewModel">
-                                                    <Border Background="{Binding IsCode, Converter={x:Static BooleanToBrushConverter.Instance}}"
-                                                            BorderBrush="#374151"
-                                                            BorderThickness="{Binding IsCode, Converter={x:Static BooleanToThicknessConverter.Instance}}"
+                                                    <Border Background="{Binding Background}"
+                                                            BorderBrush="{Binding BorderBrush}"
+                                                            BorderThickness="{Binding BorderThickness}"
                                                             CornerRadius="4"
-                                                            Padding="{Binding IsCode, Converter={x:Static BooleanToPaddingConverter.Instance}}"
+                                                            Padding="{Binding Padding}"
                                                             Margin="{Binding Margin}">
                                                         <TextBlock Text="{Binding Text}"
                                                                    TextWrapping="Wrap"
                                                                    FontSize="{Binding FontSize}"
                                                                    FontWeight="{Binding FontWeight}"
                                                                    Foreground="{Binding Foreground}"
-                                                                   FontFamily="{Binding IsCode, Converter={x:Static BooleanToFontFamilyConverter.Instance}}"/>
+                                                                   FontFamily="{Binding FontFamily}"/>
                                                     </Border>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>

@@ -4,6 +4,7 @@ using Avalonia.Platform.Storage;
 using OntologicalStudio.Core.Models;
 using OntologicalStudio.Desktop.ViewModels;
 using System.Diagnostics;
+using System.Net;
 using System.Text;
 
 namespace OntologicalStudio.Desktop.Views;
@@ -92,6 +93,29 @@ public partial class ScenariosView : UserControl
     private async void OnExportWordClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         => await ExportAsync(sender, ArtifactExportFormat.Word);
 
+    private async void OnCopyFormattedArtifactClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if ((sender as Control)?.DataContext is not SolutionsViewModel viewModel)
+            return;
+
+        var html = viewModel.BuildSelectedArtifactHtml();
+        if (string.IsNullOrWhiteSpace(html))
+        {
+            viewModel.StatusMessage = "No formatted artifact available to copy.";
+            return;
+        }
+
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel?.Clipboard is null)
+        {
+            viewModel.StatusMessage = "Clipboard is not available.";
+            return;
+        }
+
+        await topLevel.Clipboard.SetTextAsync(WebUtility.HtmlDecode(StripHtml(html)));
+        viewModel.StatusMessage = "Formatted artifact copied to clipboard.";
+    }
+
     private async Task ExportAsync(object? sender, ArtifactExportFormat format)
     {
         if ((sender as Control)?.DataContext is not SolutionsViewModel viewModel)
@@ -158,5 +182,11 @@ public partial class ScenariosView : UserControl
         var invalid = Path.GetInvalidFileNameChars();
         var cleaned = new string(input.Select(ch => invalid.Contains(ch) ? '-' : ch).ToArray()).Trim();
         return string.IsNullOrWhiteSpace(cleaned) ? "prompt" : cleaned;
+    }
+
+    private static string StripHtml(string html)
+    {
+        var text = System.Text.RegularExpressions.Regex.Replace(html, "<.*?>", string.Empty);
+        return text.Replace("&nbsp;", " ", StringComparison.OrdinalIgnoreCase);
     }
 }
