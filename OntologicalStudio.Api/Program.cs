@@ -102,7 +102,8 @@ app.MapPost("/api/scenarios/{id:guid}/solve", async (
     [FromServices] ISolutionService solutions,
     CancellationToken cancellationToken) =>
 {
-    var solution = await solutions.RunAsync(id, request.ExtraInstructions, "en", cancellationToken);
+    var languageCode = string.IsNullOrWhiteSpace(request.LanguageCode) ? "en" : request.LanguageCode;
+    var solution = await solutions.RunAsync(id, request.ExtraInstructions, languageCode, cancellationToken);
     return Results.Ok(new
     {
         solution.Id,
@@ -123,4 +124,4 @@ app.MapPost("/api/scenarios/{id:guid}/solve", async (
 
 app.Run("http://127.0.0.1:53821");
 
-public record SolveScenarioRequest(string? ExtraInstructions);
+public record SolveScenarioRequest(string? ExtraInstructions, string? LanguageCode);

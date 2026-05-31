@@ -42,7 +42,7 @@ public partial class EntityHydrationViewModel : ObservableObject
     private HydrationModeOption? selectedHydrationMode;
 
     [ObservableProperty]
-    private string lastPromptUsed = string.Empty;
+    private string lastPromptSent = string.Empty;
 
     [ObservableProperty]
     private bool applyHydrationData = true;
@@ -78,7 +78,7 @@ public partial class EntityHydrationViewModel : ObservableObject
         DiffNotes = string.Empty;
         DiffScores = string.Empty;
         CustomPrompt = string.Empty;
-        LastPromptUsed = string.Empty;
+        LastPromptSent = string.Empty;
         _ = LoadHistoryAsync();
     }
 
@@ -95,7 +95,7 @@ public partial class EntityHydrationViewModel : ObservableObject
         await PreviewAsync();
     }
 
-    public async Task<bool> HydrateCurrentNodeAsync(string? customPrompt = null)
+    public async Task<bool> HydrateCurrentNodeAsync(string? customPrompt = null, bool forceApplyDescription = false)
     {
         if (SelectedNode is null || IsBusy)
             return false;
@@ -105,8 +105,19 @@ public partial class EntityHydrationViewModel : ObservableObject
         if (Preview is null)
             return false;
 
-        await ApplyAsync();
-        return Preview is not null;
+        var previousApplyNotes = ApplyNotes;
+        if (forceApplyDescription)
+            ApplyNotes = true;
+
+        try
+        {
+            return await ApplyCurrentPreviewAsync();
+        }
+        finally
+        {
+            if (forceApplyDescription)
+                ApplyNotes = previousApplyNotes;
+        }
     }
 
     [RelayCommand]
@@ -136,7 +147,9 @@ public partial class EntityHydrationViewModel : ObservableObject
             return;
 
         IsBusy = true;
-        var effectivePrompt = BuildEffectivePrompt(CustomPrompt);
+        var customPrompt = string.IsNullOrWhiteSpace(CustomPrompt)
+            ? null
+            : CustomPrompt.Trim();
         StatusMessage = _localization.CurrentLanguageCode == "es"
             ? "Generando hidratación con investigación web..."
             : "Generating hydration with web research...";
@@ -153,12 +166,13 @@ public partial class EntityHydrationViewModel : ObservableObject
                         IncludeIncentives = IncludeIncentives,
                         IncludeBehavioralPatterns = IncludeBehavioralPatterns,
                         IncludePersonalities = true,
+                        HydrationMode = SelectedHydrationMode?.Key ?? "factual",
                         DetailLevel = 2,
                         MaxSuggestions = 8
                     },
-                    effectivePrompt,
+                    customPrompt,
                     _localization.CurrentLanguageCode));
-            LastPromptUsed = Preview.PromptUsed;
+            LastPromptSent = Preview.PromptUsed;
             BuildDiff();
             StatusMessage = _localization.CurrentLanguageCode == "es"
                 ? "Hidratación lista. Se aplicará sobre la entidad."
@@ -179,8 +193,13 @@ public partial class EntityHydrationViewModel : ObservableObject
     [RelayCommand]
     private async Task ApplyAsync()
     {
+        await ApplyCurrentPreviewAsync();
+    }
+
+    private async Task<bool> ApplyCurrentPreviewAsync()
+    {
         if (SelectedNode is null || Preview is null || IsBusy)
-            return;
+            return false;
 
         IsBusy = true;
         try
@@ -198,16 +217,37 @@ public partial class EntityHydrationViewModel : ObservableObject
                     ApplyConfidence = ApplyConfidence,
                     ApplyCompleteness = ApplyCompleteness
                 }));
+
+            if (ApplyNotes && !string.IsNullOrWhiteSpace(Preview.Result.SuggestedNotes))
+            {
+                SelectedNode.Entity.Description = string.Join(
+                    Environment.NewLine + Environment.NewLine,
+                    new[] { SelectedNode.Entity.Description, Preview.Result.SuggestedNotes }
+                        .Where(x => !string.IsNullOrWhiteSpace(x)));
+            }
+
+            if (ApplyHydrationData && !string.IsNullOrWhiteSpace(Preview.Result.SuggestedProperties))
+                SelectedNode.Entity.HydrationData = Preview.Result.SuggestedProperties;
+
+            if (ApplyConfidence)
+                SelectedNode.Entity.ConfidenceLevel = Preview.Result.ConfidenceScore;
+
+            if (ApplyCompleteness && Preview.Result.CompletenessScore > 0)
+                SelectedNode.Entity.CompletenessScore = Preview.Result.CompletenessScore;
+
+            SelectedNode.RefreshDisplay();
             StatusMessage = _localization.CurrentLanguageCode == "es"
                 ? "Hidratación aplicada a la entidad."
                 : "Hydration applied to entity.";
             await LoadHistoryAsync();
+            return true;
         }
         catch (Exception ex)
         {
             StatusMessage = _localization.CurrentLanguageCode == "es"
                 ? $"Falló la aplicación: {ex.Message}"
                 : $"Apply failed: {ex.Message}";
+            return false;
         }
         finally
         {
@@ -262,20 +302,6 @@ public partial class EntityHydrationViewModel : ObservableObject
         }
 
         SelectedHydrationMode = HydrationModes.FirstOrDefault(x => x.Key == previousKey) ?? HydrationModes.FirstOrDefault();
-    }
-
-    private string BuildEffectivePrompt(string? rawPrompt)
-    {
-        var userPrompt = rawPrompt?.Trim() ?? string.Empty;
-        var modeInstruction = SelectedHydrationMode?.Instruction?.Trim() ?? string.Empty;
-
-        if (string.IsNullOrWhiteSpace(modeInstruction))
-            return userPrompt;
-
-        if (string.IsNullOrWhiteSpace(userPrompt))
-            return modeInstruction;
-
-        return $"{modeInstruction}{Environment.NewLine}{Environment.NewLine}{userPrompt}";
     }
 }
 

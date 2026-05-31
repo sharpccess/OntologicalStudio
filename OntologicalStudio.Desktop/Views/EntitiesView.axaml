@@ -34,16 +34,9 @@
                     <TextBlock Text="{DynamicResource entities.create}" FontWeight="Bold"/>
                     <TextBox Watermark="{DynamicResource entities.name}" Text="{Binding NewName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding HasSelectedUniverse}"/>
                     <TextBox Watermark="{DynamicResource entities.description}" Text="{Binding NewDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="80" IsEnabled="{Binding HasSelectedUniverse}"/>
-                    <ComboBox ItemsSource="{Binding EntityTypes}"
-                              SelectedItem="{Binding NewEntityType, Mode=TwoWay}"
-                              HorizontalAlignment="Stretch"
-                              IsEnabled="{Binding HasSelectedUniverse}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="m:EntityType">
-                                <TextBlock Text="{Binding DisplayName}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                    <TextBox Watermark="{DynamicResource entities.type}"
+                             Text="{Binding NewEntityTypeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             IsEnabled="{Binding HasSelectedUniverse}"/>
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <Button Content="{DynamicResource entities.create}" Command="{Binding CreateCommand}" IsEnabled="{Binding HasSelectedUniverse}"/>
                         <Button Content="{DynamicResource entities.deleteSelected}" Command="{Binding DeleteCommand}" IsEnabled="{Binding HasSelectedUniverse}"/>

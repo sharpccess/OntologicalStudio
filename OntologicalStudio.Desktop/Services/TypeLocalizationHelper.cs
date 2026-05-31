@@ -33,6 +33,17 @@ public static class TypeLocalizationHelper
             || string.Equals(LocalizeRelationshipTypeName(relationshipType.Name, localization), trimmed, StringComparison.OrdinalIgnoreCase);
     }
 
+    public static bool MatchesEntityTypeInput(EntityType entityType, string? input, ILocalizationService localization)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return false;
+
+        var trimmed = input.Trim();
+        return string.Equals(entityType.Name, trimmed, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(LocalizeEntityTypeName(entityType.Name, localization), trimmed, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(entityType.DisplayName, trimmed, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static string GetEntityTypeKey(string name) => name switch
     {
         "Person" => "entityType.person",

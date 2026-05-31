@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using OntologicalStudio.Localization.Services;
 using System;
 using System.Collections.ObjectModel;
@@ -57,6 +58,9 @@ public partial class MainWindowViewModel : ObservableObject
     public ObservableCollection<LanguageOption> AvailableLanguages { get; } = new();
 
     [ObservableProperty]
+    private bool isAiSettingsVisible;
+
+    [ObservableProperty]
     private UniversesViewModel? universes;
 
     [ObservableProperty]
@@ -73,6 +77,9 @@ public partial class MainWindowViewModel : ObservableObject
 
     [ObservableProperty]
     private PromptPreviewViewModel? prompt;
+
+    [ObservableProperty]
+    private AiSettingsViewModel? aiSettings;
 
     public bool HasActiveUniverse => Universes?.HasSelectedUniverse == true;
 
@@ -162,6 +169,11 @@ public partial class MainWindowViewModel : ObservableObject
             ApplyLocalization();
             WriteStartupLog("MainWindowViewModel localization initialized");
 
+            var aiSettings = new AiSettingsViewModel(_provider);
+            await aiSettings.LoadAsync();
+            AiSettings = aiSettings;
+            WriteStartupLog("AiSettingsViewModel created");
+
             var universes = new UniversesViewModel(_provider);
             WriteStartupLog("UniversesViewModel created");
             var canvas = new UniverseCanvasViewModel(_provider, universes);
@@ -212,6 +224,12 @@ public partial class MainWindowViewModel : ObservableObject
         {
             WriteStartupLog($"MainWindowViewModel InitializeShellAsync exception: {ex}");
         }
+    }
+
+    [RelayCommand]
+    private void ToggleAiSettings()
+    {
+        IsAiSettingsVisible = !IsAiSettingsVisible;
     }
 
     private void HandleUniverseStateChanged()

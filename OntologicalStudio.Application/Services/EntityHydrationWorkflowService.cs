@@ -30,8 +30,12 @@ public class EntityHydrationWorkflowService : IEntityHydrationWorkflowService
         return new HydrationPreview
         {
             EntityId = entityId,
-            PromptUsed = BuildPrompt(entity, options, customPrompt, languageCode),
-            ProviderUsed = "ConfigurableAIProvider",
+            PromptUsed = string.IsNullOrWhiteSpace(result.PromptUsed)
+                ? BuildPrompt(entity, options, customPrompt, languageCode)
+                : result.PromptUsed,
+            ProviderUsed = string.IsNullOrWhiteSpace(result.ProviderUsed)
+                ? "ConfigurableAIProvider"
+                : result.ProviderUsed,
             CurrentHydrationData = entity.HydrationData,
             CurrentNotes = entity.Notes,
             CurrentConfidenceLevel = entity.ConfidenceLevel,
@@ -58,10 +62,6 @@ public class EntityHydrationWorkflowService : IEntityHydrationWorkflowService
             entity.Description = string.Join(Environment.NewLine + Environment.NewLine,
                 new[] { entity.Description, request.Preview.SuggestedNotes }.Where(x => !string.IsNullOrWhiteSpace(x)));
             appliedFields.Add(nameof(Entity.Description));
-
-            entity.Notes = string.Join(Environment.NewLine + Environment.NewLine,
-                new[] { entity.Notes, request.Preview.SuggestedNotes }.Where(x => !string.IsNullOrWhiteSpace(x)));
-            appliedFields.Add(nameof(Entity.Notes));
         }
 
         if (request.ApplyConfidence)

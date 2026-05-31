@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Shapes;
 using Avalonia.Collections;
@@ -409,6 +410,7 @@ public partial class UniverseCanvasView : UserControl
                 BorderBrush = new SolidColorBrush(Color.Parse(linking ? "#c596ff" : selected ? "#6ec1ff" : "#465463")),
                 BorderThickness = new Thickness(selected ? 2 : 1),
                 Padding = new Thickness(10),
+                ClipToBounds = true,
                 Tag = node,
                 Child = BuildNodeContent(node)
             };
@@ -496,7 +498,11 @@ public partial class UniverseCanvasView : UserControl
         if (isSelected && _viewModel is not null)
             return BuildSelectedNodeEditor(node);
 
-        var layout = new Grid();
+        var layout = new Grid
+        {
+            ClipToBounds = true
+        };
+        layout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
         layout.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
         layout.RowDefinitions.Add(new RowDefinition(GridLength.Star));
         layout.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
@@ -507,7 +513,8 @@ public partial class UniverseCanvasView : UserControl
             Text = node.Name,
             FontWeight = FontWeight.SemiBold,
             Foreground = Brushes.White,
-            TextTrimming = TextTrimming.CharacterEllipsis
+            TextTrimming = TextTrimming.CharacterEllipsis,
+            MaxWidth = Math.Max(40, node.Width - 56)
         };
         Grid.SetRow(title, 0);
         Grid.SetColumn(title, 0);
@@ -559,35 +566,46 @@ public partial class UniverseCanvasView : UserControl
                         : $"Hydration failed: {ex.Message}";
             }
         };
-        Grid.SetRow(hydrateButton, 0);
+        Grid.SetRow(hydrateButton, 1);
         Grid.SetColumn(hydrateButton, 0);
+        Grid.SetColumnSpan(hydrateButton, 2);
         hydrateButton.HorizontalAlignment = HorizontalAlignment.Left;
-        hydrateButton.Margin = new Thickness(0, 22, 0, 0);
+        hydrateButton.Margin = new Thickness(0, 4, 0, 0);
         layout.Children.Add(hydrateButton);
 
-        var body = new StackPanel
+        var body = new Grid
         {
-            Spacing = 4,
-            Children =
-            {
-                new TextBlock
-                {
-                    Text = node.TypeName,
-                    FontSize = 11,
-                    Opacity = 0.65
-                },
-                new TextBlock
-                {
-                    Text = node.Description,
-                    FontSize = 11,
-                    TextWrapping = TextWrapping.Wrap,
-                    Width = Math.Max(60, node.Width - 20),
-                    MaxHeight = Math.Max(36, node.Height - 54),
-                    Opacity = 0.8
-                }
-            }
+            ClipToBounds = true,
+            Margin = new Thickness(0, 6, 0, 0)
         };
-        Grid.SetRow(body, 1);
+        body.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+        body.RowDefinitions.Add(new RowDefinition(GridLength.Star));
+
+        var typeBlock = new TextBlock
+        {
+            Text = node.TypeName,
+            FontSize = 11,
+            Opacity = 0.65,
+            TextTrimming = TextTrimming.CharacterEllipsis,
+            MaxWidth = Math.Max(40, node.Width - 28)
+        };
+        Grid.SetRow(typeBlock, 0);
+        body.Children.Add(typeBlock);
+
+        var descriptionBlock = new TextBlock
+        {
+            Text = node.Description,
+            FontSize = 11,
+            TextWrapping = TextWrapping.Wrap,
+            Width = Math.Max(60, node.Width - 28),
+            MaxHeight = Math.Max(24, node.Height - 108),
+            Opacity = 0.8,
+            ClipToBounds = true
+        };
+        Grid.SetRow(descriptionBlock, 1);
+        body.Children.Add(descriptionBlock);
+
+        Grid.SetRow(body, 2);
         Grid.SetColumn(body, 0);
         Grid.SetColumnSpan(body, 2);
         layout.Children.Add(body);
@@ -597,17 +615,34 @@ public partial class UniverseCanvasView : UserControl
 
     private Control BuildSelectedNodeEditor(CanvasEntityNodeViewModel node)
     {
+        var root = new Grid
+        {
+            ClipToBounds = true
+        };
+        root.RowDefinitions.Add(new RowDefinition(GridLength.Star));
+        root.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+
+        var editorScroll = new ScrollViewer
+        {
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            MaxHeight = Math.Max(92, node.Height - 40)
+        };
+
         var layout = new StackPanel
         {
             Spacing = 6
         };
+        editorScroll.Content = layout;
+        Grid.SetRow(editorScroll, 0);
+        root.Children.Add(editorScroll);
 
         TextBox? descriptionBox = null;
         TextBox? notesBox = null;
-        ComboBox? typeBox = null;
         var suppressInitialAutosave = true;
         var isSavingInlineNode = false;
         var pendingComboSave = false;
+        var suppressHydrationAutosave = false;
 
         var nameBox = new TextBox
         {
@@ -625,6 +660,8 @@ public partial class UniverseCanvasView : UserControl
         nameBox.LostFocus += async (_, _) =>
         {
             if (suppressInitialAutosave || isSavingInlineNode)
+                return;
+            if (suppressHydrationAutosave)
                 return;
             if (pendingComboSave)
                 return;
@@ -654,35 +691,26 @@ public partial class UniverseCanvasView : UserControl
         };
         layout.Children.Add(nameBox);
 
-        typeBox = new ComboBox
+        var typeTextBox = new TextBox
         {
-            ItemsSource = _viewModel?.EntityTypes,
-            SelectedItem = _viewModel?.SelectedNodeEntityType,
+            Text = _viewModel?.SelectedNodeEntityTypeText ?? node.Entity.EntityType?.DisplayName ?? node.Entity.EntityType?.Name ?? string.Empty,
             HorizontalAlignment = HorizontalAlignment.Stretch
         };
-        typeBox.PointerPressed += (_, args) => args.Handled = true;
-        typeBox.ItemTemplate = new FuncDataTemplate<EntityType>((entityType, _) =>
-            new TextBlock { Text = entityType?.DisplayName ?? entityType?.Name ?? string.Empty });
-        typeBox.SelectionChanged += async (_, _) =>
+        typeTextBox.PointerPressed += (_, args) => args.Handled = true;
+        typeTextBox.GetObservable(TextBox.TextProperty).Subscribe(value =>
+        {
+            if (_viewModel is not null)
+                _viewModel.SelectedNodeEntityTypeText = value ?? string.Empty;
+        });
+        typeTextBox.LostFocus += async (_, _) =>
         {
             if (suppressInitialAutosave || isSavingInlineNode)
                 return;
-
-            if (typeBox.SelectedItem is EntityType selectedType)
-            {
-                node.Entity.EntityTypeId = selectedType.Id;
-                node.Entity.EntityType = selectedType;
-                node.RefreshDisplay();
-            }
-
-            if (_viewModel is not null)
-                _viewModel.SelectedNodeEntityType = typeBox.SelectedItem as EntityType;
-
-            pendingComboSave = true;
+            if (suppressHydrationAutosave)
+                return;
             await SaveInlineNodeAsync();
-            pendingComboSave = false;
         };
-        layout.Children.Add(typeBox);
+        layout.Children.Add(typeTextBox);
 
         descriptionBox = new TextBox
         {
@@ -690,7 +718,7 @@ public partial class UniverseCanvasView : UserControl
             Watermark = "Description",
             AcceptsReturn = true,
             TextWrapping = TextWrapping.Wrap,
-            Height = Math.Max(72, node.Height - 112)
+            Height = Math.Max(72, node.Height - 140)
         };
         descriptionBox.PointerPressed += (_, args) => args.Handled = true;
         descriptionBox.GetObservable(TextBox.TextProperty).Subscribe(value =>
@@ -703,6 +731,8 @@ public partial class UniverseCanvasView : UserControl
         descriptionBox.LostFocus += async (_, _) =>
         {
             if (suppressInitialAutosave || isSavingInlineNode)
+                return;
+            if (suppressHydrationAutosave)
                 return;
             if (pendingComboSave)
                 return;
@@ -739,7 +769,7 @@ public partial class UniverseCanvasView : UserControl
 
         async Task SaveInlineNodeAsync()
         {
-            if (_viewModel is null || isSavingInlineNode || descriptionBox is null || notesBox is null || typeBox is null)
+            if (_viewModel is null || isSavingInlineNode || descriptionBox is null || notesBox is null)
                 return;
 
             isSavingInlineNode = true;
@@ -750,7 +780,7 @@ public partial class UniverseCanvasView : UserControl
                     nameBox.Text,
                     descriptionBox.Text,
                     notesBox.Text,
-                    typeBox.SelectedItem as EntityType);
+                    _viewModel.SelectedNodeEntityType);
             }
             finally
             {
@@ -768,6 +798,8 @@ public partial class UniverseCanvasView : UserControl
         notesBox.LostFocus += async (_, _) =>
         {
             if (suppressInitialAutosave || isSavingInlineNode)
+                return;
+            if (suppressHydrationAutosave)
                 return;
             if (pendingComboSave)
                 return;
@@ -787,6 +819,7 @@ public partial class UniverseCanvasView : UserControl
         {
             try
             {
+                suppressHydrationAutosave = true;
                 await HydrateNodeAsync(node);
             }
             catch (Exception ex)
@@ -796,12 +829,17 @@ public partial class UniverseCanvasView : UserControl
                         ? string.Format(hydrateFailed?.ToString() ?? "Hydration failed: {0}", ex.Message)
                         : $"Hydration failed: {ex.Message}";
             }
+            finally
+            {
+                suppressHydrationAutosave = false;
+            }
         };
 
         var buttons = new StackPanel
         {
             Orientation = Orientation.Horizontal,
-            Spacing = 6
+            Spacing = 6,
+            Margin = new Thickness(0, 6, 0, 0)
         };
         buttons.Children.Add(hydrateButton);
 
@@ -823,8 +861,9 @@ public partial class UniverseCanvasView : UserControl
         };
         buttons.Children.Add(deleteButton);
 
-        layout.Children.Add(buttons);
-        return layout;
+        Grid.SetRow(buttons, 1);
+        root.Children.Add(buttons);
+        return root;
     }
 
     private async Task<string?> ShowHydrationPromptDialogAsync(CanvasEntityNodeViewModel node)
@@ -926,9 +965,15 @@ public partial class UniverseCanvasView : UserControl
             return;
 
         _viewModel.SelectNode(node);
-        var hydrated = await _viewModel.Hydration.HydrateCurrentNodeAsync(prompt);
+        var hydrated = await _viewModel.Hydration.HydrateCurrentNodeAsync(prompt, forceApplyDescription: true);
         if (!hydrated)
             return;
+
+        if (_viewModel.SelectedNode?.Id == node.Id)
+        {
+            _viewModel.SelectedNodeDescription = node.Entity.Description ?? string.Empty;
+            _viewModel.SelectedNodeNotes = node.Entity.Notes ?? string.Empty;
+        }
 
         var refreshedEntity = await ScopedRunner.RunAsync<IEntityService, Entity>(
             _viewModel.ServiceProvider,

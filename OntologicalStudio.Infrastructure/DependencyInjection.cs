@@ -19,6 +19,7 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlite(connectionString));
 
+        services.AddSingleton<IAiConnectionSettingsService, AiConnectionSettingsService>();
         services.AddScoped<IAIProvider, ConfigurableAIProvider>();
 
         services.AddScoped<IEntityRepository, EntityRepository>();

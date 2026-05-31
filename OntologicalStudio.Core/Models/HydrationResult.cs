@@ -5,6 +5,8 @@ public class HydrationResult
     public Guid EntityId { get; set; }
     public string SuggestedProperties { get; set; } = "{}";
     public string SuggestedNotes { get; set; } = string.Empty;
+    public string PromptUsed { get; set; } = string.Empty;
+    public string ProviderUsed { get; set; } = string.Empty;
     public int ConfidenceScore { get; set; }
     public List<string> Sources { get; set; } = new List<string>();
     

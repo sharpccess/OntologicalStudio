@@ -36,6 +36,9 @@ public partial class EntitiesViewModel : ObservableObject
     private EntityType? newEntityType;
 
     [ObservableProperty]
+    private string newEntityTypeText = string.Empty;
+
+    [ObservableProperty]
     private string statusMessage = string.Empty;
 
     public bool HasSelectedUniverse => _universes.SelectedUniverse is not null;
@@ -77,6 +80,7 @@ public partial class EntitiesViewModel : ObservableObject
             foreach (var t in types.OrderBy(t => t.Name))
                 EntityTypes.Add(TypeLocalizationHelper.Localize(t, _localization));
             NewEntityType ??= EntityTypes.FirstOrDefault();
+            NewEntityTypeText = NewEntityType?.DisplayName ?? string.Empty;
         }
         catch (Exception ex)
         {
@@ -129,14 +133,17 @@ public partial class EntitiesViewModel : ObservableObject
         var universe = _universes.SelectedUniverse;
         if (universe is null) { StatusMessage = _localization.CurrentLanguageCode == "es" ? "Selecciona primero un universo." : "Select a universe first."; return; }
         if (string.IsNullOrWhiteSpace(NewName)) { StatusMessage = _localization.CurrentLanguageCode == "es" ? "El nombre es obligatorio." : "Name is required."; return; }
-        if (NewEntityType is null) { StatusMessage = _localization.CurrentLanguageCode == "es" ? "El tipo de entidad es obligatorio." : "Entity type is required."; return; }
+        var entityType = await ResolveEntityTypeAsync(NewEntityTypeText, NewEntityType);
+        if (entityType is null) { StatusMessage = _localization.CurrentLanguageCode == "es" ? "El tipo de entidad es obligatorio." : "Entity type is required."; return; }
 
         try
         {
             await ScopedRunner.RunAsync<IEntityService>(_provider,
-                s => s.CreateAsync(NewName.Trim(), NewDescription?.Trim() ?? string.Empty, NewEntityType.Id, universe.Id));
+                s => s.CreateAsync(NewName.Trim(), NewDescription?.Trim() ?? string.Empty, entityType.Id, universe.Id));
             NewName = string.Empty;
             NewDescription = string.Empty;
+            NewEntityType = entityType;
+            NewEntityTypeText = entityType.DisplayName;
             await LoadAsync();
             _universes.NotifyDataChanged();
         }
@@ -165,5 +172,40 @@ public partial class EntitiesViewModel : ObservableObject
                 ? $"Error al eliminar: {ex.Message}"
                 : $"Delete failed: {ex.Message}";
         }
+    }
+
+    partial void OnNewEntityTypeChanged(EntityType? value)
+    {
+        NewEntityTypeText = value?.DisplayName ?? string.Empty;
+    }
+
+    private async Task<EntityType?> ResolveEntityTypeAsync(string? input, EntityType? selectedType)
+    {
+        var trimmed = input?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(trimmed))
+            return selectedType;
+
+        if (selectedType is not null && TypeLocalizationHelper.MatchesEntityTypeInput(selectedType, trimmed, _localization))
+            return selectedType;
+
+        var existing = EntityTypes.FirstOrDefault(x => TypeLocalizationHelper.MatchesEntityTypeInput(x, trimmed, _localization));
+        if (existing is not null)
+            return existing;
+
+        var created = new EntityType
+        {
+            Name = trimmed,
+            Description = trimmed
+        };
+
+        await ScopedRunner.RunAsync<IEntityTypeRepository>(
+            _provider,
+            repository => repository.AddAsync(created));
+
+        TypeLocalizationHelper.Localize(created, _localization);
+        EntityTypes.Add(created);
+        NewEntityType = created;
+        NewEntityTypeText = created.DisplayName;
+        return created;
     }
 }

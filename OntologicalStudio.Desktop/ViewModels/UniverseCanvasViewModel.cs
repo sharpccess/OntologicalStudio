@@ -46,6 +46,9 @@ public partial class UniverseCanvasViewModel : ObservableObject
     private EntityType? selectedEntityType;
 
     [ObservableProperty]
+    private string selectedEntityTypeText = string.Empty;
+
+    [ObservableProperty]
     private RelationshipType? selectedRelationshipType;
 
     [ObservableProperty]
@@ -88,6 +91,9 @@ public partial class UniverseCanvasViewModel : ObservableObject
 
     [ObservableProperty]
     private EntityType? selectedNodeEntityType;
+
+    [ObservableProperty]
+    private string selectedNodeEntityTypeText = string.Empty;
 
     [ObservableProperty]
     private RelationshipType? selectedNodeRelationshipType;
@@ -155,6 +161,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
             foreach (var entityType in entityTypes.OrderBy(x => x.Name))
                 EntityTypes.Add(TypeLocalizationHelper.Localize(entityType, _localization));
             SelectedEntityType ??= EntityTypes.FirstOrDefault();
+            SelectedEntityTypeText = SelectedEntityType?.DisplayName ?? string.Empty;
 
             var relationshipTypes = await ScopedRunner.RunAsync<IRelationshipTypeRepository, IEnumerable<RelationshipType>>(
                 _provider,
@@ -285,7 +292,9 @@ public partial class UniverseCanvasViewModel : ObservableObject
             return;
         }
 
-        var entityType = entityTypeOverride ?? SelectedEntityType ?? EntityTypes.FirstOrDefault();
+        var entityType = entityTypeOverride is not null
+            ? await ResolveEntityTypeAsync(entityTypeOverride.DisplayName, entityTypeOverride)
+            : await ResolveEntityTypeAsync(SelectedEntityTypeText, SelectedEntityType ?? EntityTypes.FirstOrDefault());
 
         if (entityType is null)
         {
@@ -515,10 +524,11 @@ public partial class UniverseCanvasViewModel : ObservableObject
             selectedNode.Entity.Name = normalizedName;
             selectedNode.Entity.Description = normalizedDescription;
             selectedNode.Entity.Notes = normalizedNotes;
-            if (nodeEntityType is not null)
+            var resolvedEntityType = await ResolveEntityTypeAsync(SelectedNodeEntityTypeText, nodeEntityType);
+            if (resolvedEntityType is not null)
             {
-                selectedNode.Entity.EntityTypeId = nodeEntityType.Id;
-                selectedNode.Entity.EntityType = nodeEntityType;
+                selectedNode.Entity.EntityTypeId = resolvedEntityType.Id;
+                selectedNode.Entity.EntityType = resolvedEntityType;
             }
 
             await ScopedRunner.RunAsync<IEntityService>(
@@ -563,6 +573,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
             return;
 
         var edgeId = SelectedEdge.Id;
+        var previousLabel = SelectedEdge.Label;
         var relationshipType = await ResolveRelationshipTypeAsync(SelectedNodeRelationshipTypeText, SelectedNodeRelationshipType);
         if (relationshipType is null)
         {
@@ -586,10 +597,16 @@ public partial class UniverseCanvasViewModel : ObservableObject
             if (SelectedEdge is not null)
             {
                 SelectedEdge.RelationshipTypeId = relationshipType.Id;
-                SelectedEdge.Label = relationshipType.DisplayName;
+                SelectedEdge.Label = string.IsNullOrWhiteSpace(SelectedNodeRelationshipTypeText)
+                    ? relationshipType.DisplayName
+                    : SelectedNodeRelationshipTypeText.Trim();
                 SelectedEdge.Description = relationshipDescription;
                 ApplySelectedRelationshipSnapshot(SelectedEdge);
             }
+
+            StatusMessage = previousLabel == SelectedEdge?.Label
+                ? $"Relationship saved as '{SelectedEdge?.Label}'."
+                : $"Relationship changed to '{SelectedEdge?.Label}'.";
         }
         catch (Exception ex)
         {
@@ -757,10 +774,11 @@ public partial class UniverseCanvasViewModel : ObservableObject
                 return;
             }
 
-            SelectedNodeName = node.Name;
-            SelectedNodeDescription = node.Description;
-            SelectedNodeNotes = node.Entity.Notes ?? string.Empty;
-            SelectedNodeEntityType = EntityTypes.FirstOrDefault(x => x.Id == node.Entity.EntityTypeId);
+        SelectedNodeName = node.Name;
+        SelectedNodeDescription = node.Description;
+        SelectedNodeNotes = node.Entity.Notes ?? string.Empty;
+        SelectedNodeEntityType = EntityTypes.FirstOrDefault(x => x.Id == node.Entity.EntityTypeId);
+        SelectedNodeEntityTypeText = SelectedNodeEntityType?.DisplayName ?? node.Entity.EntityType?.DisplayName ?? node.Entity.EntityType?.Name ?? string.Empty;
         }
         finally
         {
@@ -808,7 +826,7 @@ public partial class UniverseCanvasViewModel : ObservableObject
             }
 
             SelectedNodeRelationshipType = RelationshipTypes.FirstOrDefault(x => x.Id == edge.RelationshipTypeId);
-            SelectedNodeRelationshipTypeText = SelectedNodeRelationshipType?.DisplayName ?? edge.Label;
+            SelectedNodeRelationshipTypeText = edge.Label;
             SelectedNodeRelationshipDescription = edge.Description;
         }
         finally
@@ -886,6 +904,38 @@ public partial class UniverseCanvasViewModel : ObservableObject
         SelectedRelationshipTypeText = created.DisplayName;
         SelectedNodeRelationshipType = created;
         SelectedNodeRelationshipTypeText = created.DisplayName;
+        return created;
+    }
+
+    private async Task<EntityType?> ResolveEntityTypeAsync(string? input, EntityType? selectedType)
+    {
+        var trimmed = input?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(trimmed))
+            return selectedType;
+
+        if (selectedType is not null && TypeLocalizationHelper.MatchesEntityTypeInput(selectedType, trimmed, _localization))
+            return selectedType;
+
+        var existing = EntityTypes.FirstOrDefault(x => TypeLocalizationHelper.MatchesEntityTypeInput(x, trimmed, _localization));
+        if (existing is not null)
+            return existing;
+
+        var created = new EntityType
+        {
+            Name = trimmed,
+            Description = trimmed
+        };
+
+        await ScopedRunner.RunAsync<IEntityTypeRepository>(
+            _provider,
+            repository => repository.AddAsync(created));
+
+        TypeLocalizationHelper.Localize(created, _localization);
+        EntityTypes.Add(created);
+        SelectedEntityType = created;
+        SelectedEntityTypeText = created.DisplayName;
+        SelectedNodeEntityType = created;
+        SelectedNodeEntityTypeText = created.DisplayName;
         return created;
     }
 

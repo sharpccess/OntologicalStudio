@@ -18,15 +18,9 @@
 
                     <Separator Margin="0,4"/>
                     <TextBlock Text="{DynamicResource canvas.createEntity}" FontWeight="SemiBold"/>
-                    <ComboBox ItemsSource="{Binding EntityTypes}"
-                              SelectedItem="{Binding SelectedEntityType, Mode=TwoWay}"
-                              IsEnabled="{Binding HasSelectedUniverse}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding DisplayName}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                    <TextBox Watermark="{DynamicResource entities.type}"
+                             Text="{Binding SelectedEntityTypeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             IsEnabled="{Binding HasSelectedUniverse}"/>
                     <TextBox Watermark="{DynamicResource canvas.entityNameOptional}"
                              Text="{Binding NewEntityName, Mode=TwoWay}"
                              IsEnabled="{Binding HasSelectedUniverse}"/>
@@ -84,14 +78,8 @@
                     <TextBlock Text="{DynamicResource canvas.selectedNode}" FontWeight="SemiBold"/>
                     <TextBox Watermark="{DynamicResource canvas.nodeName}"
                              Text="{Binding SelectedNodeName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    <ComboBox ItemsSource="{Binding EntityTypes}"
-                              SelectedItem="{Binding SelectedNodeEntityType, Mode=TwoWay}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding DisplayName}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                    <TextBox Watermark="{DynamicResource entities.type}"
+                             Text="{Binding SelectedNodeEntityTypeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     <TextBox Watermark="{DynamicResource canvas.nodeDescription}"
                              Text="{Binding SelectedNodeDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              AcceptsReturn="True"
@@ -135,13 +123,28 @@
                     <Separator Margin="0,4"/>
                     <StackPanel DataContext="{Binding Hydration}">
                         <TextBlock Text="{DynamicResource canvas.hydration}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{DynamicResource ai.hydrate.mode}" Opacity="0.7" FontSize="11"/>
+                        <ComboBox ItemsSource="{Binding HydrationModes}"
+                                  SelectedItem="{Binding SelectedHydrationMode, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayName}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                         <TextBox Watermark="{DynamicResource canvas.customPrompt}"
                                  Text="{Binding CustomPrompt, Mode=TwoWay}"
                                  AcceptsReturn="True"
                                  TextWrapping="Wrap"
                                  Height="110"/>
-                        <Button Content="Hydrate selected entity"
+                        <Button Content="{DynamicResource entity.hydrate}"
                                 Command="{Binding HydrateCurrentNodeCommand}"/>
+                        <TextBlock Text="{DynamicResource canvas.providerPrompt}" Opacity="0.7" FontSize="11"/>
+                        <TextBox Text="{Binding LastPromptSent}"
+                                 IsReadOnly="True"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 Height="150"/>
                         <TextBlock Text="{Binding StatusMessage}" Opacity="0.7" FontSize="11" TextWrapping="Wrap"/>
                     </StackPanel>
                 </StackPanel>
