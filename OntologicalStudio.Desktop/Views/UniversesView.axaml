@@ -8,7 +8,7 @@
         <Border Grid.Column="0" Grid.RowSpan="2" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,8,0">
             <DockPanel>
                 <TextBlock DockPanel.Dock="Top" Text="{DynamicResource universes.title}" FontWeight="Bold" Margin="0,0,0,6"/>
-                <Button DockPanel.Dock="Bottom" Content="{DynamicResource common.refresh}" Command="{Binding RefreshCommand}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                <Button DockPanel.Dock="Bottom" Content="{DynamicResource common.refresh}" Click="OnRefreshClick" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
                 <ListBox ItemsSource="{Binding Items}"
                          SelectedItem="{Binding SelectedUniverse, Mode=TwoWay}"
                          x:DataType="vm:UniversesViewModel">
@@ -30,8 +30,8 @@
                 <TextBox Watermark="{DynamicResource common.name}" Text="{Binding NewName, Mode=TwoWay}"/>
                 <TextBox Watermark="{DynamicResource common.description}" Text="{Binding NewDescription, Mode=TwoWay}" AcceptsReturn="True" Height="80"/>
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="{DynamicResource common.create}" Command="{Binding CreateCommand}"/>
-                    <Button Content="{DynamicResource common.deleteSelected}" Command="{Binding DeleteCommand}"/>
+                    <Button Content="{DynamicResource common.create}" Click="OnCreateClick"/>
+                    <Button Content="{DynamicResource common.deleteSelected}" Click="OnDeleteClick"/>
                 </StackPanel>
                 <TextBlock Text="{Binding StatusMessage}" Opacity="0.7" FontSize="11"/>
 

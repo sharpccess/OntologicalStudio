@@ -3,7 +3,7 @@
              xmlns:vm="using:OntologicalStudio.Desktop.ViewModels"
              x:Class="OntologicalStudio.Desktop.Views.UniverseCanvasView"
              x:DataType="vm:UniverseCanvasViewModel">
-    <Grid ColumnDefinitions="320,*" Margin="8">
+    <Grid ColumnDefinitions="320,Auto,*" Margin="8">
         <Border Grid.Column="0" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,8,0">
             <ScrollViewer>
                 <StackPanel Spacing="8">
@@ -81,7 +81,8 @@
                              AcceptsReturn="True"
                              Height="70"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <Button Content="{DynamicResource canvas.saveNode}"/>
+                        <Button Content="{DynamicResource canvas.saveNode}"
+                                Click="OnSaveSelectedNodeClick"/>
                         <Button Content="{DynamicResource canvas.deleteSelectedNode}"
                                 Command="{Binding DeleteSelectedNodeCommand}"/>
                     </StackPanel>
@@ -100,7 +101,12 @@
                              Text="{Binding SelectedNodeRelationshipDescription, Mode=TwoWay}"
                              AcceptsReturn="True"
                              Height="60"/>
-                    <Button Content="{DynamicResource canvas.saveRelationship}" Command="{Binding SaveSelectedRelationshipCommand}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Button Content="{DynamicResource canvas.saveRelationship}"
+                                Click="OnSaveSelectedRelationshipClick"/>
+                        <Button Content="{DynamicResource canvas.menu.deleteRelationship}"
+                                Click="OnDeleteSelectedRelationshipClick"/>
+                    </StackPanel>
 
                     <Separator Margin="0,4"/>
                     <StackPanel DataContext="{Binding Hydration}">
@@ -160,7 +166,13 @@
             </ScrollViewer>
         </Border>
 
-        <Border Grid.Column="1" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Background="#11151a">
+        <GridSplitter Grid.Column="1"
+                      Width="8"
+                      Background="#2d3742"
+                      ResizeDirection="Columns"
+                      ShowsPreview="True"/>
+
+        <Border Grid.Column="2" BorderBrush="#444" BorderThickness="1" CornerRadius="4" Background="#11151a">
             <ScrollViewer x:Name="CanvasScrollHost"
                           HorizontalScrollBarVisibility="Auto"
                           VerticalScrollBarVisibility="Auto">
