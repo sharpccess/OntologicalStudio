@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OntologicalStudio.Desktop")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+58c5768e33b7a0d1091ef55612b79432166cccb4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e0990b74c22919d9ea50799f393425c269c6d317")]
 [assembly: System.Reflection.AssemblyProductAttribute("OntologicalStudio.Desktop")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OntologicalStudio.Desktop")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
