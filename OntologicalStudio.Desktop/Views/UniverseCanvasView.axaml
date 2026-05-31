@@ -10,16 +10,17 @@
                     <TextBlock Text="{DynamicResource canvas.title}" FontWeight="Bold" FontSize="16"/>
                     <TextBlock Text="{Binding StatusMessage}" Opacity="0.7" TextWrapping="Wrap" FontSize="11"/>
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <Button Content="{DynamicResource canvas.zoomOut}" Command="{Binding ZoomOutCommand}"/>
-                        <Button Content="{DynamicResource canvas.zoomReset}" Command="{Binding ResetZoomCommand}"/>
-                        <Button Content="{DynamicResource canvas.zoomIn}" Command="{Binding ZoomInCommand}"/>
-                        <Button Content="{DynamicResource canvas.linkMode}" Command="{Binding ToggleLinkModeCommand}"/>
+                        <Button Content="{DynamicResource canvas.zoomOut}" Command="{Binding ZoomOutCommand}" IsEnabled="{Binding HasSelectedUniverse}"/>
+                        <Button Content="{DynamicResource canvas.zoomReset}" Command="{Binding ResetZoomCommand}" IsEnabled="{Binding HasSelectedUniverse}"/>
+                        <Button Content="{DynamicResource canvas.zoomIn}" Command="{Binding ZoomInCommand}" IsEnabled="{Binding HasSelectedUniverse}"/>
+                        <Button Content="{DynamicResource canvas.linkMode}" Command="{Binding ToggleLinkModeCommand}" IsEnabled="{Binding HasSelectedUniverse}"/>
                     </StackPanel>
 
                     <Separator Margin="0,4"/>
                     <TextBlock Text="{DynamicResource canvas.createEntity}" FontWeight="SemiBold"/>
                     <ComboBox ItemsSource="{Binding EntityTypes}"
-                              SelectedItem="{Binding SelectedEntityType, Mode=TwoWay}">
+                              SelectedItem="{Binding SelectedEntityType, Mode=TwoWay}"
+                              IsEnabled="{Binding HasSelectedUniverse}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Name}"/>
@@ -27,11 +28,13 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                     <TextBox Watermark="{DynamicResource canvas.entityNameOptional}"
-                             Text="{Binding NewEntityName, Mode=TwoWay}"/>
+                             Text="{Binding NewEntityName, Mode=TwoWay}"
+                             IsEnabled="{Binding HasSelectedUniverse}"/>
                     <TextBox Watermark="{DynamicResource canvas.entityDescription}"
                              Text="{Binding NewEntityDescription, Mode=TwoWay}"
                              AcceptsReturn="True"
-                             Height="72"/>
+                             Height="72"
+                             IsEnabled="{Binding HasSelectedUniverse}"/>
                     <TextBlock Text="{DynamicResource canvas.createHint}"
                                Opacity="0.6"
                                FontSize="11"
@@ -41,7 +44,8 @@
                     <TextBlock Text="{DynamicResource canvas.connectEntities}" FontWeight="SemiBold"/>
                     <TextBlock Text="{DynamicResource canvas.source}" Opacity="0.7" FontSize="11"/>
                     <ComboBox ItemsSource="{Binding Nodes}"
-                              SelectedItem="{Binding LinkSource, Mode=TwoWay}">
+                              SelectedItem="{Binding LinkSource, Mode=TwoWay}"
+                              IsEnabled="{Binding HasSelectedUniverse}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Name}"/>
@@ -50,7 +54,8 @@
                     </ComboBox>
                     <TextBlock Text="{DynamicResource canvas.relationshipType}" Opacity="0.7" FontSize="11"/>
                     <ComboBox ItemsSource="{Binding RelationshipTypes}"
-                              SelectedItem="{Binding SelectedRelationshipType, Mode=TwoWay}">
+                              SelectedItem="{Binding SelectedRelationshipType, Mode=TwoWay}"
+                              IsEnabled="{Binding HasSelectedUniverse}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Name}"/>
@@ -59,7 +64,8 @@
                     </ComboBox>
                     <TextBlock Text="{DynamicResource canvas.target}" Opacity="0.7" FontSize="11"/>
                     <ComboBox ItemsSource="{Binding Nodes}"
-                              SelectedItem="{Binding LinkTarget, Mode=TwoWay}">
+                              SelectedItem="{Binding LinkTarget, Mode=TwoWay}"
+                              IsEnabled="{Binding HasSelectedUniverse}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Name}"/>
@@ -67,8 +73,8 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Content="{DynamicResource canvas.connect}" Command="{Binding ConnectCommand}"/>
-                        <Button Content="{DynamicResource canvas.refresh}" Command="{Binding RefreshCommand}"/>
+                        <Button Content="{DynamicResource canvas.connect}" Command="{Binding ConnectCommand}" IsEnabled="{Binding HasSelectedUniverse}"/>
+                        <Button Content="{DynamicResource canvas.refresh}" Command="{Binding RefreshCommand}" IsEnabled="{Binding HasSelectedUniverse}"/>
                     </StackPanel>
 
                     <Separator Margin="0,4"/>

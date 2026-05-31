@@ -87,13 +87,23 @@ public partial class UniverseCanvasViewModel : ObservableObject
     [ObservableProperty]
     private bool hasLinkPreview;
 
+    public bool HasSelectedUniverse => _universes.SelectedUniverse is not null;
+
     public UniverseCanvasViewModel(IServiceProvider provider, UniversesViewModel universes)
     {
         _provider = provider;
         _universes = universes;
         Hydration = new EntityHydrationViewModel(provider);
-        _universes.SelectionChanged += async () => await LoadAsync();
-        _universes.UniversesChanged += async () => await LoadAsync();
+        _universes.SelectionChanged += async () =>
+        {
+            OnPropertyChanged(nameof(HasSelectedUniverse));
+            await LoadAsync();
+        };
+        _universes.UniversesChanged += async () =>
+        {
+            OnPropertyChanged(nameof(HasSelectedUniverse));
+            await LoadAsync();
+        };
     }
 
     private async Task LoadReferenceDataAsync()
