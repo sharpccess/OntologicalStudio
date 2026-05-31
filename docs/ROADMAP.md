@@ -84,14 +84,14 @@
 - [x] Modelo `HydrationLog` (EntityId, PromptUsed, ProviderUsed, RawResponse, AppliedFields[], CreatedAt).
 - [~] Diálogo de hidratación:
   - [x] Prompt editable, pre-rellenado por template (Person / Company / Belief / …).
-  - [ ] Streaming de respuesta.
+  - [x] Streaming de respuesta.
   - [x] Diff visual entre estado actual y propuesta de la IA.
   - [x] Apply por campo (checkboxes).
 - [x] Historial por entidad.
-- [ ] Refactor `IAIProvider`:
-  - `IAsyncEnumerable<AIChunk> StreamAsync(AIRequest req, CancellationToken ct)`
-  - Chunks: `TextChunk`, `ImageChunk`, `FileChunk`, `DoneChunk(InputTokens, OutputTokens)`.
-  - `GeneratePromptAsync` queda como wrapper.
+- [x] Refactor `IAIProvider`:
+  - [x] `IAsyncEnumerable<AIChunk> StreamAsync(AIRequest req, CancellationToken ct)`
+  - [x] Chunks: `TextChunk`, `ImageChunk`, `FileChunk`, `DoneChunk(InputTokens, OutputTokens)`.
+  - [x] `GeneratePromptAsync` queda como wrapper.
 
 ---
 

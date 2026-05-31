@@ -194,9 +194,11 @@ public partial class UniverseCanvasView : UserControl
             var path = new ShapePath
             {
                 Data = Geometry.Parse(edge.PathData),
-                Stroke = new SolidColorBrush(Color.Parse("#5f7184")),
-                StrokeThickness = 2
+                Stroke = new SolidColorBrush(Color.Parse(_viewModel.SelectedEdge?.Id == edge.Id ? "#ffd166" : "#5f7184")),
+                StrokeThickness = _viewModel.SelectedEdge?.Id == edge.Id ? 3 : 2,
+                Tag = edge
             };
+            path.PointerPressed += OnEdgePointerPressed;
             _canvas.Children.Add(path);
 
             var label = new Border
@@ -400,5 +402,15 @@ public partial class UniverseCanvasView : UserControl
             ItemsSource = new object[] { connectItem, cancelConnectionItem, deleteItem }
         };
         menu.Open(target);
+    }
+
+    private void OnEdgePointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (_viewModel is null || sender is not ShapePath path || path.Tag is not CanvasRelationshipEdgeViewModel edge)
+            return;
+
+        _viewModel.SelectEdge(edge);
+        RenderScene();
+        e.Handled = true;
     }
 }

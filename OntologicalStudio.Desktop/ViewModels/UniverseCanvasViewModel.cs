@@ -59,6 +59,21 @@ public partial class UniverseCanvasViewModel : ObservableObject
     [ObservableProperty]
     private bool isLinkMode;
 
+    [ObservableProperty]
+    private string selectedNodeName = string.Empty;
+
+    [ObservableProperty]
+    private string selectedNodeDescription = string.Empty;
+
+    [ObservableProperty]
+    private RelationshipType? selectedNodeRelationshipType;
+
+    [ObservableProperty]
+    private string selectedNodeRelationshipDescription = string.Empty;
+
+    [ObservableProperty]
+    private CanvasRelationshipEdgeViewModel? selectedEdge;
+
     public UniverseCanvasViewModel(IServiceProvider provider, UniversesViewModel universes)
     {
         _provider = provider;
@@ -259,9 +274,17 @@ public partial class UniverseCanvasViewModel : ObservableObject
     public void SelectNode(CanvasEntityNodeViewModel? node)
     {
         SelectedNode = node;
+        SelectedEdge = null;
         Hydration.SelectedNode = node;
         if (node is null)
+        {
+            SelectedNodeName = string.Empty;
+            SelectedNodeDescription = string.Empty;
             return;
+        }
+
+        SelectedNodeName = node.Name;
+        SelectedNodeDescription = node.Description;
 
         if (IsLinkMode && LinkSource is null)
         {
@@ -276,6 +299,21 @@ public partial class UniverseCanvasViewModel : ObservableObject
             LinkSource ??= node;
             LinkTarget ??= Nodes.FirstOrDefault(x => x.Id != node.Id) ?? node;
         }
+    }
+
+    public void SelectEdge(CanvasRelationshipEdgeViewModel? edge)
+    {
+        SelectedEdge = edge;
+        if (edge is null)
+        {
+            SelectedNodeRelationshipType = null;
+            SelectedNodeRelationshipDescription = string.Empty;
+            return;
+        }
+
+        SelectedNode = null;
+        SelectedNodeRelationshipType = RelationshipTypes.FirstOrDefault(x => x.Name == edge.Label);
+        SelectedNodeRelationshipDescription = edge.Description;
     }
 
     public void StartConnection(CanvasEntityNodeViewModel node)
@@ -299,6 +337,68 @@ public partial class UniverseCanvasViewModel : ObservableObject
     {
         SelectedNode = node;
         await DeleteSelectedNodeAsync();
+    }
+
+    [RelayCommand]
+    private async Task SaveSelectedNodeAsync()
+    {
+        if (SelectedNode is null)
+            return;
+
+        try
+        {
+            await ScopedRunner.RunAsync<IEntityService>(
+                _provider,
+                async service =>
+                {
+                    var entity = await service.GetByIdAsync(SelectedNode.Id);
+                    entity.Name = SelectedNodeName.Trim();
+                    entity.Description = SelectedNodeDescription.Trim();
+                    await service.UpdateAsync(entity);
+                });
+
+            await LoadAsync();
+            _universes.NotifyDataChanged();
+            SelectedNode = Nodes.FirstOrDefault(x => x.Id == SelectedNode?.Id);
+            if (SelectedNode is not null)
+            {
+                SelectedNodeName = SelectedNode.Name;
+                SelectedNodeDescription = SelectedNode.Description;
+            }
+            StatusMessage = "Node updated.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Save node failed: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task SaveSelectedRelationshipAsync()
+    {
+        if (SelectedEdge is null || SelectedNodeRelationshipType is null)
+            return;
+
+        try
+        {
+            await ScopedRunner.RunAsync<IRelationshipService>(
+                _provider,
+                async service =>
+                {
+                    var relationship = await service.GetByIdAsync(SelectedEdge.Id);
+                    relationship.RelationshipTypeId = SelectedNodeRelationshipType.Id;
+                    relationship.Description = SelectedNodeRelationshipDescription.Trim();
+                    await service.UpdateAsync(relationship);
+                });
+
+            await LoadAsync();
+            _universes.NotifyDataChanged();
+            StatusMessage = "Relationship updated.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Save relationship failed: {ex.Message}";
+        }
     }
 
     public async Task HandleNodeClickedAsync(CanvasEntityNodeViewModel node)

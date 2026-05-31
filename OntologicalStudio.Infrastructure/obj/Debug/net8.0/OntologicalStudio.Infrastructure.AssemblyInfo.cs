@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OntologicalStudio.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dbef67b53859b6450ed3087765bf0e2d57aadfdd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5827aac9ec7617f97f5e8c4d36f87872906d8335")]
 [assembly: System.Reflection.AssemblyProductAttribute("OntologicalStudio.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OntologicalStudio.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
