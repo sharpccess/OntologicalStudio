@@ -218,19 +218,19 @@ public partial class SolutionsViewModel : ObservableObject
         ResolutionStyles.Clear();
         if (_localization.CurrentLanguageCode == "es")
         {
-            ResolutionStyles.Add("Diagnóstico estratégico");
-            ResolutionStyles.Add("Plan de acción paso a paso");
-            ResolutionStyles.Add("Análisis de riesgos y mitigaciones");
-            ResolutionStyles.Add("Opciones comparadas con pros y contras");
-            ResolutionStyles.Add("Respuesta breve y ejecutiva");
+            ResolutionStyles.Add("Usa un estilo de diagnóstico estratégico, totalmente basado en las entidades y relaciones del modelo.");
+            ResolutionStyles.Add("Devuelve un plan de acción paso a paso, concreto y accionable, basado en el escenario.");
+            ResolutionStyles.Add("Haz un análisis de riesgos y mitigaciones, usando solo el contexto modelado.");
+            ResolutionStyles.Add("Compara opciones con pros y contras, conectando cada opción con las entidades implicadas.");
+            ResolutionStyles.Add("Responde en formato ejecutivo breve, priorizando claridad y relevancia.");
         }
         else
         {
-            ResolutionStyles.Add("Strategic diagnosis");
-            ResolutionStyles.Add("Step-by-step action plan");
-            ResolutionStyles.Add("Risk analysis and mitigations");
-            ResolutionStyles.Add("Compared options with pros and cons");
-            ResolutionStyles.Add("Short executive response");
+            ResolutionStyles.Add("Use a strategic diagnosis style fully grounded in the modeled entities and relationships.");
+            ResolutionStyles.Add("Return a concrete step-by-step action plan based on the scenario.");
+            ResolutionStyles.Add("Provide a risks and mitigations analysis using only the modeled context.");
+            ResolutionStyles.Add("Compare options with pros and cons, tying each option to the involved entities.");
+            ResolutionStyles.Add("Respond in a short executive format, prioritizing clarity and relevance.");
         }
 
         SelectedResolutionStyle = string.Empty;

@@ -15,6 +15,7 @@ public partial class EntityHydrationViewModel : ObservableObject
     private readonly ILocalizationService _localization;
 
     public ObservableCollection<HydrationLog> History { get; } = new();
+    public ObservableCollection<HydrationModeOption> HydrationModes { get; } = new();
 
     [ObservableProperty]
     private CanvasEntityNodeViewModel? selectedNode;
@@ -36,6 +37,12 @@ public partial class EntityHydrationViewModel : ObservableObject
 
     [ObservableProperty]
     private string customPrompt = string.Empty;
+
+    [ObservableProperty]
+    private HydrationModeOption? selectedHydrationMode;
+
+    [ObservableProperty]
+    private string lastPromptUsed = string.Empty;
 
     [ObservableProperty]
     private bool applyHydrationData = true;
@@ -71,6 +78,7 @@ public partial class EntityHydrationViewModel : ObservableObject
         DiffNotes = string.Empty;
         DiffScores = string.Empty;
         CustomPrompt = string.Empty;
+        LastPromptUsed = string.Empty;
         _ = LoadHistoryAsync();
     }
 
@@ -78,6 +86,8 @@ public partial class EntityHydrationViewModel : ObservableObject
     {
         _provider = provider;
         _localization = provider.GetRequiredService<ILocalizationService>();
+        _localization.OnLanguageChanged += HandleLanguageChanged;
+        RebuildHydrationModes();
     }
 
     public async Task PreviewCurrentNodeAsync()
@@ -126,6 +136,7 @@ public partial class EntityHydrationViewModel : ObservableObject
             return;
 
         IsBusy = true;
+        var effectivePrompt = BuildEffectivePrompt(CustomPrompt);
         StatusMessage = _localization.CurrentLanguageCode == "es"
             ? "Generando hidratación con investigación web..."
             : "Generating hydration with web research...";
@@ -145,8 +156,9 @@ public partial class EntityHydrationViewModel : ObservableObject
                         DetailLevel = 2,
                         MaxSuggestions = 8
                     },
-                    CustomPrompt,
+                    effectivePrompt,
                     _localization.CurrentLanguageCode));
+            LastPromptUsed = Preview.PromptUsed;
             BuildDiff();
             StatusMessage = _localization.CurrentLanguageCode == "es"
                 ? "Hidratación lista. Se aplicará sobre la entidad."
@@ -223,4 +235,62 @@ public partial class EntityHydrationViewModel : ObservableObject
             $"Confidence: {Preview.CurrentConfidenceLevel} -> {Preview.Result.ConfidenceScore}{Environment.NewLine}" +
             $"Completeness: {Preview.CurrentCompletenessScore} -> {Preview.Result.CompletenessScore}";
     }
+
+    private void HandleLanguageChanged()
+    {
+        RebuildHydrationModes();
+    }
+
+    private void RebuildHydrationModes()
+    {
+        var previousKey = SelectedHydrationMode?.Key;
+        HydrationModes.Clear();
+
+        if (_localization.CurrentLanguageCode == "es")
+        {
+            HydrationModes.Add(new HydrationModeOption("factual", "Factual", "Modo factual", "Usa un tono factual y concreto. Evita frases vagas o poéticas. Prioriza hechos observables, rasgos claros y atributos reutilizables."));
+            HydrationModes.Add(new HydrationModeOption("psychological", "Psychological", "Modo psicológico", "Enfoca la hidratación en motivaciones, creencias, miedos, contradicciones internas y patrones de comportamiento."));
+            HydrationModes.Add(new HydrationModeOption("organizational", "Organizational", "Modo organizacional", "Enfoca la hidratación en rol, incentivos, dependencias, conflictos, poder, estructura y contexto organizacional."));
+            HydrationModes.Add(new HydrationModeOption("strategic", "Strategic", "Modo estratégico", "Enfoca la hidratación en objetivos, riesgos, palancas, restricciones, oportunidades y efectos sistémicos."));
+        }
+        else
+        {
+            HydrationModes.Add(new HydrationModeOption("factual", "Factual mode", "Factual mode", "Use a factual and concrete tone. Avoid vague or poetic phrasing. Prioritize observable facts, clear traits, and reusable attributes."));
+            HydrationModes.Add(new HydrationModeOption("psychological", "Psychological mode", "Psychological mode", "Focus the hydration on motivations, beliefs, fears, internal contradictions, and behavioral patterns."));
+            HydrationModes.Add(new HydrationModeOption("organizational", "Organizational mode", "Organizational mode", "Focus the hydration on role, incentives, dependencies, conflicts, power, structure, and organizational context."));
+            HydrationModes.Add(new HydrationModeOption("strategic", "Strategic mode", "Strategic mode", "Focus the hydration on goals, risks, leverage points, constraints, opportunities, and systemic effects."));
+        }
+
+        SelectedHydrationMode = HydrationModes.FirstOrDefault(x => x.Key == previousKey) ?? HydrationModes.FirstOrDefault();
+    }
+
+    private string BuildEffectivePrompt(string? rawPrompt)
+    {
+        var userPrompt = rawPrompt?.Trim() ?? string.Empty;
+        var modeInstruction = SelectedHydrationMode?.Instruction?.Trim() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(modeInstruction))
+            return userPrompt;
+
+        if (string.IsNullOrWhiteSpace(userPrompt))
+            return modeInstruction;
+
+        return $"{modeInstruction}{Environment.NewLine}{Environment.NewLine}{userPrompt}";
+    }
+}
+
+public class HydrationModeOption
+{
+    public HydrationModeOption(string key, string name, string displayName, string instruction)
+    {
+        Key = key;
+        Name = name;
+        DisplayName = displayName;
+        Instruction = instruction;
+    }
+
+    public string Key { get; }
+    public string Name { get; }
+    public string DisplayName { get; }
+    public string Instruction { get; }
 }

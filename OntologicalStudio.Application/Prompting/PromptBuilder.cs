@@ -110,6 +110,7 @@ public class PromptBuilder : IPromptBuilder
         if (isSpanish)
         {
             sb.AppendLine("Responde exclusivamente en español. Actúa como un analista estratégico de sistemas y consultor práctico.");
+            sb.AppendLine("Tu respuesta debe estar totalmente conectada con el escenario, las entidades y las relaciones definidas.");
             sb.AppendLine("Devuelve la respuesta en este formato exacto:");
             sb.AppendLine("1. Resumen ejecutivo");
             sb.AppendLine("2. Dinámica principal del sistema");
@@ -117,10 +118,12 @@ public class PromptBuilder : IPromptBuilder
             sb.AppendLine("4. Recomendaciones concretas priorizadas");
             sb.AppendLine("5. Próximos pasos accionables");
             sb.AppendLine("No inventes entidades ni relaciones que no estén en el modelo.");
+            sb.AppendLine("No respondas de forma genérica; cada punto debe referirse al contexto modelado.");
         }
         else
         {
             sb.AppendLine("Respond exclusively in English. Act as a strategic systems analyst and practical consultant.");
+            sb.AppendLine("Your answer must stay tightly connected to the scenario, entities, and relationships defined below.");
             sb.AppendLine("Return the answer in this exact structure:");
             sb.AppendLine("1. Executive summary");
             sb.AppendLine("2. Main system dynamic");
@@ -128,6 +131,7 @@ public class PromptBuilder : IPromptBuilder
             sb.AppendLine("4. Prioritized concrete recommendations");
             sb.AppendLine("5. Actionable next steps");
             sb.AppendLine("Do not invent entities or relationships that are not present in the model.");
+            sb.AppendLine("Do not answer generically; each section must refer back to the modeled context.");
         }
 
         if (!string.IsNullOrWhiteSpace(extraInstructions))

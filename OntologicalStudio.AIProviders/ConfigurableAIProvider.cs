@@ -63,15 +63,99 @@ public class ConfigurableAIProvider : IAIProvider
         var researchBlock = BuildResearchBlock(webResearch, isSpanish);
         string prompt = string.IsNullOrWhiteSpace(customPrompt)
             ? isSpanish
-                ? $"Completa atributos, notas y dinámicas para la entidad '{entity.Name}' de tipo '{entity.EntityType?.Name ?? "General"}'. Descripción actual: {entity.Description}. Notas actuales: {entity.Notes}.{Environment.NewLine}{researchBlock}"
-                : $"Complete attributes, notes, and dynamics for the entity '{entity.Name}' of type '{entity.EntityType?.Name ?? "General"}'. Current description: {entity.Description}. Current notes: {entity.Notes}.{Environment.NewLine}{researchBlock}"
+                ? $"""
+                  TAREA:
+                  Hidrata la entidad '{entity.Name}' de tipo '{entity.EntityType?.Name ?? "General"}'.
+
+                  OBJETIVO:
+                  Mejorar la descripción de la entidad con información útil, coherente y específica. No seas poético ni ambiguo.
+
+                  CONTEXTO ACTUAL:
+                  - Nombre: {entity.Name}
+                  - Tipo: {entity.EntityType?.Name ?? "General"}
+                  - Descripción actual: {entity.Description}
+                  - Notas actuales: {entity.Notes}
+
+                  CAMPOS DESEADOS:
+                  - Descripción más precisa y útil
+                  - Motivaciones, miedos, incentivos y patrones si aplican
+                  - Atributos estructurados en formato JSON
+
+                  REGLAS:
+                  - Responde SOLO en español.
+                  - No inventes hechos no sustentados.
+                  - Si usas contexto web, intégralo de forma prudente.
+                  - analysisNotes debe ser una descripción mejorada, clara y directamente reutilizable dentro de la entidad.
+
+                  {researchBlock}
+                  """
+                : $"""
+                  TASK:
+                  Hydrate the entity '{entity.Name}' of type '{entity.EntityType?.Name ?? "General"}'.
+
+                  GOAL:
+                  Improve the entity description with useful, coherent, and specific information. Do not be poetic or vague.
+
+                  CURRENT CONTEXT:
+                  - Name: {entity.Name}
+                  - Type: {entity.EntityType?.Name ?? "General"}
+                  - Current description: {entity.Description}
+                  - Current notes: {entity.Notes}
+
+                  DESIRED OUTPUT:
+                  - A more precise and useful description
+                  - Motivations, fears, incentives, and patterns when relevant
+                  - Structured attributes in JSON format
+
+                  RULES:
+                  - Respond ONLY in English.
+                  - Do not invent unsupported facts.
+                  - If web context is available, integrate it cautiously.
+                  - analysisNotes must be an improved description that can be directly reused inside the entity.
+
+                  {researchBlock}
+                  """
             : isSpanish
-                ? $"Hidrata la entidad '{entity.Name}' de tipo '{entity.EntityType?.Name ?? "General"}' siguiendo esta instrucción: {customPrompt}{Environment.NewLine}{Environment.NewLine}Descripción actual: {entity.Description}{Environment.NewLine}Notas actuales: {entity.Notes}{Environment.NewLine}{researchBlock}"
-                : $"Hydrate the entity '{entity.Name}' of type '{entity.EntityType?.Name ?? "General"}' following this instruction: {customPrompt}{Environment.NewLine}{Environment.NewLine}Current description: {entity.Description}{Environment.NewLine}Current notes: {entity.Notes}{Environment.NewLine}{researchBlock}";
+                ? $"""
+                  TAREA:
+                  Hidrata la entidad '{entity.Name}' de tipo '{entity.EntityType?.Name ?? "General"}' siguiendo esta instrucción del usuario:
+
+                  {customPrompt}
+
+                  CONTEXTO ACTUAL:
+                  - Descripción actual: {entity.Description}
+                  - Notas actuales: {entity.Notes}
+
+                  REGLAS:
+                  - Responde SOLO en español.
+                  - No ignores la instrucción del usuario.
+                  - analysisNotes debe servir como texto útil para poblar la descripción del objeto.
+                  - suggestedProperties debe contener atributos concretos en JSON.
+
+                  {researchBlock}
+                  """
+                : $"""
+                  TASK:
+                  Hydrate the entity '{entity.Name}' of type '{entity.EntityType?.Name ?? "General"}' following this user instruction:
+
+                  {customPrompt}
+
+                  CURRENT CONTEXT:
+                  - Current description: {entity.Description}
+                  - Current notes: {entity.Notes}
+
+                  RULES:
+                  - Respond ONLY in English.
+                  - Do not ignore the user instruction.
+                  - analysisNotes must be useful text to populate the object description.
+                  - suggestedProperties must contain concrete JSON attributes.
+
+                  {researchBlock}
+                  """;
 
         string system = isSpanish
-            ? "Eres un consultor experto en ontologías, mapeo sistémico e investigación web. Usa el contexto de investigación web si está disponible. Responde SIEMPRE en español. Devuelve SOLO un JSON con: confidenceScore (int 0-100), completenessScore (int 0-100), suggestedProperties (objeto JSON de atributos), y analysisNotes (string). analysisNotes debe ser un enriquecimiento breve pero útil para la descripción de la entidad."
-            : "You are an expert ontology, systems-mapping, and web-research consultant. Use the web research context when available. Respond ONLY in English. Return ONLY a JSON object with: confidenceScore (int 0-100), completenessScore (int 0-100), suggestedProperties (JSON object of attributes), and analysisNotes (string). analysisNotes must be a concise but useful enrichment for the entity description.";
+            ? "Eres un consultor experto en ontologías, mapeo sistémico e investigación web. Devuelve SOLO JSON válido. Esquema obligatorio: { \"confidenceScore\": int, \"completenessScore\": int, \"suggestedProperties\": { ... }, \"analysisNotes\": \"...\" }. No añadas markdown, comentarios ni texto antes o después del JSON."
+            : "You are an expert ontology, systems-mapping, and web-research consultant. Return ONLY valid JSON. Required schema: { \"confidenceScore\": int, \"completenessScore\": int, \"suggestedProperties\": { ... }, \"analysisNotes\": \"...\" }. Do not add markdown, comments, or any text before or after the JSON.";
         
         string rawResponse = string.Empty;
         string? openAiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
