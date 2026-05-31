@@ -36,4 +36,10 @@
     <ProjectReference Include="..\OntologicalStudio.Localization\OntologicalStudio.Localization.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\OntologicalStudio.Localization\Languages\*.json"
+          Link="Languages\%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
