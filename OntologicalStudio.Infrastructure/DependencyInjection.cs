@@ -20,6 +20,7 @@ public static class DependencyInjection
             options.UseSqlite(connectionString));
 
         services.AddSingleton<IAiConnectionSettingsService, AiConnectionSettingsService>();
+        services.AddSingleton<IAiOperationStatusService, AiOperationStatusService>();
         services.AddSingleton<ILibraryCatalogService, LibraryCatalogService>();
         services.AddScoped<IAIProvider, ConfigurableAIProvider>();
 

@@ -1,0 +1,73 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OntologicalStudio.Desktop.ViewModels"
+             x:Class="OntologicalStudio.Desktop.Views.AiOperationOverlay"
+             x:DataType="vm:AiOperationOverlayViewModel">
+    <Border Background="#B3000000"
+            IsVisible="{Binding IsBusy, FallbackValue=False}"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch">
+        <Border Background="#1B222D"
+                BorderBrush="#2A3340"
+                BorderThickness="1"
+                CornerRadius="10"
+                Padding="28,24"
+                MinWidth="420"
+                MaxWidth="560"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                BoxShadow="0 10 28 0 #88000000">
+            <StackPanel Spacing="14">
+                <!-- Title row -->
+                <Grid ColumnDefinitions="Auto,*">
+                    <Border Grid.Column="0"
+                            Width="10" Height="10"
+                            CornerRadius="5"
+                            Background="#4EA0FF"
+                            Margin="0,8,12,0"
+                            VerticalAlignment="Top"/>
+                    <StackPanel Grid.Column="1" Spacing="2">
+                        <TextBlock Text="{Binding Title}"
+                                   FontSize="15"
+                                   FontWeight="SemiBold"
+                                   Foreground="#F3F4F6"
+                                   TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding Provider}"
+                                   FontSize="12"
+                                   Foreground="#9CA3AF"
+                                   TextWrapping="Wrap"
+                                   IsVisible="{Binding HasProvider}"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Elapsed + status text -->
+                <Grid ColumnDefinitions="*,Auto" Margin="0,2,0,0">
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding StatusText}"
+                               Foreground="#9CA3AF"
+                               FontSize="12"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding ElapsedText}"
+                               Foreground="#E5E7EB"
+                               FontFamily="Consolas, Menlo, monospace"
+                               FontSize="13"
+                               VerticalAlignment="Center"/>
+                </Grid>
+
+                <!-- Indeterminate progress bar -->
+                <ProgressBar IsIndeterminate="True"
+                             MinHeight="3"
+                             Foreground="#4EA0FF"
+                             Background="#0F141A"/>
+
+                <!-- Cancel button -->
+                <Button Content="{Binding CancelButtonLabel}"
+                        HorizontalAlignment="Right"
+                        Padding="16,6"
+                        Command="{Binding CancelCommand}"
+                        IsEnabled="{Binding CanCancel}"/>
+            </StackPanel>
+        </Border>
+    </Border>
+</UserControl>
