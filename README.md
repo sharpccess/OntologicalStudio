@@ -143,9 +143,6 @@ Full details in [`installer/README.md`](installer/README.md).
 
 Branch from `main`, name your branch `feature/<short-name>` or `fix/<short-name>`, run `dotnet build` clean, open a PR with a brief rationale. Code style follows standard .NET conventions; **null reference types are enabled** project-wide.
 
-### 📄 License · Licencia
-
-Currently **TBD**. Until a license file is added, the code is "all rights reserved" by default. If you want to use it, open an issue and we'll talk.
 
 ---
 
@@ -275,9 +272,7 @@ Detalles completos en [`installer/README.md`](installer/README.md).
 
 Trabaja desde una rama `feature/<nombre>` o `fix/<nombre>` partiendo de `main`. `dotnet build` debe quedar limpio antes de abrir PR; describe brevemente el porqué del cambio. El proyecto tiene **referencias nullable habilitadas**.
 
-### 📄 Licencia
 
-Por definir. Hasta que se añada un archivo de licencia, el código es "todos los derechos reservados" por defecto. Si quieres usarlo, abre un issue y hablamos.
 
 ---
 
