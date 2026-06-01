@@ -300,8 +300,108 @@ public class ConfigurableAIProvider : IAIProvider
             "openrouter" => await GenerateOpenRouterAsync(prompt, systemPrompt, provider, jsonMode),
             "openai" => await GenerateOpenAiCompatibleAsync(prompt, systemPrompt, provider, jsonMode, "OpenAI"),
             "anthropic" => await GenerateAnthropicAsync(prompt, systemPrompt, provider),
+            "deepseek" => await GenerateDeepSeekAsync(prompt, systemPrompt, provider, jsonMode),
+            "gemini" => await GenerateGeminiAsync(prompt, systemPrompt, provider, jsonMode),
             _ => await GenerateOllamaAsync(prompt, systemPrompt, provider.Endpoint, provider.Model, provider.ApiKey, jsonMode)
         };
+    }
+
+    // DeepSeek is OpenAI-compatible; reuses the same payload shape with a different default endpoint.
+    private async Task<string> GenerateDeepSeekAsync(string prompt, string systemPrompt, ProviderConfiguration provider, bool jsonMode)
+    {
+        var endpoint = NormalizeChatCompletionsEndpoint(provider.Endpoint, "https://api.deepseek.com/v1/chat/completions");
+        _providerName = $"DeepSeek ({provider.Model})";
+        var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", provider.ApiKey);
+
+        var body = new
+        {
+            model = provider.Model,
+            messages = new object[]
+            {
+                new { role = "system", content = systemPrompt },
+                new { role = "user", content = prompt }
+            },
+            response_format = jsonMode ? new { type = "json_object" } : null,
+            temperature = 0.7,
+            stream = false
+        };
+
+        request.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
+        var response = await _httpClient.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+        var jsonString = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(jsonString);
+        return doc.RootElement.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString() ?? string.Empty;
+    }
+
+    // Google Gemini uses its own request/response format.
+    // Endpoint pattern: https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent
+    private async Task<string> GenerateGeminiAsync(string prompt, string systemPrompt, ProviderConfiguration provider, bool jsonMode)
+    {
+        var model = string.IsNullOrWhiteSpace(provider.Model) ? "gemini-2.0-flash" : provider.Model!.Trim();
+        var endpoint = NormalizeGeminiEndpoint(provider.Endpoint, model);
+        _providerName = $"Gemini ({model})";
+
+        var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+        request.Headers.Add("x-goog-api-key", provider.ApiKey);
+
+        object? systemInstruction = string.IsNullOrWhiteSpace(systemPrompt)
+            ? null
+            : new { parts = new object[] { new { text = systemPrompt } } };
+
+        var body = new
+        {
+            system_instruction = systemInstruction,
+            contents = new object[]
+            {
+                new
+                {
+                    role = "user",
+                    parts = new object[] { new { text = prompt } }
+                }
+            },
+            generationConfig = new
+            {
+                temperature = 0.7,
+                responseMimeType = jsonMode ? "application/json" : "text/plain"
+            }
+        };
+
+        request.Content = new StringContent(
+            JsonSerializer.Serialize(body, new JsonSerializerOptions { DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull }),
+            Encoding.UTF8,
+            "application/json");
+
+        var response = await _httpClient.SendAsync(request);
+        var jsonString = await response.Content.ReadAsStringAsync();
+        if (!response.IsSuccessStatusCode)
+            throw new InvalidOperationException($"Gemini returned {(int)response.StatusCode}: {jsonString}");
+
+        using var doc = JsonDocument.Parse(jsonString);
+        if (doc.RootElement.TryGetProperty("candidates", out var candidates)
+            && candidates.ValueKind == JsonValueKind.Array
+            && candidates.GetArrayLength() > 0)
+        {
+            var first = candidates[0];
+            if (first.TryGetProperty("content", out var contentObj)
+                && contentObj.TryGetProperty("parts", out var parts)
+                && parts.ValueKind == JsonValueKind.Array)
+            {
+                var sb = new StringBuilder();
+                foreach (var part in parts.EnumerateArray())
+                {
+                    if (part.TryGetProperty("text", out var textProp))
+                        sb.Append(textProp.GetString());
+                }
+                return sb.ToString();
+            }
+            // Surface blocked / safety responses with a useful message
+            if (first.TryGetProperty("finishReason", out var finish))
+                throw new InvalidOperationException($"Gemini stopped without text. finishReason={finish.GetString()}");
+        }
+
+        return string.Empty;
     }
 
     private async Task<string> GenerateOpenRouterAsync(string prompt, string systemPrompt, ProviderConfiguration provider, bool jsonMode)
@@ -539,6 +639,8 @@ public class ConfigurableAIProvider : IAIProvider
             "openrouter" => $"OpenRouter ({model})",
             "openai" => $"OpenAI ({model})",
             "anthropic" => $"Anthropic ({model})",
+            "deepseek" => $"DeepSeek ({model})",
+            "gemini" => $"Gemini ({model})",
             _ => $"Ollama ({model})"
         };
     }
@@ -595,6 +697,37 @@ public class ConfigurableAIProvider : IAIProvider
         }
 
         return normalized;
+    }
+
+    // Gemini endpoint is per-model. Accepts:
+    //   - empty: builds the default https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent
+    //   - "https://generativelanguage.googleapis.com": appends /v1beta/models/{model}:generateContent
+    //   - a full ":generateContent" URL: used as-is
+    private static string NormalizeGeminiEndpoint(string endpoint, string model)
+    {
+        var normalized = (endpoint ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(normalized))
+            normalized = "https://generativelanguage.googleapis.com";
+
+        if (!normalized.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            && !normalized.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = $"https://{normalized}";
+        }
+
+        normalized = normalized.TrimEnd('/');
+        // If user already passed a full :generateContent URL, keep it
+        if (normalized.Contains(":generateContent", StringComparison.OrdinalIgnoreCase))
+            return normalized;
+
+        // If user passed only the host, build the canonical URL
+        if (!normalized.Contains("/v1beta/", StringComparison.OrdinalIgnoreCase)
+            && !normalized.Contains("/v1/", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = $"{normalized}/v1beta";
+        }
+
+        return $"{normalized}/models/{model}:generateContent";
     }
 
     // Heuristic Seeding Engine
