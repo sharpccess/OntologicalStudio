@@ -98,9 +98,7 @@
                     <TextBox Grid.Row="3" Grid.Column="1"
                              Margin="0,0,0,6"
                              Text="{Binding AiSettings.OllamaApiKey, Mode=TwoWay}"
-                             HorizontalAlignment="Stretch"
-                             IsEnabled="{Binding AiSettings.IsApiKeyRequired}"
-                             Watermark="{Binding AiSettings.ApiKeyHint}"/>
+                             HorizontalAlignment="Stretch"/>
 
                     <TextBlock Grid.Row="4" Grid.Column="1"
                                Text="{Binding AiSettings.StatusMessage}"
