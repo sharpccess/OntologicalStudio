@@ -27,6 +27,9 @@ build_property.EnableCodeStyleSeverity =
 [c:/Users/emoti/source/repos/OntogenesisPlus/OntologicalStudio/OntologicalStudio.Desktop/App.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[c:/Users/emoti/source/repos/OntogenesisPlus/OntologicalStudio/OntologicalStudio.Desktop/Views/AiOperationOverlay.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [c:/Users/emoti/source/repos/OntogenesisPlus/OntologicalStudio/OntologicalStudio.Desktop/Views/EntitiesView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 

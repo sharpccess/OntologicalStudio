@@ -161,7 +161,83 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
-      "OntologicalStudio.Core/1.0.0": {
+      "OntologicalStudio.Core/0.1.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "compile": {
+          "bin/placeholder/OntologicalStudio.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/OntologicalStudio.Core.dll": {}
+        }
+      }
+    },
+    "net8.0/win-x64": {
+      "DocumentFormat.OpenXml/3.0.2": {
+        "type": "package",
+        "dependencies": {
+          "DocumentFormat.OpenXml.Framework": "3.0.2"
+        },
+        "compile": {
+          "lib/net8.0/DocumentFormat.OpenXml.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/DocumentFormat.OpenXml.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "DocumentFormat.OpenXml.Framework/3.0.2": {
+        "type": "package",
+        "dependencies": {
+          "System.IO.Packaging": "8.0.0"
+        },
+        "compile": {
+          "lib/net8.0/DocumentFormat.OpenXml.Framework.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/DocumentFormat.OpenXml.Framework.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "QuestPDF/2024.3.0": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/QuestPDF.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/QuestPDF.dll": {
+            "related": ".xml"
+          }
+        },
+        "native": {
+          "runtimes/win-x64/native/QuestPdfSkia.dll": {}
+        }
+      },
+      "System.IO.Packaging/8.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/System.IO.Packaging.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/System.IO.Packaging.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net6.0/_._": {}
+        }
+      },
+      "OntologicalStudio.Core/0.1.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "compile": {
@@ -312,7 +388,7 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "OntologicalStudio.Core/1.0.0": {
+    "OntologicalStudio.Core/0.1.0": {
       "type": "project",
       "path": "../OntologicalStudio.Core/OntologicalStudio.Core.csproj",
       "msbuildProject": "../OntologicalStudio.Core/OntologicalStudio.Core.csproj"
@@ -321,7 +397,7 @@
   "projectFileDependencyGroups": {
     "net8.0": [
       "DocumentFormat.OpenXml >= 3.0.2",
-      "OntologicalStudio.Core >= 1.0.0",
+      "OntologicalStudio.Core >= 0.1.0",
       "QuestPDF >= 2024.3.0"
     ]
   },
@@ -331,7 +407,7 @@
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
-    "version": "1.0.0",
+    "version": "0.1.0",
     "restore": {
       "projectUniqueName": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Application\\OntologicalStudio.Application.csproj",
       "projectName": "OntologicalStudio.Application",
@@ -360,7 +436,6 @@
       },
       "frameworks": {
         "net8.0": {
-          "framework": "net8.0",
           "targetAlias": "net8.0",
           "projectReferences": {
             "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj": {
@@ -383,7 +458,6 @@
     },
     "frameworks": {
       "net8.0": {
-        "framework": "net8.0",
         "targetAlias": "net8.0",
         "dependencies": {
           "DocumentFormat.OpenXml": {
@@ -412,11 +486,23 @@
             "version": "[8.0.27, 8.0.27]"
           },
           {
+            "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
+            "version": "[8.0.27, 8.0.27]"
+          },
+          {
             "name": "Microsoft.NETCore.App.Ref",
             "version": "[8.0.27, 8.0.27]"
           },
           {
+            "name": "Microsoft.NETCore.App.Runtime.win-x64",
+            "version": "[8.0.27, 8.0.27]"
+          },
+          {
             "name": "Microsoft.WindowsDesktop.App.Ref",
+            "version": "[8.0.27, 8.0.27]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
             "version": "[8.0.27, 8.0.27]"
           }
         ],
@@ -426,6 +512,11 @@
           }
         },
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.204/PortableRuntimeIdentifierGraph.json"
+      }
+    },
+    "runtimes": {
+      "win-x64": {
+        "#import": []
       }
     }
   }

@@ -1,7 +1,8 @@
 {
   "version": 3,
   "targets": {
-    "net8.0": {}
+    "net8.0": {},
+    "net8.0/win-x64": {}
   },
   "libraries": {},
   "projectFileDependencyGroups": {
@@ -13,7 +14,7 @@
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
-    "version": "1.0.0",
+    "version": "0.1.0",
     "restore": {
       "projectUniqueName": "C:\\Users\\emoti\\source\\repos\\OntogenesisPlus\\OntologicalStudio\\OntologicalStudio.Core\\OntologicalStudio.Core.csproj",
       "projectName": "OntologicalStudio.Core",
@@ -78,11 +79,23 @@
             "version": "[8.0.27, 8.0.27]"
           },
           {
+            "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
+            "version": "[8.0.27, 8.0.27]"
+          },
+          {
             "name": "Microsoft.NETCore.App.Ref",
             "version": "[8.0.27, 8.0.27]"
           },
           {
+            "name": "Microsoft.NETCore.App.Runtime.win-x64",
+            "version": "[8.0.27, 8.0.27]"
+          },
+          {
             "name": "Microsoft.WindowsDesktop.App.Ref",
+            "version": "[8.0.27, 8.0.27]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
             "version": "[8.0.27, 8.0.27]"
           }
         ],
@@ -92,6 +105,11 @@
           }
         },
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.204/PortableRuntimeIdentifierGraph.json"
+      }
+    },
+    "runtimes": {
+      "win-x64": {
+        "#import": []
       }
     }
   }
