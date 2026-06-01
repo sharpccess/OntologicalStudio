@@ -115,6 +115,9 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private AiSettingsViewModel? aiSettings;
 
+    [ObservableProperty]
+    private AiOperationOverlayViewModel? aiOperationOverlay;
+
     public bool HasActiveUniverse => Universes?.HasSelectedUniverse == true;
 
     public MainWindowViewModel(IServiceProvider provider)
@@ -217,6 +220,10 @@ public partial class MainWindowViewModel : ObservableObject
             await aiSettings.LoadAsync();
             AiSettings = aiSettings;
             WriteStartupLog("AiSettingsViewModel created");
+
+            AiOperationOverlay = new AiOperationOverlayViewModel(
+                _provider.GetRequiredService<OntologicalStudio.Core.Interfaces.IAiOperationStatusService>());
+            WriteStartupLog("AiOperationOverlayViewModel created");
 
             var universes = new UniversesViewModel(_provider);
             WriteStartupLog("UniversesViewModel created");

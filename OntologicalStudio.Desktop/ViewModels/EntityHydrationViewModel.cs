@@ -150,6 +150,22 @@ public partial class EntityHydrationViewModel : ObservableObject
         var customPrompt = string.IsNullOrWhiteSpace(CustomPrompt)
             ? null
             : CustomPrompt.Trim();
+
+        var statusService = _provider.GetService(typeof(OntologicalStudio.Core.Interfaces.IAiOperationStatusService))
+            as OntologicalStudio.Core.Interfaces.IAiOperationStatusService;
+        var settings = _provider.GetService(typeof(OntologicalStudio.Core.Interfaces.IAiConnectionSettingsService))
+            as OntologicalStudio.Core.Interfaces.IAiConnectionSettingsService;
+        var providerLabel = "AI";
+        if (settings is not null)
+        {
+            var s = await settings.GetAsync();
+            providerLabel = $"{s.Provider} ({s.Model})";
+        }
+        var operationTitle = _localization.CurrentLanguageCode == "es"
+            ? $"Hidratando '{SelectedNode.Entity.Name}'…"
+            : $"Hydrating '{SelectedNode.Entity.Name}'…";
+        statusService?.Begin(operationTitle, providerLabel);
+
         StatusMessage = _localization.CurrentLanguageCode == "es"
             ? "Generando hidratación con investigación web..."
             : "Generating hydration with web research...";
@@ -178,6 +194,12 @@ public partial class EntityHydrationViewModel : ObservableObject
                 ? "Hidratación lista. Se aplicará sobre la entidad."
                 : "Hydration ready. It will be applied to the entity.";
         }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? "Hidratación cancelada por el usuario."
+                : "Hydration cancelled by the user.";
+        }
         catch (Exception ex)
         {
             StatusMessage = _localization.CurrentLanguageCode == "es"
@@ -186,6 +208,7 @@ public partial class EntityHydrationViewModel : ObservableObject
         }
         finally
         {
+            statusService?.End();
             IsBusy = false;
         }
     }

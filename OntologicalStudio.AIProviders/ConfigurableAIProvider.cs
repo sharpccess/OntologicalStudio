@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OntologicalStudio.AIProviders;
@@ -16,15 +17,20 @@ public class ConfigurableAIProvider : IAIProvider
 {
     private readonly HttpClient _httpClient;
     private readonly IAiConnectionSettingsService _settingsService;
+    private readonly IAiOperationStatusService? _status;
     private string _providerName = "Configurable AI Provider";
     
     public string ProviderName => _providerName;
 
-    public ConfigurableAIProvider(IAiConnectionSettingsService settingsService)
+    public ConfigurableAIProvider(IAiConnectionSettingsService settingsService, IAiOperationStatusService? status = null)
     {
         _settingsService = settingsService;
+        _status = status;
         _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(180) };
     }
+
+    /// <summary>Returns the cancellation token of the currently active operation, if any.</summary>
+    private CancellationToken OperationToken => _status?.Token ?? CancellationToken.None;
 
     public async Task<bool> ValidateConfigurationAsync()
     {
@@ -283,7 +289,7 @@ public class ConfigurableAIProvider : IAIProvider
 
         request.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
 
-        var response = await _httpClient.SendAsync(request);
+        var response = await _httpClient.SendAsync(request, OperationToken);
         response.EnsureSuccessStatusCode();
 
         string jsonString = await response.Content.ReadAsStringAsync();
@@ -328,7 +334,7 @@ public class ConfigurableAIProvider : IAIProvider
         };
 
         request.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
-        var response = await _httpClient.SendAsync(request);
+        var response = await _httpClient.SendAsync(request, OperationToken);
         response.EnsureSuccessStatusCode();
         var jsonString = await response.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(jsonString);
@@ -373,7 +379,7 @@ public class ConfigurableAIProvider : IAIProvider
             Encoding.UTF8,
             "application/json");
 
-        var response = await _httpClient.SendAsync(request);
+        var response = await _httpClient.SendAsync(request, OperationToken);
         var jsonString = await response.Content.ReadAsStringAsync();
         if (!response.IsSuccessStatusCode)
             throw new InvalidOperationException($"Gemini returned {(int)response.StatusCode}: {jsonString}");
@@ -426,7 +432,7 @@ public class ConfigurableAIProvider : IAIProvider
         };
 
         request.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
-        var response = await _httpClient.SendAsync(request);
+        var response = await _httpClient.SendAsync(request, OperationToken);
         response.EnsureSuccessStatusCode();
         var jsonString = await response.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(jsonString);
@@ -453,7 +459,7 @@ public class ConfigurableAIProvider : IAIProvider
         };
 
         request.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
-        var response = await _httpClient.SendAsync(request);
+        var response = await _httpClient.SendAsync(request, OperationToken);
         response.EnsureSuccessStatusCode();
         var jsonString = await response.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(jsonString);
@@ -481,7 +487,7 @@ public class ConfigurableAIProvider : IAIProvider
         };
 
         request.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
-        var response = await _httpClient.SendAsync(request);
+        var response = await _httpClient.SendAsync(request, OperationToken);
         response.EnsureSuccessStatusCode();
         var jsonString = await response.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(jsonString);
@@ -523,7 +529,7 @@ public class ConfigurableAIProvider : IAIProvider
 
         request.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
 
-        var response = await _httpClient.SendAsync(request);
+        var response = await _httpClient.SendAsync(request, OperationToken);
         response.EnsureSuccessStatusCode();
 
         string jsonString = await response.Content.ReadAsStringAsync();
@@ -544,7 +550,7 @@ public class ConfigurableAIProvider : IAIProvider
         var request = new HttpRequestMessage(HttpMethod.Get, $"{normalizedEndpoint}/api/tags");
         if (!string.IsNullOrWhiteSpace(apiKey))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-        var response = await _httpClient.SendAsync(request);
+        var response = await _httpClient.SendAsync(request, OperationToken);
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();

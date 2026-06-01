@@ -12,6 +12,7 @@
         Width="1200" Height="800"
         WindowStartupLocation="CenterScreen">
 
+    <Grid>
     <Grid RowDefinitions="Auto,Auto,*">
         <Border Grid.Row="0" Background="#1f1f23" Padding="16,10">
             <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
@@ -136,5 +137,8 @@
                 <views:LibraryView DataContext="{Binding Library}"/>
             </TabItem>
         </TabControl>
+    </Grid>
+    <views:AiOperationOverlay DataContext="{Binding AiOperationOverlay}"
+                              IsHitTestVisible="{Binding IsBusy, FallbackValue=False}"/>
     </Grid>
 </Window>

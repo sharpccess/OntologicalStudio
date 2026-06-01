@@ -109,6 +109,22 @@ public partial class SolutionsViewModel : ObservableObject
         if (CurrentScenario is null) { StatusMessage = _localization.T("scenarios.selectScenarioFirst"); return; }
         if (IsRunning) return;
         IsRunning = true;
+
+        var statusService = _provider.GetService(typeof(OntologicalStudio.Core.Interfaces.IAiOperationStatusService))
+            as OntologicalStudio.Core.Interfaces.IAiOperationStatusService;
+        var aiSettingsSvc = _provider.GetService(typeof(OntologicalStudio.Core.Interfaces.IAiConnectionSettingsService))
+            as OntologicalStudio.Core.Interfaces.IAiConnectionSettingsService;
+        var providerLabel = "AI";
+        if (aiSettingsSvc is not null)
+        {
+            var s = await aiSettingsSvc.GetAsync();
+            providerLabel = $"{s.Provider} ({s.Model})";
+        }
+        var title = _localization.CurrentLanguageCode == "es"
+            ? $"Resolviendo escenario '{CurrentScenario.Title}'…"
+            : $"Solving scenario '{CurrentScenario.Title}'…";
+        statusService?.Begin(title, providerLabel);
+
         StatusMessage = _localization.T("scenarios.running");
         try
         {
@@ -123,12 +139,19 @@ public partial class SolutionsViewModel : ObservableObject
             SelectedSolution = Items.FirstOrDefault(x => x.Id == sol.Id);
             StatusMessage = _localization.T("scenarios.solutionCreated", sol.Artifacts.Count);
         }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = _localization.CurrentLanguageCode == "es"
+                ? "Resolución cancelada por el usuario."
+                : "Run cancelled by the user.";
+        }
         catch (Exception ex)
         {
             StatusMessage = $"Run failed: {ex.Message}";
         }
         finally
         {
+            statusService?.End();
             IsRunning = false;
         }
     }
