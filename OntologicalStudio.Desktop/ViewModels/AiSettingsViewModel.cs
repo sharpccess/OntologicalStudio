@@ -19,7 +19,9 @@ public partial class AiSettingsViewModel : ObservableObject
         new AiProviderOption("ollama", "Ollama"),
         new AiProviderOption("openrouter", "OpenRouter"),
         new AiProviderOption("openai", "OpenAI / GPT"),
-        new AiProviderOption("anthropic", "Anthropic / Claude")
+        new AiProviderOption("anthropic", "Anthropic / Claude"),
+        new AiProviderOption("deepseek", "DeepSeek"),
+        new AiProviderOption("gemini", "Google Gemini")
     };
 
     [ObservableProperty]
@@ -46,6 +48,8 @@ public partial class AiSettingsViewModel : ObservableObject
         "openrouter" => "https://openrouter.ai/api/v1/chat/completions",
         "openai" => "https://api.openai.com/v1/chat/completions",
         "anthropic" => "https://api.anthropic.com/v1/messages",
+        "deepseek" => "https://api.deepseek.com/v1/chat/completions",
+        "gemini" => "https://generativelanguage.googleapis.com (auto-builds the rest)",
         _ => "http://localhost:11434"
     };
 
@@ -170,7 +174,42 @@ public partial class AiSettingsViewModel : ObservableObject
                 return $"✅ Ollama reachable · {count} model(s) installed.";
             }
 
-            // For cloud providers we just check DNS / host reachability via HEAD
+            // For DeepSeek (OpenAI-compatible), list models
+            if (providerKey == "deepseek")
+            {
+                var modelsRequest = new HttpRequestMessage(HttpMethod.Get, "https://api.deepseek.com/v1/models");
+                if (!string.IsNullOrWhiteSpace(OllamaApiKey))
+                    modelsRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", OllamaApiKey);
+                using var resp = await http.SendAsync(modelsRequest);
+                var json = await resp.Content.ReadAsStringAsync();
+                if (!resp.IsSuccessStatusCode)
+                    return $"❌ DeepSeek returned {(int)resp.StatusCode}: {json}";
+                using var doc = JsonDocument.Parse(json);
+                var count = doc.RootElement.TryGetProperty("data", out var arr) && arr.ValueKind == JsonValueKind.Array
+                    ? arr.GetArrayLength()
+                    : 0;
+                return $"✅ DeepSeek reachable · {count} model(s) available.";
+            }
+
+            // For Gemini, list models with the API key
+            if (providerKey == "gemini")
+            {
+                if (string.IsNullOrWhiteSpace(OllamaApiKey))
+                    return "❌ Gemini requires an API key.";
+                var modelsRequest = new HttpRequestMessage(HttpMethod.Get, "https://generativelanguage.googleapis.com/v1beta/models");
+                modelsRequest.Headers.Add("x-goog-api-key", OllamaApiKey);
+                using var resp = await http.SendAsync(modelsRequest);
+                var json = await resp.Content.ReadAsStringAsync();
+                if (!resp.IsSuccessStatusCode)
+                    return $"❌ Gemini returned {(int)resp.StatusCode}: {json}";
+                using var doc = JsonDocument.Parse(json);
+                var count = doc.RootElement.TryGetProperty("models", out var arr) && arr.ValueKind == JsonValueKind.Array
+                    ? arr.GetArrayLength()
+                    : 0;
+                return $"✅ Gemini reachable · {count} model(s) available.";
+            }
+
+            // For other cloud providers we just check DNS / host reachability via HEAD
             var uri = new Uri(OllamaEndpoint);
             var request = new HttpRequestMessage(HttpMethod.Head, $"{uri.Scheme}://{uri.Host}");
             using var response = await http.SendAsync(request);
