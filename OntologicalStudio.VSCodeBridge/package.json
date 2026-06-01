@@ -2,7 +2,7 @@
   "name": "ontologicalstudio-bridge",
   "displayName": "Ontological Studio Bridge",
   "description": "Connects the OntologicalStudio desktop app to VSCode / TRAE: forwards prompts through vscode.lm (Copilot, Claude, etc.) and embeds the Ontological Studio panel.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "ontologicalstudio",
   "engines": {
     "vscode": "^1.95.0"
