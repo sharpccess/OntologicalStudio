@@ -139,9 +139,7 @@ Full details in [`installer/README.md`](installer/README.md).
 - [ ] Live collaboration / sync layer (opt-in)
 - [ ] macOS / Linux installer parity
 
-### 🤝 Contributing
 
-Branch from `main`, name your branch `feature/<short-name>` or `fix/<short-name>`, run `dotnet build` clean, open a PR with a brief rationale. Code style follows standard .NET conventions; **null reference types are enabled** project-wide.
 
 
 ---
@@ -268,9 +266,6 @@ Detalles completos en [`installer/README.md`](installer/README.md).
 - [ ] Capa de colaboración / sincronización (opt-in)
 - [ ] Paridad de instalador en macOS / Linux
 
-### 🤝 Contribuir
-
-Trabaja desde una rama `feature/<nombre>` o `fix/<nombre>` partiendo de `main`. `dotnet build` debe quedar limpio antes de abrir PR; describe brevemente el porqué del cambio. El proyecto tiene **referencias nullable habilitadas**.
 
 
 
