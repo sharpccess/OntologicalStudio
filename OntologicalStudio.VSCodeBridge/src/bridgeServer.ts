@@ -172,11 +172,16 @@ export class BridgeServer {
         }
     }
 
-    private async runChat(payload: ChatPayload): Promise<{ content: string; model: string }> {
+    private async runChat(payload: ChatPayload): Promise<{ content: string; model: string; tokensIn?: number; tokensOut?: number }> {
         const messages = this.buildMessages(payload);
         if (messages.length === 0) {
             throw new Error("No messages provided in request body.");
         }
+
+        const approxChars = messages.reduce((acc, m) => acc + (m.content?.length || 0), 0);
+        this.opts.output.appendLine(
+            `[bridge] /chat ← ${messages.length} message(s), ~${approxChars} chars, model=${payload.model || "(auto)"}`
+        );
 
         const requestedModel = (payload.model || this.opts.preferredModel || "").trim();
         const filter = requestedModel ? this.modelFilter(requestedModel) : {};
@@ -193,7 +198,9 @@ export class BridgeServer {
 
         const model = models[0];
         this.lastUsedModel = `${model.vendor}/${model.family}`;
-        this.opts.output.appendLine(`[bridge] dispatch -> ${this.lastUsedModel} (${model.id})`);
+        this.opts.output.appendLine(
+            `[bridge] → ${this.lastUsedModel} (id=${model.id}, maxInputTokens=${model.maxInputTokens})`
+        );
 
         const lmMessages = messages.map((m) =>
             m.role === "assistant"
@@ -204,14 +211,42 @@ export class BridgeServer {
         );
 
         const cts = new vscode.CancellationTokenSource();
-        const timeout = setTimeout(() => cts.cancel(), 120_000);
+        const timeout = setTimeout(() => cts.cancel(), 180_000);
         try {
-            const response = await model.sendRequest(lmMessages, {}, cts.token);
+            const response = await model.sendRequest(
+                lmMessages,
+                { justification: "OntologicalStudio desktop app requested a hydration / scenario completion through the local bridge." },
+                cts.token
+            );
             let content = "";
             for await (const chunk of response.text) {
                 content += chunk;
             }
+            this.opts.output.appendLine(`[bridge] ← reply ${content.length} chars`);
             return { content, model: this.lastUsedModel };
+        } catch (err) {
+            // vscode.LanguageModelError has useful codes (NoPermissions, Blocked, NotFound, ContextLengthExceeded…)
+            const anyErr = err as { code?: string; message?: string; cause?: { message?: string } };
+            const code = anyErr?.code ?? "Unknown";
+            const message = anyErr?.message ?? String(err);
+            this.opts.output.appendLine(`[bridge] !! sendRequest failed [${code}]: ${message}`);
+
+            if (code === "NoPermissions") {
+                throw new Error(
+                    "The editor denied the bridge access to the language model. Open VSCode/TRAE, run a Copilot chat once, then retry. " +
+                    "Underlying error: " + message
+                );
+            }
+            if (code === "Blocked") {
+                throw new Error("The language model blocked this request (content policy). Underlying: " + message);
+            }
+            if (/context.*length/i.test(message)) {
+                throw new Error(
+                    `Prompt exceeds the model's context window (~${model.maxInputTokens} tokens). ` +
+                    "Reduce prompt size or pick a model with a larger window. Underlying: " + message
+                );
+            }
+            throw new Error(`vscode.lm error [${code}]: ${message}`);
         } finally {
             clearTimeout(timeout);
             cts.dispose();

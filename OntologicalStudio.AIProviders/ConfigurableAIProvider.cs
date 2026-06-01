@@ -23,7 +23,7 @@ public class ConfigurableAIProvider : IAIProvider
     public ConfigurableAIProvider(IAiConnectionSettingsService settingsService)
     {
         _settingsService = settingsService;
-        _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(60) };
+        _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(180) };
     }
 
     public async Task<bool> ValidateConfigurationAsync()
@@ -322,10 +322,37 @@ public class ConfigurableAIProvider : IAIProvider
         };
         request.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
 
-        var response = await _httpClient.SendAsync(request);
+        HttpResponseMessage response;
+        try
+        {
+            response = await _httpClient.SendAsync(request);
+        }
+        catch (TaskCanceledException)
+        {
+            throw new InvalidOperationException(
+                $"VSCode bridge call timed out after {_httpClient.Timeout.TotalSeconds:F0}s. The model in VSCode/TRAE may be slow or stuck. " +
+                "Check the 'Ontological Studio Bridge' output panel in the editor.");
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new InvalidOperationException(
+                $"VSCode bridge is unreachable at {endpoint}. Is the extension installed and the bridge started? Underlying: {ex.Message}");
+        }
+
         var jsonString = await response.Content.ReadAsStringAsync();
         if (!response.IsSuccessStatusCode)
-            throw new InvalidOperationException($"VSCode bridge returned {(int)response.StatusCode}: {jsonString}");
+        {
+            // Try to extract a friendly message from the bridge's JSON error payload
+            string detail = jsonString;
+            try
+            {
+                using var errDoc = JsonDocument.Parse(jsonString);
+                if (errDoc.RootElement.TryGetProperty("error", out var errProp))
+                    detail = errProp.GetString() ?? jsonString;
+            }
+            catch { /* not JSON, keep raw */ }
+            throw new InvalidOperationException($"VSCode bridge returned {(int)response.StatusCode}: {detail}");
+        }
 
         using var doc = JsonDocument.Parse(jsonString);
         if (doc.RootElement.TryGetProperty("model", out var modelProp))
@@ -334,9 +361,15 @@ public class ConfigurableAIProvider : IAIProvider
             if (!string.IsNullOrWhiteSpace(resolvedModel))
                 _providerName = $"VSCode/TRAE Bridge ({resolvedModel})";
         }
-        return doc.RootElement.TryGetProperty("content", out var contentProp)
+        var content = doc.RootElement.TryGetProperty("content", out var contentProp)
             ? contentProp.GetString() ?? string.Empty
             : string.Empty;
+
+        if (string.IsNullOrWhiteSpace(content))
+            throw new InvalidOperationException(
+                "VSCode bridge returned a 200 OK but with no content. Open the 'Ontological Studio Bridge' output panel in the editor to inspect what happened.");
+
+        return content;
     }
 
     private static string NormalizeVsCodeBridgeEndpoint(string endpoint)
