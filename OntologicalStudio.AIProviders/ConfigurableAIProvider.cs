@@ -300,95 +300,8 @@ public class ConfigurableAIProvider : IAIProvider
             "openrouter" => await GenerateOpenRouterAsync(prompt, systemPrompt, provider, jsonMode),
             "openai" => await GenerateOpenAiCompatibleAsync(prompt, systemPrompt, provider, jsonMode, "OpenAI"),
             "anthropic" => await GenerateAnthropicAsync(prompt, systemPrompt, provider),
-            "vscode" => await GenerateVsCodeBridgeAsync(prompt, systemPrompt, provider),
             _ => await GenerateOllamaAsync(prompt, systemPrompt, provider.Endpoint, provider.Model, provider.ApiKey, jsonMode)
         };
-    }
-
-    // VSCode / TRAE Bridge: posts the prompt to the local extension server
-    // which forwards it through vscode.lm (Copilot, Claude, etc.).
-    private async Task<string> GenerateVsCodeBridgeAsync(string prompt, string systemPrompt, ProviderConfiguration provider)
-    {
-        var endpoint = NormalizeVsCodeBridgeEndpoint(provider.Endpoint);
-        var modelLabel = string.IsNullOrWhiteSpace(provider.Model) ? "auto" : provider.Model!;
-        _providerName = $"VSCode/TRAE Bridge ({modelLabel})";
-
-        var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
-        var body = new
-        {
-            systemPrompt = systemPrompt ?? string.Empty,
-            userPrompt = prompt ?? string.Empty,
-            model = string.IsNullOrWhiteSpace(provider.Model) ? null : provider.Model
-        };
-        request.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
-
-        HttpResponseMessage response;
-        try
-        {
-            response = await _httpClient.SendAsync(request);
-        }
-        catch (TaskCanceledException)
-        {
-            throw new InvalidOperationException(
-                $"VSCode bridge call timed out after {_httpClient.Timeout.TotalSeconds:F0}s. The model in VSCode/TRAE may be slow or stuck. " +
-                "Check the 'Ontological Studio Bridge' output panel in the editor.");
-        }
-        catch (HttpRequestException ex)
-        {
-            throw new InvalidOperationException(
-                $"VSCode bridge is unreachable at {endpoint}. Is the extension installed and the bridge started? Underlying: {ex.Message}");
-        }
-
-        var jsonString = await response.Content.ReadAsStringAsync();
-        if (!response.IsSuccessStatusCode)
-        {
-            // Try to extract a friendly message from the bridge's JSON error payload
-            string detail = jsonString;
-            try
-            {
-                using var errDoc = JsonDocument.Parse(jsonString);
-                if (errDoc.RootElement.TryGetProperty("error", out var errProp))
-                    detail = errProp.GetString() ?? jsonString;
-            }
-            catch { /* not JSON, keep raw */ }
-            throw new InvalidOperationException($"VSCode bridge returned {(int)response.StatusCode}: {detail}");
-        }
-
-        using var doc = JsonDocument.Parse(jsonString);
-        if (doc.RootElement.TryGetProperty("model", out var modelProp))
-        {
-            var resolvedModel = modelProp.GetString();
-            if (!string.IsNullOrWhiteSpace(resolvedModel))
-                _providerName = $"VSCode/TRAE Bridge ({resolvedModel})";
-        }
-        var content = doc.RootElement.TryGetProperty("content", out var contentProp)
-            ? contentProp.GetString() ?? string.Empty
-            : string.Empty;
-
-        if (string.IsNullOrWhiteSpace(content))
-            throw new InvalidOperationException(
-                "VSCode bridge returned a 200 OK but with no content. Open the 'Ontological Studio Bridge' output panel in the editor to inspect what happened.");
-
-        return content;
-    }
-
-    private static string NormalizeVsCodeBridgeEndpoint(string endpoint)
-    {
-        var normalized = (endpoint ?? string.Empty).Trim();
-        if (string.IsNullOrWhiteSpace(normalized))
-            normalized = "http://localhost:39217";
-
-        if (!normalized.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
-            && !normalized.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-        {
-            normalized = $"http://{normalized}";
-        }
-
-        normalized = normalized.TrimEnd('/');
-        if (!normalized.EndsWith("/chat", StringComparison.OrdinalIgnoreCase))
-            normalized = $"{normalized}/chat";
-
-        return normalized;
     }
 
     private async Task<string> GenerateOpenRouterAsync(string prompt, string systemPrompt, ProviderConfiguration provider, bool jsonMode)
@@ -570,22 +483,15 @@ public class ConfigurableAIProvider : IAIProvider
     private async Task<ProviderConfiguration> GetConfiguredProviderAsync()
     {
         var settings = await _settingsService.GetAsync();
-        var provider = (settings.Provider ?? string.Empty).Trim().ToLowerInvariant();
-        // VSCode bridge does not require an API key (auth is delegated to the editor's LM API).
-        var isConfigured = provider switch
-        {
-            "vscode" => !string.IsNullOrWhiteSpace(settings.ApiEndpoint),
-            _ => !string.IsNullOrWhiteSpace(settings.Provider)
-                && !string.IsNullOrWhiteSpace(settings.ApiEndpoint)
-                && !string.IsNullOrWhiteSpace(settings.Model)
-                && !string.IsNullOrWhiteSpace(settings.ApiKey)
-        };
         return new ProviderConfiguration(
             settings.Provider,
             settings.ApiEndpoint,
             settings.Model,
             settings.ApiKey,
-            isConfigured);
+            !string.IsNullOrWhiteSpace(settings.Provider)
+                && !string.IsNullOrWhiteSpace(settings.ApiEndpoint)
+                && !string.IsNullOrWhiteSpace(settings.Model)
+                && !string.IsNullOrWhiteSpace(settings.ApiKey));
     }
 
     private static OllamaConfiguration GetFallbackOllamaConfiguration()
@@ -633,7 +539,6 @@ public class ConfigurableAIProvider : IAIProvider
             "openrouter" => $"OpenRouter ({model})",
             "openai" => $"OpenAI ({model})",
             "anthropic" => $"Anthropic ({model})",
-            "vscode" => $"VSCode/TRAE Bridge ({model})",
             _ => $"Ollama ({model})"
         };
     }
